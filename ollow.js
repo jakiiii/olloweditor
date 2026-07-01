@@ -1010,7 +1010,7 @@
           const note = values.caption.trim();
           const images = await readMultipleFilesAsDataURLs(values.files);
           this.insertHTML(
-            `<section class="ollow-media ollow-gallery" data-type="gallery"><div class="ollow-gallery-header"><span class="nw-block-label">GALLERY</span><h3>${escapeHtml(title)}</h3>${note ? `<p>${escapeHtml(note)}</p>` : ""}</div><div class="ollow-gallery-grid">${images.map((src, index) => `<figure><img src="${escapeHtml(src)}" alt="${escapeHtml(`${title} image ${index + 1}`)}"></figure>`).join("")}</div></section>`
+            `<section class="ollow-media ollow-gallery" data-type="gallery"><div class="ollow-gallery-header"><h3>${escapeHtml(title)}</h3>${note ? `<p>${escapeHtml(note)}</p>` : ""}</div><div class="ollow-gallery-grid">${images.map((src, index) => `<figure><img src="${escapeHtml(src)}" alt="${escapeHtml(`${title} image ${index + 1}`)}"></figure>`).join("")}</div></section>`
           );
           return null;
         },

@@ -390,13 +390,19 @@
 }
 
 .nw-editor-content .ollow-image {
-  background: #f8fafc;
+  background: transparent;
+  border: 0;
 }
 
 .nw-editor-content .ollow-image img {
   max-height: 520px;
   object-fit: contain;
-  border-radius: 0;
+  border-radius: 8px;
+}
+
+.nw-editor-content figure.ollow-image {
+  margin: 24px 0;
+  padding: 0;
 }
 
 .nw-editor-content figcaption {

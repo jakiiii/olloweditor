@@ -74,6 +74,7 @@
   const ALLOWED_FONT_SIZE_CLASSES = FONT_SIZE_PRESETS.map((size) => `${FONT_SIZE_CLASS_PREFIX}${size}`);
   const ALLOWED_TEXT_COLOR_CLASSES = TEXT_COLOR_PRESETS.map((color) => `${TEXT_COLOR_CLASS_PREFIX}${color.key}`);
   const ALLOWED_HIGHLIGHT_CLASSES = HIGHLIGHT_COLOR_PRESETS.map((color) => `${HIGHLIGHT_CLASS_PREFIX}${color.key}`);
+  const BOOKMARK_CLASS = "ollow-bookmark";
   const STYLE_PRESETS = [
     { key: "normal", label: "Normal", type: "reset", previewClass: "" },
     { key: "lead", label: "Lead paragraph", type: "block", className: "ollow-style-lead" },
@@ -137,6 +138,7 @@
     "TABLE",
     "TBODY",
     "TD",
+    "TFOOT",
     "TH",
     "THEAD",
     "TR",
@@ -171,9 +173,15 @@
     "ollow-editor-code",
     "ollow-editor-table",
     "ollow-editor-table-scroll",
+    "ollow-table-wide",
+    "ollow-table-full",
+    "ollow-table-bordered",
+    "ollow-table-striped",
+    "ollow-table-compact",
     "ollow-gallery",
     "ollow-gallery-grid",
     "ollow-gallery-header",
+    "ollow-bookmark",
     "ollow-image",
     "ollow-image-full",
     "ollow-image-large",
@@ -199,7 +207,9 @@
   const IMAGE_SIZE_CLASSES = ["ollow-image-small", "ollow-image-medium", "ollow-image-large", "ollow-image-full"];
   const MEDIA_ALIGNMENT_CLASSES = ["ollow-align-left", "ollow-align-center", "ollow-align-right", "ollow-align-wide", "ollow-align-full"];
   const TEXT_ALIGNMENT_CLASSES = ["ollow-text-left", "ollow-text-center", "ollow-text-right", "ollow-text-justify"];
-  const TEMP_SELECTION_CLASSES = ["is-selected", "is-media-selected", "ollow-selected", "ollow-image-selected"];
+  const TABLE_WIDTH_CLASSES = ["ollow-table-wide", "ollow-table-full"];
+  const TABLE_STYLE_CLASSES = ["ollow-table-bordered", "ollow-table-striped", "ollow-table-compact"];
+  const TEMP_SELECTION_CLASSES = ["is-selected", "is-media-selected", "ollow-selected", "ollow-image-selected", "is-bookmark-selected"];
   const MEDIA_DATA_TYPES = new Set(["attachment", "code", "embed", "gallery", "image"]);
   const IMAGE_SIZE_PRESETS = {
     small: 320,
@@ -233,6 +243,16 @@
 
   function getFontFamilyClassName(key) {
     return `${FONT_CLASS_PREFIX}${key}`;
+  }
+
+  function sanitizeBookmarkId(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
   }
 
   function getFontSizeClassName(size) {
@@ -1432,8 +1452,30 @@
           return;
         }
 
+        if (name === "data-bookmark" && node.classList.contains(BOOKMARK_CLASS) && value === "true") {
+          clean.setAttribute(name, "true");
+          return;
+        }
+
         if (name === "data-language" && tagName === "FIGURE") {
           clean.setAttribute(name, value);
+          return;
+        }
+
+        if (name === "id" && node.classList.contains(BOOKMARK_CLASS)) {
+          const bookmarkId = sanitizeBookmarkId(value);
+          if (!bookmarkId) return;
+          clean.setAttribute("id", bookmarkId);
+          return;
+        }
+
+        if (name === "contenteditable" && node.classList.contains(BOOKMARK_CLASS) && value === "false") {
+          clean.setAttribute("contenteditable", "false");
+          return;
+        }
+
+        if (name === "title" && node.classList.contains(BOOKMARK_CLASS)) {
+          clean.setAttribute("title", value);
           return;
         }
 
@@ -1453,14 +1495,27 @@
           if (!isSafeUrl(value, tagName)) return;
           clean.setAttribute(name, value);
           if (tagName === "A" && name === "href") {
-            clean.setAttribute("target", "_blank");
-            clean.setAttribute("rel", "noopener noreferrer");
+            if (!String(value).trim().startsWith("#")) {
+              clean.setAttribute("target", "_blank");
+              clean.setAttribute("rel", "noopener noreferrer");
+            }
           }
           return;
         }
 
         if (tagName === "IMG" && name === "alt") {
           clean.setAttribute(name, value);
+          return;
+        }
+
+        if ((tagName === "TD" || tagName === "TH") && ["colspan", "rowspan"].includes(name)) {
+          const number = Math.max(1, Math.min(24, Number.parseInt(value, 10) || 1));
+          clean.setAttribute(name, String(number));
+          return;
+        }
+
+        if (tagName === "TH" && name === "scope" && ["row", "col", "rowgroup", "colgroup"].includes(String(value || "").toLowerCase())) {
+          clean.setAttribute(name, String(value).toLowerCase());
           return;
         }
 
@@ -1620,6 +1675,7 @@
       edit: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 14.5V16h1.5L14 7.5 12.5 6 4 14.5Z" fill="currentColor"></path><path d="M11.8 6.7 13.3 5.2 14.8 6.7 13.3 8.2Z" fill="currentColor"></path></svg>',
       replace: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 6h8l-2.5-2.5L11 2l5 5-5 5-1.5-1.5L12 8H4V6Zm12 8H8l2.5 2.5L9 18l-5-5 5-5 1.5 1.5L8 12h8v2Z" fill="currentColor"></path></svg>',
       link: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M8 11.5 6.5 13a2.5 2.5 0 0 1-3.5-3.5L6 6.5A2.5 2.5 0 0 1 9.5 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 8.5 13.5 7a2.5 2.5 0 0 1 3.5 3.5L14 13.5A2.5 2.5 0 0 1 10.5 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M7.5 12.5 12.5 7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+      copy: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M7 7h8v10H7z" fill="none" stroke="currentColor" stroke-width="1.6" rx="1.5"/><path d="M5 13H4a1 1 0 0 1-1-1V3.8a1 1 0 0 1 1-1h7.2a1 1 0 0 1 1 1V5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
       external: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M11 3h6v6h-2V6.4l-6.3 6.3-1.4-1.4L13.6 5H11V3Z" fill="currentColor"></path><path d="M5 5h4v2H7v6h6v-2h2v4H5V5Z" fill="currentColor"></path></svg>',
       unlink: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M8.5 11.5 7 13a2.5 2.5 0 1 1-3.5-3.5L6.5 6.5A2.5 2.5 0 0 1 10 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 8l1-1a2.5 2.5 0 1 1 3.5 3.5L13.5 13.5A2.5 2.5 0 0 1 10 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4 16 16 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
       delete: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M6 6h8l-.7 10H6.7L6 6Zm2-3h4l1 1.5H16V6H4V4.5h3L8 3Z" fill="currentColor"></path></svg>',
@@ -1701,6 +1757,22 @@
         current.nodeType === Node.ELEMENT_NODE &&
         current.tagName.toUpperCase() === "FIGURE" &&
         (current.classList.contains("ollow-editor-table") || current.getAttribute("data-type") === "table")
+      ) {
+        return current;
+      }
+      current = current.parentNode;
+    }
+    return null;
+  }
+
+  function getBookmarkNode(node, root) {
+    let current = node && node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
+    while (current && current !== root) {
+      if (
+        current.nodeType === Node.ELEMENT_NODE &&
+        current.classList.contains(BOOKMARK_CLASS) &&
+        current.getAttribute("data-bookmark") === "true" &&
+        current.id
       ) {
         return current;
       }
@@ -1839,11 +1911,15 @@
       this.imageResizeToolbar = null;
       this.imageResizeHandle = null;
       this.tableToolbar = null;
+      this.bookmarkToolbar = null;
       this.selectedMediaBlock = null;
+      this.selectedBookmark = null;
       this.selectedImageFigure = null;
       this.selectedCodeFigure = null;
       this.selectedTableFigure = null;
       this.selectedTableCell = null;
+      this.selectedTableCells = [];
+      this.tableSelectionAnchorCell = null;
       this.isDraggingImageResize = false;
       this.resizePointerId = null;
       this.statusWordCount = null;
@@ -1909,6 +1985,7 @@
       this.boundImageResizeMove = this.handleImageResizeMove.bind(this);
       this.boundImageResizeEnd = this.handleImageResizeEnd.bind(this);
       this.boundRepositionTableToolbar = this.positionTableToolbar.bind(this);
+      this.boundRepositionBookmarkToolbar = this.positionBookmarkToolbar.bind(this);
     }
 
     init() {
@@ -1963,9 +2040,11 @@
       this.imageResizeToolbar = this.buildImageResizeToolbar();
       this.imageResizeHandle = this.buildImageResizeHandle();
       this.tableToolbar = this.buildTableToolbar();
+      this.bookmarkToolbar = this.buildBookmarkToolbar();
       surface.appendChild(this.imageResizeToolbar);
       surface.appendChild(this.imageResizeHandle);
       surface.appendChild(this.tableToolbar);
+      surface.appendChild(this.bookmarkToolbar);
 
       const status = document.createElement("div");
       status.className = "nw-editor-status";
@@ -2044,6 +2123,7 @@
       groupInline.appendChild(this.buildFormatPainterButton());
       groupInline.appendChild(this.makeToolbarButton("link", "Link", '<span class="material-symbols-outlined">link</span>'));
       groupInline.appendChild(this.makeToolbarButton("unlink", "Unlink", '<span class="material-symbols-outlined">link_off</span>'));
+      groupInline.appendChild(this.makeToolbarButton("bookmark", "Insert bookmark / anchor", '<span class="material-symbols-outlined">bookmark</span>'));
 
       const groupBlocks = document.createElement("div");
       groupBlocks.className = "nw-toolbar-group";
@@ -2622,6 +2702,7 @@
         ["image", "Image", "image"],
         ["code", "Code", "code_blocks"],
         ["table", "Table", "table"],
+        ["bookmark", "Bookmark", "bookmark"],
         ["import-markdown", "Import MD", "upload_file"],
         ["export-markdown", "Export MD", "download"],
         ["gallery", "Gallery", "photo_library"],
@@ -2634,7 +2715,7 @@
       insertItems.forEach(([action, label, icon], index) => {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `nw-insert-pill${index === 0 ? " is-active" : ""}`;
+        button.className = `nw-insert-pill${index === 0 ? " is-active" : ""}${action === "bookmark" ? " ollow-bookmark-btn" : ""}`;
         button.dataset.action = action;
         const shortcutLabel = TOOLBAR_SHORTCUT_LABELS[action];
         const fullTitle = shortcutLabel ? `${label} (${shortcutLabel.replace(/mod/gi, "Ctrl/Cmd")})` : label;
@@ -2765,13 +2846,28 @@
       toolbar.className = "ollow-table-toolbar";
       toolbar.hidden = true;
       toolbar.innerHTML = `
-        <button type="button" data-table-action="row-above">Row Above</button>
-        <button type="button" data-table-action="row-below">Row Below</button>
-        <button type="button" data-table-action="delete-row">Delete Row</button>
-        <button type="button" data-table-action="col-left">Col Left</button>
-        <button type="button" data-table-action="col-right">Col Right</button>
-        <button type="button" data-table-action="delete-col">Delete Col</button>
-        <button type="button" data-table-action="delete-table">Delete Table</button>
+        <div class="ollow-table-toolbar-group">
+          <button type="button" data-table-action="row-above" title="Add row above">Row Above</button>
+          <button type="button" data-table-action="row-below" title="Add row below">Row Below</button>
+          <button type="button" data-table-action="delete-row" title="Delete current row">Delete Row</button>
+        </div>
+        <div class="ollow-table-toolbar-group">
+          <button type="button" data-table-action="col-left" title="Add column left">Col Left</button>
+          <button type="button" data-table-action="col-right" title="Add column right">Col Right</button>
+          <button type="button" data-table-action="delete-col" title="Delete current column">Delete Col</button>
+        </div>
+        <div class="ollow-table-toolbar-group">
+          <button type="button" data-table-action="toggle-header-row" title="Toggle header row">Header Row</button>
+          <button type="button" data-table-action="toggle-header-col" title="Toggle header column">Header Col</button>
+        </div>
+        <div class="ollow-table-toolbar-group">
+          <button type="button" data-table-action="merge-cells" title="Merge selected cells">Merge</button>
+          <button type="button" data-table-action="split-cell" title="Split merged cell">Split</button>
+        </div>
+        <div class="ollow-table-toolbar-group">
+          <button type="button" data-table-action="table-properties" title="Table properties">Properties</button>
+          <button type="button" data-table-action="delete-table" title="Delete table" class="is-danger">Delete</button>
+        </div>
       `;
 
       toolbar.addEventListener("mousedown", (event) => {
@@ -2782,6 +2878,30 @@
         const button = event.target.closest("[data-table-action]");
         if (!button) return;
         this.handleTableAction(button.dataset.tableAction);
+      });
+
+      return toolbar;
+    }
+
+    buildBookmarkToolbar() {
+      const toolbar = document.createElement("div");
+      toolbar.className = "ollow-bookmark-toolbar";
+      toolbar.hidden = true;
+      toolbar.innerHTML = `
+        <button type="button" data-bookmark-action="edit" title="Edit bookmark" aria-label="Edit bookmark">${getInlineToolbarIcon("edit")}</button>
+        <button type="button" data-bookmark-action="copy" title="Copy bookmark link" aria-label="Copy bookmark link">${getInlineToolbarIcon("copy")}</button>
+        <button type="button" data-bookmark-action="delete" title="Delete bookmark" aria-label="Delete bookmark" class="is-danger">${getInlineToolbarIcon("delete")}</button>
+      `;
+
+      toolbar.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+
+      toolbar.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-bookmark-action]");
+        if (!button) return;
+        event.preventDefault();
+        this.handleBookmarkAction(button.dataset.bookmarkAction);
       });
 
       return toolbar;
@@ -4233,6 +4353,8 @@
       window.addEventListener("scroll", this.boundRepositionImageToolbar, true);
       window.addEventListener("resize", this.boundRepositionTableToolbar);
       window.addEventListener("scroll", this.boundRepositionTableToolbar, true);
+      window.addEventListener("resize", this.boundRepositionBookmarkToolbar);
+      window.addEventListener("scroll", this.boundRepositionBookmarkToolbar, true);
       window.addEventListener("resize", this.boundViewportChange);
       window.addEventListener("orientationchange", this.boundViewportChange);
 
@@ -4273,6 +4395,9 @@
       if (this.selectedTableFigure) {
         this.positionTableToolbar();
       }
+      if (this.selectedBookmark) {
+        this.positionBookmarkToolbar();
+      }
     }
 
     handleFormSubmit(event) {
@@ -4300,6 +4425,12 @@
     }
 
     handleContentClick(event) {
+      const bookmark = getBookmarkNode(event.target, this.content);
+      if (bookmark) {
+        this.selectBookmark(bookmark);
+        return;
+      }
+
       if (this.formatPainterState && this.formatPainterState.active) {
         const block = getClosestAlignableTextBlock(event.target, this.content) || closestBlock(event.target, this.content);
         if (block && !["FIGURE", "SECTION", "DIV", "PRE"].includes(block.tagName.toUpperCase())) {
@@ -4310,7 +4441,7 @@
 
       const tableCell = getTableCell(event.target, this.content);
       if (tableCell) {
-        this.selectTableCell(tableCell);
+        this.selectTableCell(tableCell, { extendSelection: event.shiftKey });
         return;
       }
 
@@ -4333,6 +4464,7 @@
         this.closeThemeMenu();
         this.clearMediaSelection();
         this.clearTableSelection();
+        this.clearBookmarkSelection();
         return;
       }
 
@@ -4379,7 +4511,15 @@
         return;
       }
 
+      if (this.bookmarkToolbar && this.bookmarkToolbar.contains(event.target)) {
+        return;
+      }
+
       if (getTableCell(event.target, this.content)) {
+        return;
+      }
+
+      if (getBookmarkNode(event.target, this.content)) {
         return;
       }
 
@@ -4387,6 +4527,7 @@
         this.clearMediaSelection();
       }
       this.clearTableSelection();
+      this.clearBookmarkSelection();
     }
 
     handleDocumentKeydown(event) {
@@ -4432,6 +4573,9 @@
         if (this.selectedTableFigure) {
           this.clearTableSelection();
         }
+        if (this.selectedBookmark) {
+          this.clearBookmarkSelection();
+        }
       }
     }
 
@@ -4447,6 +4591,9 @@
       }
       if (this.selectedTableFigure) {
         this.positionTableToolbar();
+      }
+      if (this.selectedBookmark) {
+        this.positionBookmarkToolbar();
       }
     }
 
@@ -4541,6 +4688,9 @@
           return;
         case "unlink":
           this.execCommand("unlink");
+          return;
+        case "bookmark":
+          this.openBookmarkModal();
           return;
         case "bulleted-list":
           this.execCommand("insertUnorderedList");
@@ -4648,17 +4798,239 @@
       this.handleContentChange();
     }
 
-    selectTableCell(cell) {
+    getBookmarks() {
+      return Array.from(this.content.querySelectorAll(`.${BOOKMARK_CLASS}[data-bookmark="true"][id]`))
+        .map((bookmark) => this.getBookmarkData(bookmark))
+        .filter((bookmark) => bookmark.id);
+    }
+
+    getBookmarkData(bookmark) {
+      if (!bookmark) {
+        return { id: "", name: "", description: "" };
+      }
+      const label = (bookmark.textContent || "").replace(/^🔖\s*/, "").trim();
+      return {
+        id: bookmark.id || "",
+        name: label || bookmark.id || "",
+        description: bookmark.getAttribute("title") || "",
+      };
+    }
+
+    getUniqueBookmarkId(value, exceptBookmark) {
+      const base = sanitizeBookmarkId(value) || "bookmark";
+      let candidate = base;
+      let suffix = 2;
+      while (
+        Array.from(this.content.querySelectorAll(`[id="${candidate}"]`)).some((node) => node !== exceptBookmark)
+      ) {
+        candidate = `${base}-${suffix}`;
+        suffix += 1;
+      }
+      return candidate;
+    }
+
+    buildBookmarkHtml(values) {
+      const config = Object.assign({ id: "", name: "", description: "" }, values || {});
+      const name = String(config.name || "").trim() || config.id;
+      const id = this.getUniqueBookmarkId(config.id || name);
+      const description = String(config.description || "").trim();
+      const titleAttr = description ? ` title="${escapeHtml(description)}"` : "";
+      return `<span class="${BOOKMARK_CLASS}" id="${escapeHtml(id)}" data-bookmark="true" contenteditable="false"${titleAttr}>🔖 ${escapeHtml(name)}</span>`;
+    }
+
+    updateBookmarkNode(bookmark, values) {
+      if (!bookmark || !this.content.contains(bookmark)) return null;
+      const wrapper = document.createElement("div");
+      const id = this.getUniqueBookmarkId(values.id || values.name, bookmark);
+      wrapper.innerHTML = this.buildBookmarkHtml({
+        id,
+        name: values.name,
+        description: values.description,
+      });
+      const replacement = wrapper.firstElementChild;
+      if (!replacement) return null;
+      bookmark.replaceWith(replacement);
+      return replacement;
+    }
+
+    selectBookmark(bookmark) {
+      if (!bookmark || !this.content.contains(bookmark)) return;
+      if (this.selectedBookmark && this.selectedBookmark !== bookmark) {
+        this.selectedBookmark.classList.remove(...TEMP_SELECTION_CLASSES);
+      }
+      this.clearMediaSelection();
+      this.clearTableSelection();
+      this.selectedBookmark = bookmark;
+      this.selectedBookmark.classList.add("is-bookmark-selected");
+      this.positionBookmarkToolbar();
+    }
+
+    clearBookmarkSelection() {
+      if (this.selectedBookmark) {
+        this.selectedBookmark.classList.remove(...TEMP_SELECTION_CLASSES);
+      }
+      this.selectedBookmark = null;
+      if (this.bookmarkToolbar) {
+        this.bookmarkToolbar.hidden = true;
+      }
+    }
+
+    positionBookmarkToolbar() {
+      if (!this.selectedBookmark || !this.bookmarkToolbar || !this.surface || !this.content.contains(this.selectedBookmark)) {
+        this.clearBookmarkSelection();
+        return;
+      }
+      if (this.isModalOpen()) {
+        this.bookmarkToolbar.hidden = true;
+        return;
+      }
+      const surfaceRect = this.surface.getBoundingClientRect();
+      const bookmarkRect = this.selectedBookmark.getBoundingClientRect();
+      this.bookmarkToolbar.hidden = false;
+      const toolbarRect = this.bookmarkToolbar.getBoundingClientRect();
+      let top = bookmarkRect.top - surfaceRect.top - toolbarRect.height - 10;
+      if (top < 10) {
+        top = bookmarkRect.bottom - surfaceRect.top + 10;
+      }
+      const maxLeft = Math.max(10, surfaceRect.width - toolbarRect.width - 10);
+      const left = Math.min(Math.max(10, bookmarkRect.left - surfaceRect.left), maxLeft);
+      this.bookmarkToolbar.style.top = `${Math.round(top)}px`;
+      this.bookmarkToolbar.style.left = `${Math.round(left)}px`;
+    }
+
+    copyBookmarkLink(bookmark) {
+      if (!bookmark || !bookmark.id) return;
+      const value = `#${bookmark.id}`;
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        navigator.clipboard.writeText(value).then(
+          () => this.showFeedback("Bookmark link copied."),
+          () => this.showFeedback("Unable to copy bookmark link.")
+        );
+      } else {
+        this.showFeedback("Clipboard copy is not available in this browser.");
+      }
+    }
+
+    handleBookmarkAction(action) {
+      if (!this.selectedBookmark || !this.content.contains(this.selectedBookmark)) {
+        this.clearBookmarkSelection();
+        return;
+      }
+      if (action === "edit") {
+        this.openBookmarkModal(this.selectedBookmark);
+        return;
+      }
+      if (action === "copy") {
+        this.copyBookmarkLink(this.selectedBookmark);
+        return;
+      }
+      if (action === "delete") {
+        const bookmark = this.selectedBookmark;
+        this.clearBookmarkSelection();
+        bookmark.remove();
+        this.handleContentChange();
+      }
+    }
+
+    getSelectedTableCells() {
+      const cells = Array.isArray(this.selectedTableCells) ? this.selectedTableCells.filter((item) => item && this.content.contains(item)) : [];
+      if (cells.length) {
+        return cells;
+      }
+      return this.selectedTableCell && this.content.contains(this.selectedTableCell) ? [this.selectedTableCell] : [];
+    }
+
+    getTableProperties(figure) {
+      const target = figure || this.selectedTableFigure;
+      const table = target ? target.querySelector("table") : null;
+      if (!target || !table) {
+        return {
+          caption: "",
+          width: "auto",
+          headerRow: false,
+          headerColumn: false,
+          striped: false,
+          bordered: false,
+          compact: false,
+        };
+      }
+
+      return {
+        caption: (target.querySelector("figcaption")?.textContent || "").trim(),
+        width: target.classList.contains("ollow-table-wide")
+          ? "wide"
+          : target.classList.contains("ollow-table-full")
+            ? "full"
+            : "auto",
+        headerRow: Boolean(table.tHead && table.tHead.rows.length),
+        headerColumn: Array.from(table.rows).some((row) => {
+          const firstCell = row.cells[0];
+          return firstCell && firstCell.tagName.toUpperCase() === "TH" && firstCell.getAttribute("scope") === "row";
+        }),
+        striped: target.classList.contains("ollow-table-striped"),
+        bordered: target.classList.contains("ollow-table-bordered"),
+        compact: target.classList.contains("ollow-table-compact"),
+      };
+    }
+
+    clearSelectedTableCells() {
+      this.getSelectedTableCells().forEach((cell) => {
+        cell.classList.remove("is-selected-cell", "is-selected-cell-primary");
+      });
+      this.selectedTableCells = [];
+    }
+
+    buildSelectedTableCells(cell, extendSelection) {
+      if (!extendSelection || !this.tableSelectionAnchorCell || !cell) {
+        this.tableSelectionAnchorCell = cell;
+        return cell ? [cell] : [];
+      }
+
+      const anchor = this.tableSelectionAnchorCell;
+      const anchorRow = anchor.parentElement;
+      const targetRow = cell.parentElement;
+      if (!anchorRow || !targetRow || anchorRow.parentElement !== targetRow.parentElement) {
+        this.tableSelectionAnchorCell = cell;
+        return [cell];
+      }
+
+      const rowCells = Array.from(anchorRow.children);
+      const anchorIndex = rowCells.indexOf(anchor);
+      const targetIndex = Array.from(targetRow.children).indexOf(cell);
+      if (anchorIndex === -1 || targetIndex === -1 || anchorRow !== targetRow) {
+        return [cell];
+      }
+
+      const [start, end] = [anchorIndex, targetIndex].sort((a, b) => a - b);
+      return rowCells.slice(start, end + 1);
+    }
+
+    selectTableCell(cell, options) {
       if (!cell || !this.content.contains(cell)) return;
+      const config = Object.assign({ extendSelection: false }, options || {});
       const figure = getTableFigure(cell, this.content);
       if (!figure) return;
       if (this.selectedTableFigure && this.selectedTableFigure !== figure) {
         this.selectedTableFigure.classList.remove(...TEMP_SELECTION_CLASSES);
       }
+      if (this.selectedTableFigure !== figure) {
+        this.clearSelectedTableCells();
+        this.tableSelectionAnchorCell = cell;
+      }
+      this.clearBookmarkSelection();
       this.clearMediaSelection();
       this.selectedTableFigure = figure;
       this.selectedTableCell = cell;
+      this.clearSelectedTableCells();
+      this.selectedTableCells = this.buildSelectedTableCells(cell, config.extendSelection);
+      this.selectedTableCells.forEach((selectedCell, index) => {
+        selectedCell.classList.add("is-selected-cell");
+        if (index === 0) {
+          selectedCell.classList.add("is-selected-cell-primary");
+        }
+      });
       this.selectedTableFigure.classList.add("is-selected");
+      this.updateTableToolbarState();
       this.positionTableToolbar();
     }
 
@@ -4666,8 +5038,10 @@
       if (this.selectedTableFigure) {
         this.selectedTableFigure.classList.remove(...TEMP_SELECTION_CLASSES);
       }
+      this.clearSelectedTableCells();
       this.selectedTableFigure = null;
       this.selectedTableCell = null;
+      this.tableSelectionAnchorCell = null;
       if (this.tableToolbar) {
         this.tableToolbar.hidden = true;
       }
@@ -4678,6 +5052,7 @@
       if (this.selectedMediaBlock && this.selectedMediaBlock !== block) {
         this.selectedMediaBlock.classList.remove(...TEMP_SELECTION_CLASSES);
       }
+      this.clearBookmarkSelection();
       this.clearTableSelection();
       this.selectedMediaBlock = block;
       this.selectedImageFigure = getImageFigure(block, this.content);
@@ -5460,6 +5835,10 @@
         this.clearTableSelection();
         return;
       }
+      if (this.isModalOpen()) {
+        this.tableToolbar.hidden = true;
+        return;
+      }
 
       const surfaceRect = this.surface.getBoundingClientRect();
       const tableRect = this.selectedTableFigure.getBoundingClientRect();
@@ -5473,6 +5852,255 @@
       const left = Math.min(Math.max(10, tableRect.left - surfaceRect.left), maxLeft);
       this.tableToolbar.style.top = `${Math.round(top)}px`;
       this.tableToolbar.style.left = `${Math.round(left)}px`;
+      this.updateTableToolbarState();
+    }
+
+    updateTableToolbarState() {
+      if (!this.tableToolbar) return;
+      const properties = this.getTableProperties(this.selectedTableFigure);
+      const selectedCells = this.getSelectedTableCells();
+      const hasHorizontalMergeSelection = this.canMergeSelectedTableCells();
+      const splitAllowed = Boolean(this.selectedTableCell && ((Number(this.selectedTableCell.getAttribute("colspan")) || 1) > 1 || (Number(this.selectedTableCell.getAttribute("rowspan")) || 1) > 1));
+
+      Array.from(this.tableToolbar.querySelectorAll("[data-table-action]")).forEach((button) => {
+        const action = button.dataset.tableAction;
+        button.classList.toggle("is-active", (
+          (action === "toggle-header-row" && properties.headerRow) ||
+          (action === "toggle-header-col" && properties.headerColumn)
+        ));
+
+        if (action === "merge-cells") {
+          button.disabled = !hasHorizontalMergeSelection;
+        } else if (action === "split-cell") {
+          button.disabled = !splitAllowed;
+        } else {
+          button.disabled = !selectedCells.length;
+        }
+      });
+    }
+
+    getTableRowCells(row) {
+      return Array.from((row && row.children) || []).filter((cell) => ["TD", "TH"].includes(cell.tagName.toUpperCase()));
+    }
+
+    ensureTableBody(table) {
+      if (!table.tBodies.length) {
+        table.appendChild(document.createElement("tbody"));
+      }
+      return table.tBodies[0];
+    }
+
+    normalizeTableStructure(table) {
+      if (!table) return;
+      if (table.tHead && !table.tHead.rows.length) {
+        table.tHead.remove();
+      }
+      Array.from(table.tBodies).forEach((tbody) => {
+        if (!tbody.rows.length) {
+          tbody.remove();
+        }
+      });
+      this.ensureTableBody(table);
+    }
+
+    setTableHeaderRow(enabled) {
+      const figure = this.selectedTableFigure;
+      const table = figure && figure.querySelector("table");
+      if (!figure || !table) return;
+      const body = this.ensureTableBody(table);
+
+      if (enabled) {
+        if (table.tHead && table.tHead.rows.length) return;
+        const sourceRow = body.rows[0] || table.rows[0];
+        if (!sourceRow) return;
+        const headerRow = sourceRow.cloneNode(true);
+        Array.from(headerRow.cells).forEach((cell) => {
+          const nextCell = document.createElement("th");
+          nextCell.innerHTML = cell.innerHTML || "Header";
+          nextCell.colSpan = cell.colSpan || 1;
+          nextCell.rowSpan = cell.rowSpan || 1;
+          nextCell.setAttribute("scope", "col");
+          cell.replaceWith(nextCell);
+        });
+        const thead = document.createElement("thead");
+        thead.appendChild(headerRow);
+        table.insertBefore(thead, table.firstChild);
+        sourceRow.remove();
+      } else if (table.tHead && table.tHead.rows.length) {
+        const headerRow = table.tHead.rows[0];
+        const replacement = document.createElement("tr");
+        Array.from(headerRow.cells).forEach((cell) => {
+          const nextCell = document.createElement("td");
+          nextCell.innerHTML = cell.innerHTML || "Cell";
+          nextCell.colSpan = cell.colSpan || 1;
+          nextCell.rowSpan = cell.rowSpan || 1;
+          replacement.appendChild(nextCell);
+        });
+        body.insertBefore(replacement, body.firstChild || null);
+        table.tHead.remove();
+      }
+      this.normalizeTableStructure(table);
+    }
+
+    setTableHeaderColumn(enabled) {
+      const figure = this.selectedTableFigure;
+      const table = figure && figure.querySelector("table");
+      if (!figure || !table) return;
+
+      Array.from(table.rows).forEach((row, rowIndex) => {
+        const firstCell = row.cells[0];
+        if (!firstCell) return;
+        if (enabled) {
+          if (firstCell.tagName.toUpperCase() !== "TH") {
+            const replacement = document.createElement("th");
+            replacement.innerHTML = firstCell.innerHTML || (rowIndex === 0 && table.tHead ? "Header" : "Row");
+            replacement.colSpan = firstCell.colSpan || 1;
+            replacement.rowSpan = firstCell.rowSpan || 1;
+            replacement.setAttribute("scope", "row");
+            firstCell.replaceWith(replacement);
+          } else {
+            firstCell.setAttribute("scope", rowIndex === 0 && table.tHead ? "col" : "row");
+          }
+        } else if (firstCell.tagName.toUpperCase() === "TH" && firstCell.getAttribute("scope") === "row") {
+          const replacement = document.createElement("td");
+          replacement.innerHTML = firstCell.innerHTML || "Cell";
+          replacement.colSpan = firstCell.colSpan || 1;
+          replacement.rowSpan = firstCell.rowSpan || 1;
+          firstCell.replaceWith(replacement);
+        }
+      });
+      this.normalizeTableStructure(table);
+    }
+
+    canMergeSelectedTableCells() {
+      const cells = this.getSelectedTableCells();
+      if (cells.length < 2) return false;
+      const firstRow = cells[0].parentElement;
+      if (!firstRow || !cells.every((cell) => cell.parentElement === firstRow)) {
+        return false;
+      }
+      const indexes = cells
+        .map((cell) => this.getTableRowCells(firstRow).indexOf(cell))
+        .filter((index) => index >= 0)
+        .sort((a, b) => a - b);
+      if (indexes.length !== cells.length) return false;
+      return indexes.every((index, position) => position === 0 || index === indexes[position - 1] + 1);
+    }
+
+    mergeSelectedTableCells() {
+      const cells = this.getSelectedTableCells();
+      if (!this.canMergeSelectedTableCells()) {
+        this.showFeedback("Only adjacent cells in the same row can be merged.");
+        return this.selectedTableCell;
+      }
+      const primaryCell = cells[0];
+      const totalColspan = cells.reduce((sum, cell) => sum + (Number(cell.getAttribute("colspan")) || 1), 0);
+      const mergedContent = cells
+        .map((cell) => (cell.textContent || "").trim())
+        .filter(Boolean)
+        .join(" ");
+      primaryCell.colSpan = totalColspan;
+      primaryCell.innerHTML = mergedContent ? escapeHtml(mergedContent) : "Cell";
+      cells.slice(1).forEach((cell) => cell.remove());
+      return primaryCell;
+    }
+
+    splitSelectedTableCell() {
+      const cell = this.selectedTableCell;
+      if (!cell) return cell;
+      const colspan = Number(cell.getAttribute("colspan")) || 1;
+      const rowspan = Number(cell.getAttribute("rowspan")) || 1;
+      if (rowspan > 1) {
+        this.showFeedback("Splitting row spans is not supported in this editor yet.");
+      }
+      if (colspan <= 1) {
+        return cell;
+      }
+      const tagName = cell.tagName.toLowerCase();
+      cell.removeAttribute("colspan");
+      for (let index = 1; index < colspan; index += 1) {
+        const nextCell = document.createElement(tagName);
+        if (tagName === "th" && cell.getAttribute("scope")) {
+          nextCell.setAttribute("scope", cell.getAttribute("scope"));
+        }
+        nextCell.textContent = tagName === "th" ? "Header" : "Cell";
+        cell.insertAdjacentElement("afterend", nextCell);
+      }
+      return cell;
+    }
+
+    applyTableProperties(values) {
+      const figure = this.selectedTableFigure;
+      const table = figure && figure.querySelector("table");
+      if (!figure || !table) return;
+
+      figure.classList.remove(...TABLE_WIDTH_CLASSES, ...TABLE_STYLE_CLASSES);
+      if (values.width === "wide") {
+        figure.classList.add("ollow-table-wide");
+      } else if (values.width === "full") {
+        figure.classList.add("ollow-table-full");
+      }
+      if (values.striped) {
+        figure.classList.add("ollow-table-striped");
+      }
+      if (values.bordered) {
+        figure.classList.add("ollow-table-bordered");
+      }
+      if (values.compact) {
+        figure.classList.add("ollow-table-compact");
+      }
+
+      this.setTableHeaderRow(Boolean(values.headerRow));
+      this.setTableHeaderColumn(Boolean(values.headerColumn));
+
+      let caption = figure.querySelector("figcaption");
+      const captionText = String(values.caption || "").trim();
+      if (captionText) {
+        if (!caption) {
+          caption = document.createElement("figcaption");
+          figure.appendChild(caption);
+        }
+        caption.textContent = captionText;
+      } else if (caption) {
+        caption.remove();
+      }
+
+      this.normalizeTableStructure(table);
+      this.updateTableToolbarState();
+      this.handleContentChange();
+    }
+
+    openTablePropertiesModal() {
+      const current = this.getTableProperties(this.selectedTableFigure);
+      this.openModal({
+        title: "Table Properties",
+        copy: "Set caption, width, header behavior, and display variants for the selected table.",
+        confirmLabel: "Update Table",
+        panelClass: "ollow-table-properties-modal-panel",
+        fields: [
+          { name: "caption", label: "Table caption", type: "text", placeholder: "Table caption", value: current.caption },
+          {
+            name: "width",
+            label: "Table width",
+            type: "select",
+            value: current.width,
+            options: [
+              { value: "auto", label: "Auto" },
+              { value: "wide", label: "Wide" },
+              { value: "full", label: "Full width" },
+            ],
+          },
+          { name: "headerRow", label: "Header row", type: "checkbox", checked: current.headerRow },
+          { name: "headerColumn", label: "Header column", type: "checkbox", checked: current.headerColumn },
+          { name: "striped", label: "Striped rows", type: "checkbox", checked: current.striped },
+          { name: "bordered", label: "Bordered style", type: "checkbox", checked: current.bordered },
+          { name: "compact", label: "Compact style", type: "checkbox", checked: current.compact },
+        ],
+        onConfirm: (values) => {
+          this.applyTableProperties(values);
+          return null;
+        },
+      });
     }
 
     focusTableCell(cell) {
@@ -5498,23 +6126,41 @@
       return row;
     }
 
-    buildTableHtml(rows, columns, caption, hasHeaderRow) {
+    buildTableHtml(rows, columns, caption, hasHeaderRow, options) {
+      const config = Object.assign({
+        width: "auto",
+        headerColumn: false,
+        striped: false,
+        bordered: false,
+        compact: false,
+      }, options || {});
       const safeRows = Math.max(1, Math.min(20, Number(rows) || 1));
       const safeColumns = Math.max(1, Math.min(12, Number(columns) || 1));
       const totalBodyRows = hasHeaderRow ? Math.max(1, safeRows - 1) : safeRows;
+      const figureClasses = ["ollow-editor-table"];
+      if (config.width === "wide") figureClasses.push("ollow-table-wide");
+      if (config.width === "full") figureClasses.push("ollow-table-full");
+      if (config.striped) figureClasses.push("ollow-table-striped");
+      if (config.bordered) figureClasses.push("ollow-table-bordered");
+      if (config.compact) figureClasses.push("ollow-table-compact");
 
       let thead = "";
       if (hasHeaderRow) {
-        const headerCells = Array.from({ length: safeColumns }, (_, index) => `<th>Header ${index + 1}</th>`).join("");
+        const headerCells = Array.from({ length: safeColumns }, (_, index) => `<th scope="col">Header ${index + 1}</th>`).join("");
         thead = `<thead><tr>${headerCells}</tr></thead>`;
       }
 
-      const bodyRows = Array.from({ length: totalBodyRows }, () => {
-        const cells = Array.from({ length: safeColumns }, () => "<td>Cell</td>").join("");
+      const bodyRows = Array.from({ length: totalBodyRows }, (_, rowIndex) => {
+        const cells = Array.from({ length: safeColumns }, (_, cellIndex) => {
+          if (cellIndex === 0 && config.headerColumn) {
+            return `<th scope="row">${hasHeaderRow ? `Row ${rowIndex + 1}` : `Header ${rowIndex + 1}`}</th>`;
+          }
+          return "<td>Cell</td>";
+        }).join("");
         return `<tr>${cells}</tr>`;
       }).join("");
 
-      return `<figure class="ollow-editor-table" data-type="table"><div class="ollow-editor-table-scroll"><table>${thead}<tbody>${bodyRows}</tbody></table></div>${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ""}</figure>`;
+      return `<figure class="${escapeHtml(figureClasses.join(" "))}" data-type="table"><div class="ollow-editor-table-scroll"><table>${thead}<tbody>${bodyRows}</tbody></table></div>${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ""}</figure>`;
     }
 
     openTableModal() {
@@ -5557,7 +6203,8 @@
 
       const rows = Array.from(table.querySelectorAll("tr"));
       const currentIndex = rows.indexOf(currentRow);
-      const cellIndex = Array.from(currentRow.children).indexOf(this.selectedTableCell);
+      const rowCells = this.getTableRowCells(currentRow);
+      const cellIndex = rowCells.indexOf(this.selectedTableCell);
       if (currentIndex === -1 || cellIndex === -1) return;
 
       let focusCell = this.selectedTableCell;
@@ -5565,13 +6212,13 @@
 
       switch (action) {
         case "row-above": {
-          const newRow = this.createTableRow(currentRow.children.length, currentTag === "th");
+          const newRow = this.createTableRow(rowCells.length, currentTag === "th");
           currentRow.parentElement.insertBefore(newRow, currentRow);
           focusCell = newRow.children[Math.min(cellIndex, newRow.children.length - 1)] || newRow.firstElementChild;
           break;
         }
         case "row-below": {
-          const newRow = this.createTableRow(currentRow.children.length, currentTag === "th");
+          const newRow = this.createTableRow(rowCells.length, currentTag === "th");
           currentRow.insertAdjacentElement("afterend", newRow);
           focusCell = newRow.children[Math.min(cellIndex, newRow.children.length - 1)] || newRow.firstElementChild;
           break;
@@ -5595,10 +6242,14 @@
         case "col-left":
         case "col-right": {
           Array.from(table.querySelectorAll("tr")).forEach((row) => {
-            const sourceCell = row.children[Math.min(cellIndex, row.children.length - 1)];
+            const cells = this.getTableRowCells(row);
+            const sourceCell = cells[Math.min(cellIndex, cells.length - 1)];
             const newCell = document.createElement(sourceCell && sourceCell.tagName.toUpperCase() === "TH" ? "th" : "td");
             newCell.textContent = newCell.tagName.toUpperCase() === "TH" ? "Header" : "Cell";
-            const referenceCell = row.children[cellIndex] || row.lastElementChild;
+            if (newCell.tagName.toUpperCase() === "TH" && row.parentElement && row.parentElement.tagName.toUpperCase() === "THEAD") {
+              newCell.setAttribute("scope", "col");
+            }
+            const referenceCell = cells[cellIndex] || row.lastElementChild;
             if (!referenceCell) {
               row.appendChild(newCell);
               return;
@@ -5614,8 +6265,9 @@
         }
         case "delete-col": {
           Array.from(table.querySelectorAll("tr")).forEach((row) => {
-            if (row.children[cellIndex]) {
-              row.children[cellIndex].remove();
+            const cells = this.getTableRowCells(row);
+            if (cells[cellIndex]) {
+              cells[cellIndex].remove();
             }
           });
           const hasCells = table.querySelector("td,th");
@@ -5628,6 +6280,28 @@
           focusCell = currentRow.children[Math.min(cellIndex, currentRow.children.length - 1)] || table.querySelector("td,th");
           break;
         }
+        case "toggle-header-row": {
+          this.setTableHeaderRow(!(table.tHead && table.tHead.rows.length));
+          focusCell = table.querySelector("td,th");
+          break;
+        }
+        case "toggle-header-col": {
+          this.setTableHeaderColumn(!this.getTableProperties(this.selectedTableFigure).headerColumn);
+          focusCell = table.querySelector("td,th");
+          break;
+        }
+        case "merge-cells": {
+          focusCell = this.mergeSelectedTableCells();
+          break;
+        }
+        case "split-cell": {
+          focusCell = this.splitSelectedTableCell();
+          break;
+        }
+        case "table-properties": {
+          this.openTablePropertiesModal();
+          return;
+        }
         case "delete-table": {
           const tableFigure = this.selectedTableFigure;
           this.clearTableSelection();
@@ -5639,21 +6313,14 @@
           return;
       }
 
-      if (table.tHead && !table.tHead.rows.length) {
-        table.tHead.remove();
-      }
-      if (table.tBodies[0] && !table.tBodies[0].rows.length) {
-        table.tBodies[0].remove();
-      }
-      if (!table.tBodies.length) {
-        table.appendChild(document.createElement("tbody"));
-      }
+      this.normalizeTableStructure(table);
 
       const nextCell = focusCell || table.querySelector("td,th");
       if (nextCell) {
         this.selectTableCell(nextCell);
         this.focusTableCell(nextCell);
       }
+      this.updateTableToolbarState();
       this.handleContentChange();
     }
 
@@ -5877,22 +6544,57 @@
     openLinkModal() {
       const selection = window.getSelection();
       const selectedText = selection && selection.toString().trim();
+      const bookmarks = this.getBookmarks();
       this.openModal({
         title: "Insert Link",
-        copy: "Add a safe URL and optional replacement text.",
+        copy: "Add a safe URL, or jump to an existing bookmark in this article.",
         confirmLabel: "Apply Link",
         fields: [
           { name: "url", label: "URL", type: "url", placeholder: "https://example.com" },
+          {
+            name: "bookmarkId",
+            label: "Link to bookmark",
+            type: "select",
+            value: "",
+            options: [{ value: "", label: "None" }].concat(
+              bookmarks.map((bookmark) => ({ value: bookmark.id, label: `${bookmark.name} (#${bookmark.id})` }))
+            ),
+          },
           { name: "text", label: "Link text", type: "text", placeholder: selectedText || "Link text", value: selectedText },
         ],
+        onOpen: (fieldRefs) => {
+          const urlInput = fieldRefs.url;
+          const bookmarkSelect = fieldRefs.bookmarkId;
+          const textInput = fieldRefs.text;
+          if (bookmarkSelect && urlInput) {
+            bookmarkSelect.addEventListener("change", () => {
+              if (!bookmarkSelect.value) return;
+              urlInput.value = `#${bookmarkSelect.value}`;
+              const selectedBookmark = bookmarks.find((bookmark) => bookmark.id === bookmarkSelect.value);
+              if (selectedBookmark && textInput && !String(textInput.value || "").trim()) {
+                textInput.value = selectedBookmark.name;
+              }
+            });
+          }
+          if (urlInput && bookmarkSelect) {
+            urlInput.addEventListener("input", () => {
+              const value = String(urlInput.value || "").trim();
+              if (!value.startsWith("#")) {
+                bookmarkSelect.value = "";
+              }
+            });
+          }
+        },
         onConfirm: (values) => {
-          if (!isSafeUrl(values.url, "A")) {
+          const url = String(values.url || "").trim() || (values.bookmarkId ? `#${values.bookmarkId}` : "");
+          if (!isSafeUrl(url, "A")) {
             return "Enter a valid URL.";
           }
           this.restoreSelection();
-          const safeText = values.text.trim() || values.url.trim();
+          const isHashLink = url.startsWith("#");
+          const safeText = values.text.trim() || url;
           if (window.getSelection() && window.getSelection().toString().trim()) {
-            document.execCommand("createLink", false, values.url.trim());
+            document.execCommand("createLink", false, url);
             const selectionAnchor = getSelectionAncestor(this.content);
             const anchor = selectionAnchor && selectionAnchor.nodeType === Node.ELEMENT_NODE
               ? selectionAnchor.closest("a")
@@ -5901,15 +6603,77 @@
                 : null;
             if (anchor) {
               anchor.textContent = safeText;
-              anchor.setAttribute("target", "_blank");
-              anchor.setAttribute("rel", "noopener noreferrer");
+              if (isHashLink) {
+                anchor.removeAttribute("target");
+                anchor.removeAttribute("rel");
+              } else {
+                anchor.setAttribute("target", "_blank");
+                anchor.setAttribute("rel", "noopener noreferrer");
+              }
             }
             this.handleContentChange();
             return null;
           }
           this.insertHTML(
-            `<a href="${escapeHtml(values.url.trim())}" target="_blank" rel="noopener noreferrer">${escapeHtml(safeText)}</a>`
+            `<a href="${escapeHtml(url)}"${isHashLink ? "" : ' target="_blank" rel="noopener noreferrer"'}>${escapeHtml(safeText)}</a>`
           );
+          return null;
+        },
+      });
+    }
+
+    openBookmarkModal(existingBookmark) {
+      const current = this.getBookmarkData(existingBookmark);
+      this.openModal({
+        title: existingBookmark ? "Edit Bookmark" : "Insert Bookmark",
+        copy: "Create an anchor point inside the article and link to it later with #bookmark-id.",
+        confirmLabel: existingBookmark ? "Update Bookmark" : "Insert Bookmark",
+        fields: [
+          { name: "name", label: "Bookmark name", type: "text", placeholder: "Economic Policy Section", value: current.name },
+          { name: "id", label: "Bookmark ID", type: "text", placeholder: "economic-policy-section", value: current.id },
+          { name: "description", label: "Description", type: "text", placeholder: "Optional note", value: current.description },
+        ],
+        onOpen: (fieldRefs) => {
+          const nameInput = fieldRefs.name;
+          const idInput = fieldRefs.id;
+          let manualId = Boolean(current.id);
+          if (idInput) {
+            idInput.addEventListener("input", () => {
+              manualId = true;
+              idInput.value = sanitizeBookmarkId(idInput.value);
+            });
+          }
+          if (nameInput && idInput) {
+            nameInput.addEventListener("input", () => {
+              if (manualId) return;
+              idInput.value = sanitizeBookmarkId(nameInput.value);
+            });
+          }
+        },
+        onConfirm: (values) => {
+          const name = String(values.name || "").trim();
+          if (!name) {
+            return "Bookmark name is required.";
+          }
+          const id = this.getUniqueBookmarkId(values.id || name, existingBookmark || null);
+          const payload = {
+            name,
+            id,
+            description: String(values.description || "").trim(),
+          };
+          if (existingBookmark && this.content.contains(existingBookmark)) {
+            const replacement = this.updateBookmarkNode(existingBookmark, payload);
+            if (replacement) {
+              this.selectBookmark(replacement);
+              this.handleContentChange();
+            }
+            return null;
+          }
+          this.insertHTML(this.buildBookmarkHtml(payload));
+          const inserted = this.content.querySelector(`.${BOOKMARK_CLASS}[id="${id}"]`);
+          if (inserted) {
+            this.selectBookmark(inserted);
+          }
           return null;
         },
       });
@@ -6396,6 +7160,13 @@
         this.updateMediaAlignmentToolbarState();
         this.positionImageResizeToolbar();
       }
+      if (this.selectedTableFigure && this.content.contains(this.selectedTableFigure)) {
+        this.updateTableToolbarState();
+        this.positionTableToolbar();
+      }
+      if (this.selectedBookmark && this.content.contains(this.selectedBookmark)) {
+        this.positionBookmarkToolbar();
+      }
     }
 
     saveSelection() {
@@ -6517,6 +7288,7 @@
       const clone = this.content.cloneNode(true);
       Array.from(clone.querySelectorAll("*")).forEach((element) => {
         element.classList.remove(...TEMP_SELECTION_CLASSES);
+        element.classList.remove("is-selected-cell", "is-selected-cell-primary");
       });
       return this.sanitizeHTML(clone.innerHTML);
     }
@@ -6528,6 +7300,7 @@
       this.content.innerHTML = clean;
       this.clearMediaSelection();
       this.clearTableSelection();
+      this.clearBookmarkSelection();
       this.isDirty = false;
       if (!config.skipSync) {
         this.sync({ autosave: false, silent: Boolean(config.silent) });
@@ -6554,6 +7327,7 @@
       this.content.innerHTML = clean;
       this.clearMediaSelection();
       this.clearTableSelection();
+      this.clearBookmarkSelection();
       this.focus();
       this.handleContentChange();
       return clean;
@@ -6628,6 +7402,8 @@
       window.removeEventListener("scroll", this.boundRepositionImageToolbar, true);
       window.removeEventListener("resize", this.boundRepositionTableToolbar);
       window.removeEventListener("scroll", this.boundRepositionTableToolbar, true);
+      window.removeEventListener("resize", this.boundRepositionBookmarkToolbar);
+      window.removeEventListener("scroll", this.boundRepositionBookmarkToolbar, true);
       window.removeEventListener("resize", this.boundViewportChange);
       window.removeEventListener("orientationchange", this.boundViewportChange);
       document.removeEventListener("pointermove", this.boundImageResizeMove);

@@ -901,6 +901,19 @@
   color: var(--nw-accent);
 }
 
+.nw-insert-pill.ollow-bookmark-btn {
+  border-color: color-mix(in srgb, var(--ollow-primary) 24%, var(--nw-border) 76%);
+  background: color-mix(in srgb, var(--ollow-primary-soft) 72%, var(--ollow-surface) 28%);
+  color: var(--ollow-primary);
+}
+
+.nw-insert-pill.ollow-bookmark-btn:hover,
+.nw-insert-pill.ollow-bookmark-btn.is-active {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+  color: var(--ollow-primary);
+}
+
 .nw-insert-pill .material-symbols-outlined {
   font-size: 14px;
 }
@@ -1438,6 +1451,28 @@
   outline-offset: 4px;
 }
 
+.nw-editor-content .ollow-bookmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 4px;
+  border: 1px dashed var(--ollow-primary-border);
+  border-radius: 999px;
+  background: var(--ollow-primary-soft);
+  color: var(--ollow-primary);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.nw-editor-content .ollow-bookmark.is-bookmark-selected {
+  outline: 2px solid var(--ollow-select);
+  outline-offset: 3px;
+}
+
 .nw-editor-content figure.ollow-editor-code figcaption {
   border-bottom: 1px solid var(--ollow-code-caption-border);
   background: var(--ollow-code-caption-bg);
@@ -1475,6 +1510,8 @@
   border: 1px solid var(--nw-border);
   border-radius: 8px;
   overflow: hidden;
+  max-width: 100%;
+  transition: outline-color 120ms ease, width 140ms ease, max-width 140ms ease;
 }
 
 .nw-editor-content figure.ollow-editor-table.is-selected,
@@ -1495,6 +1532,18 @@
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.nw-editor-content figure.ollow-editor-table.ollow-table-wide {
+  width: min(100%, 920px);
+  max-width: 920px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.nw-editor-content figure.ollow-editor-table.ollow-table-full {
+  width: 100%;
+  max-width: 100%;
 }
 
 .ollow-editor-table table {
@@ -1527,6 +1576,37 @@
   color: var(--nw-text);
   font-size: 15px;
   line-height: 1.7;
+}
+
+.ollow-editor-table th.is-selected-cell,
+.ollow-editor-table td.is-selected-cell {
+  background: color-mix(in srgb, var(--ollow-select) 14%, var(--ollow-surface) 86%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ollow-select) 36%, transparent 64%);
+}
+
+.ollow-editor-table th.is-selected-cell-primary,
+.ollow-editor-table td.is-selected-cell-primary {
+  box-shadow: inset 0 0 0 2px var(--ollow-select);
+}
+
+.nw-editor-content figure.ollow-editor-table.ollow-table-striped tbody tr:nth-child(odd) td,
+.nw-editor-content figure.ollow-editor-table.ollow-table-striped tbody tr:nth-child(odd) th[scope="row"] {
+  background: var(--ollow-surface-soft);
+}
+
+.nw-editor-content figure.ollow-editor-table.ollow-table-compact th,
+.nw-editor-content figure.ollow-editor-table.ollow-table-compact td {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.nw-editor-content figure.ollow-editor-table.ollow-table-bordered {
+  border-color: var(--ollow-text-strong);
+}
+
+.nw-editor-content figure.ollow-editor-table.ollow-table-bordered th,
+.nw-editor-content figure.ollow-editor-table.ollow-table-bordered td {
+  border-color: color-mix(in srgb, var(--ollow-text-strong) 25%, var(--nw-border) 75%);
 }
 
 .nw-editor-content figcaption {
@@ -1756,12 +1836,32 @@
   display: none !important;
 }
 
+.ollow-modal-open .ollow-table-toolbar {
+  display: none !important;
+}
+
+.ollow-table-toolbar-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding-right: 8px;
+  margin-right: 2px;
+  border-right: 1px solid var(--nw-border);
+}
+
+.ollow-table-toolbar-group:last-child {
+  padding-right: 0;
+  margin-right: 0;
+  border-right: 0;
+}
+
 .ollow-table-toolbar button {
   appearance: none;
-  border: 1px solid transparent;
+  border: 1px solid var(--nw-border);
   border-radius: 8px;
-  background: transparent;
-  color: var(--ollow-soft);
+  background: var(--ollow-surface);
+  color: var(--ollow-text-strong);
   padding: 7px 10px;
   font: inherit;
   font-size: 12px;
@@ -1774,6 +1874,72 @@
   border-color: var(--nw-accent-border);
   background: var(--nw-accent-soft);
   color: var(--nw-accent);
+}
+
+.ollow-table-toolbar button.is-active {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+  color: var(--ollow-primary);
+}
+
+.ollow-table-toolbar button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ollow-table-toolbar button.is-danger {
+  color: var(--ollow-danger);
+  border-color: color-mix(in srgb, var(--ollow-danger) 35%, var(--nw-border) 65%);
+}
+
+.ollow-table-toolbar button.is-danger:hover {
+  background: color-mix(in srgb, var(--ollow-danger) 10%, var(--ollow-surface) 90%);
+}
+
+.ollow-bookmark-toolbar {
+  position: absolute;
+  z-index: 1000;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  background: var(--ollow-surface);
+  border: 1px solid var(--nw-border);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: var(--ollow-shadow-float);
+}
+
+.ollow-bookmark-toolbar[hidden] {
+  display: none !important;
+}
+
+.ollow-modal-open .ollow-bookmark-toolbar {
+  display: none !important;
+}
+
+.ollow-bookmark-toolbar button {
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--nw-border);
+  border-radius: 8px;
+  background: var(--ollow-surface);
+  color: var(--ollow-text-strong);
+  padding: 0;
+  cursor: pointer;
+}
+
+.ollow-bookmark-toolbar button:hover {
+  background: var(--ollow-surface-muted);
+}
+
+.ollow-bookmark-toolbar button.is-danger {
+  color: var(--ollow-danger);
+  border-color: color-mix(in srgb, var(--ollow-danger) 35%, var(--nw-border) 65%);
+}
+
+.ollow-bookmark-toolbar button.is-danger:hover {
+  background: color-mix(in srgb, var(--ollow-danger) 10%, var(--ollow-surface) 90%);
 }
 
 .nw-editor-content > .ollow-align-left {
@@ -1975,6 +2141,10 @@
   color: var(--ollow-muted);
   font-size: 13px;
   font-weight: 600;
+}
+
+.nw-editor-modal-panel.ollow-table-properties-modal-panel {
+  width: min(92vw, 640px);
 }
 
 .nw-modal-checkbox {

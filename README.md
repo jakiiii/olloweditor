@@ -22,6 +22,7 @@ Ollow Editor is designed for newsroom-style writing, blog publishing, CMS forms,
 - Paragraph and heading support
 - Bold, italic, underline
 - Link and unlink support
+- Bookmark / anchor support
 - Bullet and numbered lists
 - Pull quote block
 - Image upload from local machine
@@ -176,6 +177,7 @@ Ollow Editor currently supports:
 | Underline     | Underline selected text         |
 | Link          | Insert a hyperlink              |
 | Unlink        | Remove hyperlink                |
+| Bookmark      | Insert an internal anchor       |
 | Bullet List   | Insert unordered list           |
 | Numbered List | Insert ordered list             |
 | Pull Quote    | Insert styled quote block       |
@@ -228,6 +230,47 @@ editor.addShortcut("mod+shift+m", () => {
 editor.removeShortcut("mod+shift+m");
 const shortcuts = editor.getShortcuts();
 ```
+
+## Bookmarks and Anchors
+
+Use the `Bookmark` toolbar button near the link tools to insert internal anchors for long articles.
+
+The editor also exposes a clearly visible `Bookmark` pill in the insert toolbar row so the anchor tool is easy to find.
+
+Bookmark rules:
+
+- the name generates a lowercase slug automatically
+- IDs use hyphens
+- unsafe characters are removed
+- duplicate IDs are auto-suffixed, such as `economic-policy-section-2`
+
+Inserted bookmark HTML:
+
+```html
+<span class="ollow-bookmark" id="economic-policy-section" data-bookmark="true" contenteditable="false">
+  🔖 Economic Policy Section
+</span>
+```
+
+Clicking a bookmark marker shows a floating toolbar with:
+
+- edit
+- copy link
+- delete
+
+The link modal also lists existing bookmarks and can create internal links like:
+
+```html
+<a href="#economic-policy-section">Jump to Economic Policy Section</a>
+```
+
+Sanitizer notes:
+
+- keeps `.ollow-bookmark`
+- keeps safe bookmark `id` values
+- keeps `data-bookmark="true"`
+- keeps `href="#bookmark-id"` links
+- strips unsafe IDs, event handlers, and `javascript:` links
 
 ## Font Family and Size
 
@@ -1127,15 +1170,75 @@ Inserted tables use editable HTML like:
 </figure>
 ```
 
-When the cursor is inside a table, Ollow Editor shows table editing controls for:
+When the cursor is inside a table, Ollow Editor now shows an advanced floating table toolbar with:
 
-- add row above
-- add row below
+- add row above / below
 - delete row
-- add column left
-- add column right
+- add column left / right
 - delete column
+- toggle header row
+- toggle header column
+- merge adjacent selected cells in the same row
+- split merged cells with `colspan`
+- table properties
 - delete table
+
+Shift-click inside the same row to select adjacent cells for merge.
+
+Table Properties lets you update:
+
+- caption
+- width: `Auto`, `Wide`, `Full width`
+- header row
+- header column
+- striped rows
+- bordered style
+- compact style
+
+Saved table classes:
+
+- `ollow-editor-table`
+- `ollow-table-wide`
+- `ollow-table-full`
+- `ollow-table-bordered`
+- `ollow-table-striped`
+- `ollow-table-compact`
+
+Saved HTML can look like:
+
+```html
+<figure class="ollow-editor-table ollow-table-bordered ollow-table-striped" data-type="table">
+  <div class="ollow-editor-table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Header 1</th>
+          <th scope="col">Header 2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Row 1</th>
+          <td>Cell</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <figcaption>Table caption</figcaption>
+</figure>
+```
+
+Sanitizer notes:
+
+- `thead`, `tbody`, and `tfoot` are preserved
+- `colspan`, `rowspan`, and `scope` are preserved on table cells
+- only approved table classes are kept
+- unsafe inline styles and event attributes are removed
+
+Responsive behavior:
+
+- tables stay inside `.ollow-editor-table-scroll`
+- wide tables scroll horizontally inside the editor instead of forcing page-level overflow
 
 ---
 

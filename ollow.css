@@ -98,29 +98,28 @@
   color: var(--nw-accent);
 }
 
-.nw-toolbar-button--media-align {
-  min-width: auto;
-  height: 30px;
-  border: 1px solid var(--nw-border);
-  border-radius: 999px;
-  background: #ffffff;
-  padding: 0 10px;
-  color: #0f172a;
-  font-size: 12px;
-  font-weight: 700;
+.nw-toolbar-button svg,
+.ollow-media-toolbar button svg {
+  width: 16px;
+  height: 16px;
 }
 
-.nw-toolbar-button--media-align:hover:not(:disabled) {
+.nw-toolbar-group--media-align .nw-toolbar-button {
+  border: 1px solid var(--nw-border);
+  background: #ffffff;
+}
+
+.nw-toolbar-group--media-align .nw-toolbar-button:hover:not(:disabled) {
   background: #f1f5f9;
 }
 
-.nw-toolbar-button--media-align.is-active {
+.nw-toolbar-group--media-align .nw-toolbar-button.is-active {
   background: #fee2e2;
   border-color: #ef4444;
   color: #991b1b;
 }
 
-.nw-toolbar-button--media-align:disabled {
+.nw-toolbar-group--media-align .nw-toolbar-button:disabled {
   opacity: 0.48;
   cursor: not-allowed;
 }
@@ -238,6 +237,22 @@
 
 .nw-editor-content p {
   margin: 0;
+}
+
+.nw-editor-content .ollow-text-left {
+  text-align: left;
+}
+
+.nw-editor-content .ollow-text-center {
+  text-align: center;
+}
+
+.nw-editor-content .ollow-text-right {
+  text-align: right;
+}
+
+.nw-editor-content .ollow-text-justify {
+  text-align: justify;
 }
 
 .nw-editor-content h2,
@@ -736,6 +751,13 @@
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
+}
+
+.ollow-media-toolbar button.ollow-media-toolbar-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  justify-content: center;
 }
 
 .ollow-media-toolbar button:hover {

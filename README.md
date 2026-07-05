@@ -235,13 +235,25 @@ Local test flow:
 
 ### Media Alignment
 
-Click a supported media block to show the floating media toolbar. A smaller alignment group is also visible in the main editor toolbar and becomes enabled when a media block is selected.
+The main toolbar includes MS Word-style alignment icon buttons for normal text blocks:
 
-Alignment controls support:
+- Align left
+- Align center
+- Align right
+- Justify
 
-- `Left`
-- `Center`
-- `Right`
+These buttons apply text alignment classes to paragraphs, headings, blockquotes, and list items:
+
+- `ollow-text-left`
+- `ollow-text-center`
+- `ollow-text-right`
+- `ollow-text-justify`
+
+When a media block is selected, the same top toolbar left/center/right buttons align the media block instead.
+
+Click a supported media block to show the floating media toolbar. It includes:
+
+- left / center / right alignment icons
 - `Wide`
 - `Full`
 - `Reset`
@@ -267,7 +279,7 @@ The floating toolbar shows:
 - alignment controls for all supported media blocks
 - image size controls only for images
 
-Alignment classes are saved in the synced HTML. Temporary selection classes used by the floating toolbar are not saved.
+Text alignment classes and media alignment classes are saved in the synced HTML. Temporary selection classes used by the floating toolbar are not saved.
 
 ### Code Blocks
 

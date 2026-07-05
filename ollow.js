@@ -70,6 +70,10 @@
     "ollow-image-large",
     "ollow-image-medium",
     "ollow-image-small",
+    "ollow-text-center",
+    "ollow-text-justify",
+    "ollow-text-left",
+    "ollow-text-right",
     "ollow-media",
     "ollow-video-wrapper",
   ]);
@@ -80,6 +84,7 @@
   const URL_ATTRS = new Set(["href", "src"]);
   const IMAGE_SIZE_CLASSES = ["ollow-image-small", "ollow-image-medium", "ollow-image-large", "ollow-image-full"];
   const MEDIA_ALIGNMENT_CLASSES = ["ollow-align-left", "ollow-align-center", "ollow-align-right", "ollow-align-wide", "ollow-align-full"];
+  const TEXT_ALIGNMENT_CLASSES = ["ollow-text-left", "ollow-text-center", "ollow-text-right", "ollow-text-justify"];
   const TEMP_SELECTION_CLASSES = ["is-selected", "is-media-selected", "ollow-selected", "ollow-image-selected"];
   const MEDIA_DATA_TYPES = new Set(["attachment", "code", "embed", "gallery", "image"]);
   const IMAGE_SIZE_PRESETS = {
@@ -398,13 +403,39 @@
     while (current && current !== root) {
         if (current.nodeType === Node.ELEMENT_NODE) {
           const tagName = current.tagName.toUpperCase();
-          if (["P", "H2", "H3", "H4", "BLOCKQUOTE", "UL", "OL", "FIGURE", "DIV", "SECTION"].includes(tagName)) {
+          if (["P", "H2", "H3", "H4", "BLOCKQUOTE", "UL", "OL", "LI", "FIGURE", "DIV", "SECTION"].includes(tagName)) {
             return current;
           }
         }
       current = current.parentNode;
     }
     return null;
+  }
+
+  function isAlignableTextBlock(node) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) return false;
+    return ["P", "H2", "H3", "H4", "BLOCKQUOTE", "LI"].includes(node.tagName.toUpperCase());
+  }
+
+  function getClosestAlignableTextBlock(node, root) {
+    let current = node && node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
+    while (current && current !== root) {
+      if (isAlignableTextBlock(current)) {
+        return current;
+      }
+      current = current.parentNode;
+    }
+    return null;
+  }
+
+  function getAlignmentIcon(alignment) {
+    const paths = {
+      left: ["M3 5h14", "M3 8h10", "M3 11h14", "M3 14h9"],
+      center: ["M3 5h14", "M5 8h10", "M3 11h14", "M6 14h8"],
+      right: ["M3 5h14", "M7 8h10", "M3 11h14", "M8 14h9"],
+      justify: ["M3 5h14", "M3 8h14", "M3 11h14", "M3 14h14"],
+    };
+    return `<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">${(paths[alignment] || paths.left).map((path) => `<path d="${path}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>`).join("")}</svg>`;
   }
 
   function getSelectionAncestor(root) {
@@ -631,7 +662,6 @@
       this.statusSave = null;
       this.statusDot = null;
       this.toolbarButtons = {};
-      this.mediaAlignButtons = [];
       this.headingSelect = null;
       this.modal = null;
       this.modalTitle = null;
@@ -779,24 +809,10 @@
 
       const groupMediaAlign = document.createElement("div");
       groupMediaAlign.className = "nw-toolbar-group nw-toolbar-group--media-align";
-      [
-        ["left", "Align Left", "Left"],
-        ["center", "Align Center", "Center"],
-        ["right", "Align Right", "Right"],
-        ["wide", "Align Wide", "Wide"],
-        ["full", "Align Full", "Full"],
-        ["reset", "Reset Alignment", "Reset"],
-      ].forEach(([value, title, label]) => {
-        const button = createButton(label, {
-          className: "nw-toolbar-button nw-toolbar-button--media-align",
-          "data-top-media-align": value,
-          title,
-          "aria-label": title,
-        });
-        button.disabled = true;
-        this.mediaAlignButtons.push(button);
-        groupMediaAlign.appendChild(button);
-      });
+      groupMediaAlign.appendChild(this.makeToolbarButton("align-left", "Align left", getAlignmentIcon("left")));
+      groupMediaAlign.appendChild(this.makeToolbarButton("align-center", "Align center", getAlignmentIcon("center")));
+      groupMediaAlign.appendChild(this.makeToolbarButton("align-right", "Align right", getAlignmentIcon("right")));
+      groupMediaAlign.appendChild(this.makeToolbarButton("align-justify", "Justify", getAlignmentIcon("justify")));
 
       row.appendChild(groupUndo);
       row.appendChild(this.makeDivider());
@@ -879,9 +895,9 @@
       toolbar.innerHTML = `
         <div class="ollow-media-toolbar-group" data-role="align-controls">
           <span class="ollow-media-toolbar-label">Align</span>
-          <button type="button" data-media-align="left">Left</button>
-          <button type="button" data-media-align="center">Center</button>
-          <button type="button" data-media-align="right">Right</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-media-align="left" title="Align left" aria-label="Align left">${getAlignmentIcon("left")}</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-media-align="center" title="Align center" aria-label="Align center">${getAlignmentIcon("center")}</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-media-align="right" title="Align right" aria-label="Align right">${getAlignmentIcon("right")}</button>
           <button type="button" data-media-align="wide">Wide</button>
           <button type="button" data-media-align="full">Full</button>
           <button type="button" data-media-align="reset">Reset</button>
@@ -1012,12 +1028,6 @@
           event.preventDefault();
           this.handleAction(actionButton.dataset.action);
         }
-      });
-
-      this.wrapper.addEventListener("click", (event) => {
-        const alignmentButton = event.target.closest("[data-top-media-align]");
-        if (!alignmentButton || alignmentButton.disabled) return;
-        this.applySelectedMediaAlignment(alignmentButton.dataset.topMediaAlign);
       });
 
       this.headingSelect.addEventListener("change", () => {
@@ -1319,6 +1329,18 @@
         case "attachment":
           this.openAttachmentModal();
           return;
+        case "align-left":
+          this.handleAlignmentAction("left");
+          return;
+        case "align-center":
+          this.handleAlignmentAction("center");
+          return;
+        case "align-right":
+          this.handleAlignmentAction("right");
+          return;
+        case "align-justify":
+          this.handleAlignmentAction("justify");
+          return;
         default:
           return;
       }
@@ -1388,6 +1410,7 @@
       this.updateImageResizeToolbarState();
       this.updateCodeToolbarState();
       this.positionImageResizeToolbar();
+      this.updateToolbarState();
     }
 
     clearMediaSelection() {
@@ -1397,13 +1420,13 @@
       this.selectedMediaBlock = null;
       this.selectedImageFigure = null;
       this.selectedCodeFigure = null;
-      this.updateMainMediaAlignmentButtons();
       if (this.imageResizeToolbar) {
         this.imageResizeToolbar.hidden = true;
       }
       if (this.imageResizeHandle) {
         this.imageResizeHandle.hidden = true;
       }
+      this.updateToolbarState();
     }
 
     normalizeImageFigure(figure) {
@@ -1424,6 +1447,79 @@
       return "";
     }
 
+    removeTextAlignmentClasses(element) {
+      if (!element || !element.classList) return;
+      element.classList.remove(...TEXT_ALIGNMENT_CLASSES);
+    }
+
+    getCurrentBlocksFromSelection() {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return [];
+      const range = selection.getRangeAt(0);
+      if (!this.content.contains(range.commonAncestorContainer)) return [];
+
+      const blocks = new Set();
+      Array.from(this.content.querySelectorAll("p, h2, h3, h4, blockquote, li")).forEach((element) => {
+        try {
+          if (range.intersectsNode(element)) {
+            blocks.add(element);
+          }
+        } catch (error) {
+          // Ignore invalid range intersections.
+        }
+      });
+
+      if (!blocks.size) {
+        const fallback = getClosestAlignableTextBlock(range.commonAncestorContainer, this.content);
+        if (fallback) {
+          blocks.add(fallback);
+        }
+      }
+
+      return Array.from(blocks);
+    }
+
+    getSelectedTextAlignment() {
+      const blocks = this.getCurrentBlocksFromSelection();
+      if (!blocks.length) return "";
+
+      const alignments = blocks.map((block) => {
+        if (block.classList.contains("ollow-text-center")) return "center";
+        if (block.classList.contains("ollow-text-right")) return "right";
+        if (block.classList.contains("ollow-text-justify")) return "justify";
+        if (block.classList.contains("ollow-text-left")) return "left";
+        return "left";
+      });
+
+      const first = alignments[0];
+      return alignments.every((alignment) => alignment === first) ? first : "";
+    }
+
+    applyTextAlignment(alignment) {
+      const blocks = this.getCurrentBlocksFromSelection();
+      if (!blocks.length) return;
+
+      blocks.forEach((block) => {
+        this.removeTextAlignmentClasses(block);
+        if (alignment) {
+          block.classList.add(`ollow-text-${alignment}`);
+        }
+      });
+
+      this.saveSelection();
+      this.handleContentChange();
+    }
+
+    handleAlignmentAction(alignment) {
+      if (this.selectedMediaBlock && alignment !== "justify") {
+        this.applySelectedMediaAlignment(alignment);
+        return;
+      }
+      this.focus();
+      this.restoreSelection();
+      this.applyTextAlignment(alignment);
+    }
+
     updateMediaAlignmentToolbarState() {
       if (!this.imageResizeToolbar) return;
       const activeAlignment = this.getSelectedMediaAlignment();
@@ -1432,7 +1528,6 @@
         const isActive = value === activeAlignment || (value === "reset" && !activeAlignment);
         button.classList.toggle("is-active", isActive);
       });
-      this.updateMainMediaAlignmentButtons(activeAlignment);
 
       const sizeControls = this.imageResizeToolbar.querySelector('[data-role="size-controls"]');
       const sizeDivider = this.imageResizeToolbar.querySelector('[data-role="size-divider"]');
@@ -1446,17 +1541,6 @@
       if (!supportsImageResize && this.imageResizeHandle) {
         this.imageResizeHandle.hidden = true;
       }
-    }
-
-    updateMainMediaAlignmentButtons(activeAlignment) {
-      const currentAlignment = activeAlignment !== undefined ? activeAlignment : this.getSelectedMediaAlignment();
-      const hasSelection = Boolean(this.selectedMediaBlock);
-      this.mediaAlignButtons.forEach((button) => {
-        button.disabled = !hasSelection;
-        const value = button.dataset.topMediaAlign;
-        const isActive = hasSelection && (value === currentAlignment || (value === "reset" && !currentAlignment));
-        button.classList.toggle("is-active", isActive);
-      });
     }
 
     updateCodeToolbarState() {
@@ -2421,6 +2505,7 @@
 
     updateToolbarState() {
       const inside = selectionInside(this.content);
+      const hasEditorContext = inside || this.isFocused || Boolean(this.selectedMediaBlock);
       const states = {
         bold: inside && safeQueryState("bold"),
         italic: inside && safeQueryState("italic"),
@@ -2456,6 +2541,18 @@
         if (button) {
           button.classList.toggle("is-active", Boolean(states[key]));
         }
+      });
+
+      const activeAlignment = this.selectedMediaBlock
+        ? this.getSelectedMediaAlignment()
+        : this.getSelectedTextAlignment();
+      ["align-left", "align-center", "align-right", "align-justify"].forEach((key) => {
+        const button = this.toolbarButtons[key];
+        if (!button) return;
+        const value = key.replace("align-", "");
+        const isJustify = value === "justify";
+        button.disabled = !hasEditorContext || (Boolean(this.selectedMediaBlock) && isJustify);
+        button.classList.toggle("is-active", activeAlignment === value);
       });
 
       if (this.headingSelect) {

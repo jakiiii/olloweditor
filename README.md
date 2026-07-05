@@ -24,6 +24,7 @@ Ollow Editor is designed for newsroom-style writing, blog publishing, CMS forms,
 - Link and unlink support
 - Bookmark / anchor support
 - Special character picker
+- Emoji picker
 - Bullet and numbered lists
 - Pull quote block
 - Image upload from local machine
@@ -180,6 +181,7 @@ Ollow Editor currently supports:
 | Unlink        | Remove hyperlink                |
 | Bookmark      | Insert an internal anchor       |
 | Ω Symbols     | Insert special characters       |
+| Emoji         | Insert emoji                    |
 | Bullet List   | Insert unordered list           |
 | Numbered List | Insert ordered list             |
 | Pull Quote    | Insert styled quote block       |
@@ -303,6 +305,28 @@ Insertion behavior:
 - inserts the chosen character at the cursor
 - replaces the current text selection if one exists
 - keeps the textarea storing normal HTML content, with the character inserted as plain text
+
+## Emoji Picker
+
+Use the `Emoji` toolbar button near `Ω Symbols` to open the lightweight emoji picker.
+
+Included categories:
+
+- smileys
+- gestures
+- objects
+- news / editorial
+- nature / weather
+- flags
+
+Recent emoji are kept in memory and also stored in `localStorage` under `ollow-recent-emojis`.
+
+Insertion behavior:
+
+- restores the saved editor selection
+- inserts the chosen emoji at the cursor
+- replaces the current text selection if one exists
+- stores the emoji as normal Unicode text inside the editor HTML
 
 ## Font Family and Size
 

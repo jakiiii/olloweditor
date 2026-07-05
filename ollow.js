@@ -7,6 +7,7 @@
   const FONT_RECENTS_STORAGE_KEY = "ollow-editor-recent-fonts";
   const TEXT_COLOR_RECENTS_STORAGE_KEY = "ollow-editor-recent-colors";
   const SPECIAL_CHAR_RECENTS_STORAGE_KEY = "ollow-recent-special-chars";
+  const EMOJI_RECENTS_STORAGE_KEY = "ollow-recent-emojis";
   const DEFAULT_FONT_FAMILY_KEY = "arial";
   const DEFAULT_FONT_SIZE = 16;
   const DEFAULT_TEXT_COLOR = "#111827";
@@ -160,6 +161,101 @@
   ];
   const SPECIAL_CHARACTER_LOOKUP = new Map(
     SPECIAL_CHARACTER_CATEGORIES.flatMap((category) => category.chars.map((item) => [item.char, Object.assign({ category: category.key, categoryLabel: category.label }, item)]))
+  );
+  const EMOJI_CATEGORIES = [
+    {
+      key: "smileys",
+      label: "Smileys",
+      emojis: [
+        { emoji: "😀", label: "Grinning face" },
+        { emoji: "😃", label: "Smiling face with open mouth" },
+        { emoji: "😄", label: "Smiling face with open mouth and smiling eyes" },
+        { emoji: "😁", label: "Beaming face with smiling eyes" },
+        { emoji: "😆", label: "Grinning squinting face" },
+        { emoji: "😂", label: "Face with tears of joy" },
+        { emoji: "🙂", label: "Slightly smiling face" },
+        { emoji: "😉", label: "Winking face" },
+        { emoji: "😊", label: "Smiling face with smiling eyes" },
+        { emoji: "😍", label: "Smiling face with heart eyes" },
+        { emoji: "😎", label: "Smiling face with sunglasses" },
+        { emoji: "🤔", label: "Thinking face" },
+        { emoji: "😐", label: "Neutral face" },
+        { emoji: "😢", label: "Crying face" },
+        { emoji: "😡", label: "Pouting face" },
+      ],
+    },
+    {
+      key: "gestures",
+      label: "Gestures",
+      emojis: [
+        { emoji: "👍", label: "Thumbs up" },
+        { emoji: "👎", label: "Thumbs down" },
+        { emoji: "👏", label: "Clapping hands" },
+        { emoji: "🙌", label: "Raising hands" },
+        { emoji: "🙏", label: "Folded hands" },
+        { emoji: "💪", label: "Flexed biceps" },
+        { emoji: "👋", label: "Waving hand" },
+        { emoji: "✌️", label: "Victory hand" },
+      ],
+    },
+    {
+      key: "objects",
+      label: "Objects",
+      emojis: [
+        { emoji: "📌", label: "Pushpin" },
+        { emoji: "📍", label: "Round pushpin" },
+        { emoji: "📝", label: "Memo" },
+        { emoji: "📷", label: "Camera" },
+        { emoji: "🎥", label: "Movie camera" },
+        { emoji: "💡", label: "Light bulb" },
+        { emoji: "🔥", label: "Fire" },
+        { emoji: "⭐", label: "Star" },
+        { emoji: "✅", label: "Check mark button" },
+        { emoji: "❌", label: "Cross mark" },
+        { emoji: "⚠️", label: "Warning" },
+      ],
+    },
+    {
+      key: "news-editorial",
+      label: "News / Editorial",
+      emojis: [
+        { emoji: "📰", label: "Newspaper" },
+        { emoji: "📢", label: "Loudspeaker" },
+        { emoji: "📣", label: "Megaphone" },
+        { emoji: "🗞️", label: "Rolled up newspaper" },
+        { emoji: "🔎", label: "Magnifying glass tilted right" },
+        { emoji: "📊", label: "Bar chart" },
+        { emoji: "📈", label: "Chart increasing" },
+        { emoji: "📉", label: "Chart decreasing" },
+      ],
+    },
+    {
+      key: "nature-weather",
+      label: "Nature / Weather",
+      emojis: [
+        { emoji: "☀️", label: "Sun" },
+        { emoji: "🌧️", label: "Cloud with rain" },
+        { emoji: "⛈️", label: "Cloud with lightning and rain" },
+        { emoji: "🌊", label: "Water wave" },
+        { emoji: "🌍", label: "Globe showing Europe Africa" },
+        { emoji: "🌱", label: "Seedling" },
+      ],
+    },
+    {
+      key: "flags",
+      label: "Flags",
+      emojis: [
+        { emoji: "🇧🇩", label: "Flag Bangladesh" },
+        { emoji: "🇺🇸", label: "Flag United States" },
+        { emoji: "🇬🇧", label: "Flag United Kingdom" },
+        { emoji: "🇵🇰", label: "Flag Pakistan" },
+        { emoji: "🇪🇺", label: "Flag European Union" },
+        { emoji: "🇹🇷", label: "Flag Türkiye" },
+      ],
+    },
+  ];
+  const EMOJI_LOOKUP = new Map(
+    EMOJI_CATEGORIES.flatMap((category) => category.emojis.map((item) => [item.emoji, Object.assign({ category: category.key, categoryLabel: category.label }, item)]))
   );
   const FONT_FAMILY_LOOKUP = new Map(FONT_FAMILIES.map((font) => [font.key, font]));
   const TEXT_COLOR_LOOKUP = new Map(TEXT_COLOR_PRESETS.map((color) => [color.key, color]));
@@ -1178,6 +1274,25 @@
     }
   }
 
+  function readStoredRecentEmojis() {
+    try {
+      const raw = window.localStorage.getItem(EMOJI_RECENTS_STORAGE_KEY);
+      const values = JSON.parse(raw || "[]");
+      if (!Array.isArray(values)) return [];
+      return values.filter((value) => EMOJI_LOOKUP.has(value)).slice(0, 18);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function writeStoredRecentEmojis(emojis) {
+    try {
+      window.localStorage.setItem(EMOJI_RECENTS_STORAGE_KEY, JSON.stringify((emojis || []).slice(0, 18)));
+    } catch (error) {
+      // Ignore storage failures.
+    }
+  }
+
   function parseMarkdownToHtml(markdown, editor) {
     const lines = String(markdown || "").replace(/\r\n?/g, "\n").split("\n");
     const blocks = [];
@@ -2090,6 +2205,7 @@
       this.recentFonts = readStoredRecentFonts();
       this.recentTextColors = readStoredRecentColors();
       this.recentSpecialCharacters = readStoredRecentSpecialCharacters();
+      this.recentEmojis = readStoredRecentEmojis();
       this.systemThemeQuery = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
       this.commands = new Map();
       this.eventHandlers = new Map();
@@ -2824,6 +2940,7 @@
         ["table", "Table", "table"],
         ["bookmark", "Bookmark", "bookmark"],
         ["special-characters", "Ω Symbols", ""],
+        ["emoji", "Emoji", ""],
         ["import-markdown", "Import MD", "upload_file"],
         ["export-markdown", "Export MD", "download"],
         ["gallery", "Gallery", "photo_library"],
@@ -2844,6 +2961,8 @@
         button.setAttribute("aria-label", fullTitle);
         button.innerHTML = action === "special-characters"
           ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">Ω</span>${label}`
+          : action === "emoji"
+            ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">☺</span>${label}`
           : `<span class="material-symbols-outlined">${icon}</span>${label}`;
         this.toolbarButtons[action] = button;
         row.appendChild(button);
@@ -4817,6 +4936,9 @@
           return;
         case "special-characters":
           this.openSpecialCharacterModal();
+          return;
+        case "emoji":
+          this.openEmojiModal();
           return;
         case "bulleted-list":
           this.execCommand("insertUnorderedList");
@@ -6825,6 +6947,167 @@
             return "Choose a character to insert.";
           }
           this.insertSpecialCharacter(selectedChar);
+          return null;
+        },
+      });
+    }
+
+    getRecentEmojis() {
+      const emojis = Array.isArray(this.recentEmojis) ? this.recentEmojis : [];
+      return emojis.filter((emoji) => EMOJI_LOOKUP.has(emoji)).slice(0, 18);
+    }
+
+    rememberRecentEmoji(emoji) {
+      if (!EMOJI_LOOKUP.has(emoji)) return;
+      const emojis = this.getRecentEmojis().filter((item) => item !== emoji);
+      emojis.unshift(emoji);
+      this.recentEmojis = emojis.slice(0, 18);
+      writeStoredRecentEmojis(this.recentEmojis);
+    }
+
+    insertEmoji(emoji) {
+      if (!emoji) return;
+      this.focus();
+      this.restoreSelection();
+      insertHtmlAtSelection(this.content, escapeHtml(emoji), this.savedSelection);
+      this.saveSelection();
+      this.rememberRecentEmoji(emoji);
+      this.handleContentChange();
+    }
+
+    getEmojiResults(searchTerm, category) {
+      const query = String(searchTerm || "").trim().toLowerCase();
+      return EMOJI_CATEGORIES
+        .filter((group) => category === "all" || group.key === category)
+        .flatMap((group) => group.emojis.map((item) => Object.assign({ category: group.key, categoryLabel: group.label }, item)))
+        .filter((item) => {
+          if (!query) return true;
+          return item.label.toLowerCase().includes(query) || item.categoryLabel.toLowerCase().includes(query);
+        });
+    }
+
+    openEmojiModal() {
+      let selectedEmoji = "";
+      let activeCategory = "all";
+      let searchTerm = "";
+      this.openModal({
+        title: "Emoji Picker",
+        copy: "Search, preview, and insert emoji into the current story position.",
+        confirmLabel: "Insert Emoji",
+        panelClass: "ollow-special-characters-modal-panel ollow-emoji-modal-panel",
+        fields: [
+          {
+            name: "picker",
+            label: "Emoji picker",
+            type: "html",
+            html: `
+              <div class="ollow-emoji-picker">
+                <div class="ollow-special-chars-search-row">
+                  <input type="search" class="nw-modal-input ollow-emoji-search" placeholder="Search emoji or categories">
+                </div>
+                <div class="ollow-special-chars-tabs ollow-emoji-tabs">
+                  <button type="button" class="is-active" data-emoji-category="all">All</button>
+                  ${EMOJI_CATEGORIES.map((category) => `<button type="button" data-emoji-category="${escapeHtml(category.key)}">${escapeHtml(category.label)}</button>`).join("")}
+                </div>
+                <div class="ollow-special-chars-section" data-role="recent-wrap" hidden>
+                  <div class="ollow-special-chars-section-label">Recent</div>
+                  <div class="ollow-emoji-grid ollow-emoji-grid--compact" data-role="recent-grid"></div>
+                </div>
+                <div class="ollow-emoji-grid" data-role="results-grid"></div>
+                <div class="ollow-special-chars-preview ollow-emoji-preview">
+                  <div class="ollow-special-chars-preview-char ollow-emoji-preview-char" data-role="preview-emoji">☺</div>
+                  <div class="ollow-special-chars-preview-meta">
+                    <strong data-role="preview-label">Emoji</strong>
+                    <span data-role="preview-category">Choose an emoji to insert.</span>
+                  </div>
+                </div>
+              </div>
+            `,
+          },
+        ],
+        onOpen: () => {
+          const root = this.modalBody.querySelector(".ollow-emoji-picker");
+          if (!root) return;
+          const searchInput = root.querySelector(".ollow-emoji-search");
+          const tabButtons = Array.from(root.querySelectorAll("[data-emoji-category]"));
+          const recentWrap = root.querySelector('[data-role="recent-wrap"]');
+          const recentGrid = root.querySelector('[data-role="recent-grid"]');
+          const resultsGrid = root.querySelector('[data-role="results-grid"]');
+          const previewEmoji = root.querySelector('[data-role="preview-emoji"]');
+          const previewLabel = root.querySelector('[data-role="preview-label"]');
+          const previewCategory = root.querySelector('[data-role="preview-category"]');
+
+          const setPreview = (emoji) => {
+            const item = EMOJI_LOOKUP.get(emoji);
+            selectedEmoji = emoji;
+            if (!item) {
+              previewEmoji.textContent = "☺";
+              previewLabel.textContent = "Emoji";
+              previewCategory.textContent = "Choose an emoji to insert.";
+              return;
+            }
+            previewEmoji.textContent = item.emoji;
+            previewLabel.textContent = item.label;
+            previewCategory.textContent = item.categoryLabel;
+          };
+
+          const renderRecent = () => {
+            const recent = this.getRecentEmojis();
+            recentWrap.hidden = !recent.length;
+            recentGrid.innerHTML = recent.map((emoji) => {
+              const item = EMOJI_LOOKUP.get(emoji);
+              return `<button type="button" class="ollow-emoji-option ollow-emoji-option--compact${selectedEmoji === item.emoji ? " is-active" : ""}" data-emoji-choice="${escapeHtml(item.emoji)}" title="${escapeHtml(item.label)}">${escapeHtml(item.emoji)}</button>`;
+            }).join("");
+          };
+
+          const renderResults = () => {
+            const results = this.getEmojiResults(searchTerm, activeCategory);
+            resultsGrid.innerHTML = results.length
+              ? results.map((item) => `
+                <button type="button" class="ollow-emoji-option${selectedEmoji === item.emoji ? " is-active" : ""}" data-emoji-choice="${escapeHtml(item.emoji)}" title="${escapeHtml(item.label)}">
+                  <span class="ollow-emoji-glyph">${escapeHtml(item.emoji)}</span>
+                  <span class="ollow-emoji-name">${escapeHtml(item.label)}</span>
+                </button>
+              `).join("")
+              : `<div class="ollow-special-chars-empty">No emoji match that search.</div>`;
+          };
+
+          const handleChoice = (emoji) => {
+            setPreview(emoji);
+            renderRecent();
+            renderResults();
+          };
+
+          renderRecent();
+          renderResults();
+          setPreview(selectedEmoji);
+
+          searchInput?.addEventListener("input", () => {
+            searchTerm = searchInput.value || "";
+            renderResults();
+          });
+
+          tabButtons.forEach((button) => {
+            button.addEventListener("click", (event) => {
+              event.preventDefault();
+              activeCategory = button.dataset.emojiCategory || "all";
+              tabButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+              renderResults();
+            });
+          });
+
+          root.addEventListener("click", (event) => {
+            const option = event.target.closest("[data-emoji-choice]");
+            if (!option) return;
+            event.preventDefault();
+            handleChoice(option.dataset.emojiChoice || "");
+          });
+        },
+        onConfirm: () => {
+          if (!selectedEmoji) {
+            return "Choose an emoji to insert.";
+          }
+          this.insertEmoji(selectedEmoji);
           return null;
         },
       });

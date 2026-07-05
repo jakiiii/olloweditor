@@ -21,11 +21,19 @@
     "LI",
     "OL",
     "P",
+    "PRE",
     "SECTION",
     "SPAN",
     "STRONG",
+    "TABLE",
+    "TBODY",
+    "TD",
+    "TH",
+    "THEAD",
+    "TR",
     "U",
     "UL",
+    "CODE",
   ]);
   const CLASS_ALLOWLIST = new Set([
     "nw-editor-dragover",
@@ -51,6 +59,9 @@
     "ollow-align-right",
     "ollow-align-wide",
     "ollow-editor-image",
+    "ollow-editor-code",
+    "ollow-editor-table",
+    "ollow-editor-table-scroll",
     "ollow-gallery",
     "ollow-gallery-grid",
     "ollow-gallery-header",
@@ -63,14 +74,14 @@
     "ollow-video-wrapper",
   ]);
   const DIV_DATA_TYPES = new Set(["attachment", "embed", "fact-box", "gallery", "related"]);
-  const FIGURE_DATA_TYPES = new Set(["embed", "image"]);
+  const FIGURE_DATA_TYPES = new Set(["code", "embed", "image", "table"]);
   const BLOCKQUOTE_DATA_TYPES = new Set(["pull-quote"]);
   const SECTION_DATA_TYPES = new Set(["gallery"]);
   const URL_ATTRS = new Set(["href", "src"]);
   const IMAGE_SIZE_CLASSES = ["ollow-image-small", "ollow-image-medium", "ollow-image-large", "ollow-image-full"];
   const MEDIA_ALIGNMENT_CLASSES = ["ollow-align-left", "ollow-align-center", "ollow-align-right", "ollow-align-wide", "ollow-align-full"];
-  const IMAGE_SELECTION_CLASSES = ["is-selected", "ollow-selected", "ollow-image-selected"];
-  const MEDIA_DATA_TYPES = new Set(["attachment", "embed", "gallery", "image"]);
+  const TEMP_SELECTION_CLASSES = ["is-selected", "is-media-selected", "ollow-selected", "ollow-image-selected"];
+  const MEDIA_DATA_TYPES = new Set(["attachment", "code", "embed", "gallery", "image"]);
   const IMAGE_SIZE_PRESETS = {
     small: 320,
     medium: 560,
@@ -273,7 +284,7 @@
         if (name === "class") {
           const classes = value
             .split(/\s+/)
-            .filter((className) => CLASS_ALLOWLIST.has(className));
+            .filter((className) => CLASS_ALLOWLIST.has(className) || /^language-[a-z0-9+._-]+$/i.test(className));
           if (classes.length) {
             clean.setAttribute("class", classes.join(" "));
           }
@@ -281,6 +292,11 @@
         }
 
         if (name === "data-type") {
+          clean.setAttribute(name, value);
+          return;
+        }
+
+        if (name === "data-language" && tagName === "FIGURE") {
           clean.setAttribute(name, value);
           return;
         }
@@ -357,7 +373,7 @@
 
       if (node.nodeType !== Node.ELEMENT_NODE) return;
       const tagName = node.tagName.toUpperCase();
-      if (["P", "H2", "H3", "H4", "UL", "OL", "BLOCKQUOTE", "FIGURE", "DIV", "SECTION", "HR"].includes(tagName)) {
+      if (["P", "PRE", "H2", "H3", "H4", "UL", "OL", "BLOCKQUOTE", "FIGURE", "DIV", "SECTION", "HR"].includes(tagName)) {
         flushParagraph();
         normalizedRoot.appendChild(node);
       } else {
@@ -446,6 +462,47 @@
     return null;
   }
 
+  function getTableCell(node, root) {
+    let current = node && node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
+    while (current && current !== root) {
+      if (current.nodeType === Node.ELEMENT_NODE && ["TD", "TH"].includes(current.tagName.toUpperCase())) {
+        return current;
+      }
+      current = current.parentNode;
+    }
+    return null;
+  }
+
+  function getTableFigure(node, root) {
+    let current = node && node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
+    while (current && current !== root) {
+      if (
+        current.nodeType === Node.ELEMENT_NODE &&
+        current.tagName.toUpperCase() === "FIGURE" &&
+        (current.classList.contains("ollow-editor-table") || current.getAttribute("data-type") === "table")
+      ) {
+        return current;
+      }
+      current = current.parentNode;
+    }
+    return null;
+  }
+
+  function getCodeFigure(node, root) {
+    let current = node && node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
+    while (current && current !== root) {
+      if (
+        current.nodeType === Node.ELEMENT_NODE &&
+        current.tagName.toUpperCase() === "FIGURE" &&
+        (current.classList.contains("ollow-editor-code") || current.getAttribute("data-type") === "code")
+      ) {
+        return current;
+      }
+      current = current.parentNode;
+    }
+    return null;
+  }
+
   function getSelectableMediaBlock(node, root) {
     let current = node && node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
     while (current && current !== root) {
@@ -461,10 +518,16 @@
 
       if (
         current.classList.contains("ollow-editor-image") ||
+        current.classList.contains("ollow-editor-code") ||
+        current.classList.contains("ollow-editor-embed") ||
+        current.classList.contains("ollow-editor-attachment") ||
+        current.classList.contains("ollow-editor-gallery") ||
         current.classList.contains("ollow-image") ||
         current.classList.contains("ollow-gallery") ||
         current.classList.contains("ollow-embed") ||
-        current.classList.contains("nw-attachment")
+        current.classList.contains("nw-attachment") ||
+        current.hasAttribute("data-gallery") ||
+        current.hasAttribute("data-embed-provider")
       ) {
         return current;
       }
@@ -517,6 +580,8 @@
       if (!input) return;
       if (input.type === "file") {
         input.value = "";
+      } else if (input.type === "checkbox") {
+        input.checked = false;
       } else if (input.tagName === "TEXTAREA" || input.tagName === "INPUT") {
         input.value = "";
       }
@@ -552,8 +617,12 @@
       this.feedback = null;
       this.imageResizeToolbar = null;
       this.imageResizeHandle = null;
+      this.tableToolbar = null;
       this.selectedMediaBlock = null;
       this.selectedImageFigure = null;
+      this.selectedCodeFigure = null;
+      this.selectedTableFigure = null;
+      this.selectedTableCell = null;
       this.isDraggingImageResize = false;
       this.resizePointerId = null;
       this.statusWordCount = null;
@@ -562,6 +631,7 @@
       this.statusSave = null;
       this.statusDot = null;
       this.toolbarButtons = {};
+      this.mediaAlignButtons = [];
       this.headingSelect = null;
       this.modal = null;
       this.modalTitle = null;
@@ -582,6 +652,7 @@
       this.boundRepositionImageToolbar = this.positionImageResizeToolbar.bind(this);
       this.boundImageResizeMove = this.handleImageResizeMove.bind(this);
       this.boundImageResizeEnd = this.handleImageResizeEnd.bind(this);
+      this.boundRepositionTableToolbar = this.positionTableToolbar.bind(this);
     }
 
     init() {
@@ -631,8 +702,10 @@
 
       this.imageResizeToolbar = this.buildImageResizeToolbar();
       this.imageResizeHandle = this.buildImageResizeHandle();
+      this.tableToolbar = this.buildTableToolbar();
       surface.appendChild(this.imageResizeToolbar);
       surface.appendChild(this.imageResizeHandle);
+      surface.appendChild(this.tableToolbar);
 
       const status = document.createElement("div");
       status.className = "nw-editor-status";
@@ -704,6 +777,27 @@
       groupBlocks.appendChild(this.makeToolbarButton("quote", "Quote", '<span class="material-symbols-outlined">format_quote</span>'));
       groupBlocks.appendChild(this.makeToolbarButton("horizontal-rule", "Horizontal rule", '<span class="material-symbols-outlined">horizontal_rule</span>'));
 
+      const groupMediaAlign = document.createElement("div");
+      groupMediaAlign.className = "nw-toolbar-group nw-toolbar-group--media-align";
+      [
+        ["left", "Align Left", "Left"],
+        ["center", "Align Center", "Center"],
+        ["right", "Align Right", "Right"],
+        ["wide", "Align Wide", "Wide"],
+        ["full", "Align Full", "Full"],
+        ["reset", "Reset Alignment", "Reset"],
+      ].forEach(([value, title, label]) => {
+        const button = createButton(label, {
+          className: "nw-toolbar-button nw-toolbar-button--media-align",
+          "data-top-media-align": value,
+          title,
+          "aria-label": title,
+        });
+        button.disabled = true;
+        this.mediaAlignButtons.push(button);
+        groupMediaAlign.appendChild(button);
+      });
+
       row.appendChild(groupUndo);
       row.appendChild(this.makeDivider());
       row.appendChild(this.headingSelect);
@@ -712,6 +806,8 @@
       row.appendChild(groupInline);
       row.appendChild(this.makeDivider());
       row.appendChild(groupBlocks);
+      row.appendChild(this.makeDivider());
+      row.appendChild(groupMediaAlign);
       return row;
     }
 
@@ -722,6 +818,8 @@
       const insertItems = [
         ["pull-quote", "Pull Quote", "format_quote"],
         ["image", "Image", "image"],
+        ["code", "Code", "code_blocks"],
+        ["table", "Table", "table"],
         ["gallery", "Gallery", "photo_library"],
         ["embed", "Embed", "smart_display"],
         ["related", "Related", "article"],
@@ -776,10 +874,11 @@
 
     buildImageResizeToolbar() {
       const toolbar = document.createElement("div");
-      toolbar.className = "ollow-image-resize-toolbar";
+      toolbar.className = "ollow-media-toolbar";
       toolbar.hidden = true;
       toolbar.innerHTML = `
         <div class="ollow-media-toolbar-group" data-role="align-controls">
+          <span class="ollow-media-toolbar-label">Align</span>
           <button type="button" data-media-align="left">Left</button>
           <button type="button" data-media-align="center">Center</button>
           <button type="button" data-media-align="right">Right</button>
@@ -789,11 +888,18 @@
         </div>
         <span class="ollow-media-toolbar-divider" data-role="size-divider"></span>
         <div class="ollow-media-toolbar-group" data-role="size-controls">
+          <span class="ollow-media-toolbar-label">Size</span>
           <button type="button" data-image-size="small">Small</button>
           <button type="button" data-image-size="medium">Medium</button>
           <button type="button" data-image-size="large">Large</button>
           <button type="button" data-image-size="full">Full</button>
           <button type="button" data-image-size="reset">Reset</button>
+        </div>
+        <span class="ollow-media-toolbar-divider" data-role="code-divider" hidden></span>
+        <div class="ollow-media-toolbar-group" data-role="code-controls" hidden>
+          <button type="button" data-code-action="edit">Edit Code</button>
+          <button type="button" data-code-action="copy">Copy</button>
+          <button type="button" data-code-action="delete">Delete</button>
         </div>
       `;
 
@@ -808,8 +914,13 @@
           return;
         }
         const button = event.target.closest("[data-image-size]");
-        if (!button) return;
-        this.applySelectedImageSize(button.dataset.imageSize);
+        if (button) {
+          this.applySelectedImageSize(button.dataset.imageSize);
+          return;
+        }
+        const codeButton = event.target.closest("[data-code-action]");
+        if (!codeButton) return;
+        this.handleCodeAction(codeButton.dataset.codeAction);
       });
 
       return toolbar;
@@ -831,6 +942,33 @@
       });
 
       return handle;
+    }
+
+    buildTableToolbar() {
+      const toolbar = document.createElement("div");
+      toolbar.className = "ollow-table-toolbar";
+      toolbar.hidden = true;
+      toolbar.innerHTML = `
+        <button type="button" data-table-action="row-above">Row Above</button>
+        <button type="button" data-table-action="row-below">Row Below</button>
+        <button type="button" data-table-action="delete-row">Delete Row</button>
+        <button type="button" data-table-action="col-left">Col Left</button>
+        <button type="button" data-table-action="col-right">Col Right</button>
+        <button type="button" data-table-action="delete-col">Delete Col</button>
+        <button type="button" data-table-action="delete-table">Delete Table</button>
+      `;
+
+      toolbar.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+
+      toolbar.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-table-action]");
+        if (!button) return;
+        this.handleTableAction(button.dataset.tableAction);
+      });
+
+      return toolbar;
     }
 
     makeDivider() {
@@ -874,6 +1012,12 @@
           event.preventDefault();
           this.handleAction(actionButton.dataset.action);
         }
+      });
+
+      this.wrapper.addEventListener("click", (event) => {
+        const alignmentButton = event.target.closest("[data-top-media-align]");
+        if (!alignmentButton || alignmentButton.disabled) return;
+        this.applySelectedMediaAlignment(alignmentButton.dataset.topMediaAlign);
       });
 
       this.headingSelect.addEventListener("change", () => {
@@ -937,6 +1081,8 @@
       document.addEventListener("pointerdown", this.boundDocumentPointerDown);
       window.addEventListener("resize", this.boundRepositionImageToolbar);
       window.addEventListener("scroll", this.boundRepositionImageToolbar, true);
+      window.addEventListener("resize", this.boundRepositionTableToolbar);
+      window.addEventListener("scroll", this.boundRepositionTableToolbar, true);
 
       if (this.textarea.form) {
         const form = this.textarea.form;
@@ -958,12 +1104,22 @@
     }
 
     handleSelectionChange() {
+      const tableCell = getTableCell(getSelectionAncestor(this.content), this.content);
+      if (tableCell) {
+        this.selectTableCell(tableCell);
+      } else if (this.selectedTableFigure) {
+        this.clearTableSelection();
+      }
+
       if (this.isFocused || selectionInside(this.content)) {
         this.saveSelection();
         this.updateToolbarState();
       }
       if (this.selectedMediaBlock && !this.isDraggingImageResize) {
         this.positionImageResizeToolbar();
+      }
+      if (this.selectedTableFigure) {
+        this.positionTableToolbar();
       }
     }
 
@@ -991,17 +1147,25 @@
     }
 
     handleContentClick(event) {
+      const tableCell = getTableCell(event.target, this.content);
+      if (tableCell) {
+        this.selectTableCell(tableCell);
+        return;
+      }
+
       const mediaBlock = getSelectableMediaBlock(event.target, this.content);
       if (mediaBlock) {
         this.selectMediaBlock(mediaBlock);
         return;
       }
       this.clearMediaSelection();
+      this.clearTableSelection();
     }
 
     handleDocumentPointerDown(event) {
       if (!this.wrapper || !this.wrapper.contains(event.target)) {
         this.clearMediaSelection();
+        this.clearTableSelection();
         return;
       }
 
@@ -1013,9 +1177,18 @@
         return;
       }
 
+      if (this.tableToolbar && this.tableToolbar.contains(event.target)) {
+        return;
+      }
+
+      if (getTableCell(event.target, this.content)) {
+        return;
+      }
+
       if (!getSelectableMediaBlock(event.target, this.content)) {
         this.clearMediaSelection();
       }
+      this.clearTableSelection();
     }
 
     handleDragEnter(event) {
@@ -1125,6 +1298,12 @@
         case "image":
           this.openImageModal();
           return;
+        case "code":
+          this.openCodeModal();
+          return;
+        case "table":
+          this.openTableModal();
+          return;
         case "gallery":
           this.openGalleryModal();
           return;
@@ -1170,25 +1349,55 @@
       this.handleContentChange();
     }
 
+    selectTableCell(cell) {
+      if (!cell || !this.content.contains(cell)) return;
+      const figure = getTableFigure(cell, this.content);
+      if (!figure) return;
+      if (this.selectedTableFigure && this.selectedTableFigure !== figure) {
+        this.selectedTableFigure.classList.remove(...TEMP_SELECTION_CLASSES);
+      }
+      this.clearMediaSelection();
+      this.selectedTableFigure = figure;
+      this.selectedTableCell = cell;
+      this.selectedTableFigure.classList.add("is-selected");
+      this.positionTableToolbar();
+    }
+
+    clearTableSelection() {
+      if (this.selectedTableFigure) {
+        this.selectedTableFigure.classList.remove(...TEMP_SELECTION_CLASSES);
+      }
+      this.selectedTableFigure = null;
+      this.selectedTableCell = null;
+      if (this.tableToolbar) {
+        this.tableToolbar.hidden = true;
+      }
+    }
+
     selectMediaBlock(block) {
       if (!block || !this.content.contains(block)) return;
       if (this.selectedMediaBlock && this.selectedMediaBlock !== block) {
-        this.selectedMediaBlock.classList.remove(...IMAGE_SELECTION_CLASSES);
+        this.selectedMediaBlock.classList.remove(...TEMP_SELECTION_CLASSES);
       }
+      this.clearTableSelection();
       this.selectedMediaBlock = block;
       this.selectedImageFigure = getImageFigure(block, this.content);
-      this.selectedMediaBlock.classList.add("is-selected");
+      this.selectedCodeFigure = getCodeFigure(block, this.content);
+      this.selectedMediaBlock.classList.add("is-selected", "is-media-selected");
       this.updateMediaAlignmentToolbarState();
       this.updateImageResizeToolbarState();
+      this.updateCodeToolbarState();
       this.positionImageResizeToolbar();
     }
 
     clearMediaSelection() {
       if (this.selectedMediaBlock) {
-        this.selectedMediaBlock.classList.remove(...IMAGE_SELECTION_CLASSES);
+        this.selectedMediaBlock.classList.remove(...TEMP_SELECTION_CLASSES);
       }
       this.selectedMediaBlock = null;
       this.selectedImageFigure = null;
+      this.selectedCodeFigure = null;
+      this.updateMainMediaAlignmentButtons();
       if (this.imageResizeToolbar) {
         this.imageResizeToolbar.hidden = true;
       }
@@ -1223,6 +1432,7 @@
         const isActive = value === activeAlignment || (value === "reset" && !activeAlignment);
         button.classList.toggle("is-active", isActive);
       });
+      this.updateMainMediaAlignmentButtons(activeAlignment);
 
       const sizeControls = this.imageResizeToolbar.querySelector('[data-role="size-controls"]');
       const sizeDivider = this.imageResizeToolbar.querySelector('[data-role="size-divider"]');
@@ -1235,6 +1445,30 @@
       }
       if (!supportsImageResize && this.imageResizeHandle) {
         this.imageResizeHandle.hidden = true;
+      }
+    }
+
+    updateMainMediaAlignmentButtons(activeAlignment) {
+      const currentAlignment = activeAlignment !== undefined ? activeAlignment : this.getSelectedMediaAlignment();
+      const hasSelection = Boolean(this.selectedMediaBlock);
+      this.mediaAlignButtons.forEach((button) => {
+        button.disabled = !hasSelection;
+        const value = button.dataset.topMediaAlign;
+        const isActive = hasSelection && (value === currentAlignment || (value === "reset" && !currentAlignment));
+        button.classList.toggle("is-active", isActive);
+      });
+    }
+
+    updateCodeToolbarState() {
+      if (!this.imageResizeToolbar) return;
+      const codeControls = this.imageResizeToolbar.querySelector('[data-role="code-controls"]');
+      const codeDivider = this.imageResizeToolbar.querySelector('[data-role="code-divider"]');
+      const hasCodeBlock = Boolean(this.selectedCodeFigure);
+      if (codeControls) {
+        codeControls.hidden = !hasCodeBlock;
+      }
+      if (codeDivider) {
+        codeDivider.hidden = !hasCodeBlock;
       }
     }
 
@@ -1299,7 +1533,7 @@
       if (size && size !== "reset") {
         this.selectedImageFigure.classList.add(`ollow-image-${size}`);
       }
-      this.selectedImageFigure.classList.add("is-selected");
+      this.selectedImageFigure.classList.add("is-selected", "is-media-selected");
       this.updateImageResizeToolbarState();
       this.positionImageResizeToolbar();
       this.handleContentChange();
@@ -1314,10 +1548,121 @@
       if (alignment && alignment !== "reset") {
         this.selectedMediaBlock.classList.add(`ollow-align-${alignment}`);
       }
-      this.selectedMediaBlock.classList.add("is-selected");
+      this.selectedMediaBlock.classList.add("is-selected", "is-media-selected");
       this.updateMediaAlignmentToolbarState();
       this.positionImageResizeToolbar();
       this.handleContentChange();
+    }
+
+    sanitizeLanguage(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9+._-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
+
+    getCodeBlockData(figure) {
+      if (!figure) {
+        return { language: "", filename: "", code: "" };
+      }
+      const codeElement = figure.querySelector("code");
+      const classLanguage = codeElement
+        ? Array.from(codeElement.classList).find((className) => className.startsWith("language-"))
+        : "";
+      const language = this.sanitizeLanguage(
+        figure.getAttribute("data-language") || (classLanguage ? classLanguage.replace(/^language-/, "") : "")
+      );
+      const caption = figure.querySelector("figcaption");
+      return {
+        language,
+        filename: caption ? caption.textContent || "" : "",
+        code: codeElement ? codeElement.textContent || "" : "",
+      };
+    }
+
+    buildCodeBlockHtml(language, code, filename) {
+      const normalizedLanguage = this.sanitizeLanguage(language);
+      const languageAttr = normalizedLanguage ? ` data-language="${escapeHtml(normalizedLanguage)}"` : "";
+      const languageClass = normalizedLanguage ? ` class="language-${escapeHtml(normalizedLanguage)}"` : "";
+      const captionHtml = filename ? `<figcaption>${escapeHtml(filename)}</figcaption>` : "";
+      return `<figure class="ollow-editor-code" data-type="code"${languageAttr}>${captionHtml}<pre><code${languageClass}>${escapeHtml(code)}</code></pre></figure>`;
+    }
+
+    openCodeModal(existingFigure) {
+      const current = this.getCodeBlockData(existingFigure);
+      this.openModal({
+        title: existingFigure ? "Edit Code Block" : "Insert Code Block",
+        copy: "Add a language, paste code, and optionally label the snippet with a filename or title.",
+        confirmLabel: existingFigure ? "Update Code" : "Insert Code",
+        fields: [
+          {
+            name: "language",
+            label: "Language",
+            type: "text",
+            placeholder: "python",
+            value: current.language,
+            list: ["plaintext", "bash", "css", "html", "javascript", "json", "php", "python", "ruby", "sql", "typescript"],
+          },
+          { name: "filename", label: "Filename or title", type: "text", placeholder: "example.py", value: current.filename },
+          { name: "code", label: "Code", type: "textarea", placeholder: "print('Hello, world')", value: current.code, spellcheck: false },
+        ],
+        onConfirm: (values) => {
+          const code = String(values.code || "");
+          if (!code.trim()) {
+            return "Code is required.";
+          }
+          if (existingFigure && this.content.contains(existingFigure)) {
+            const replacement = this.updateCodeFigure(existingFigure, {
+              language: values.language,
+              code,
+              filename: values.filename,
+            });
+            if (replacement) {
+              this.selectMediaBlock(replacement);
+            }
+            this.handleContentChange();
+            return null;
+          }
+          this.insertHTML(this.buildCodeBlockHtml(values.language, code, values.filename.trim()));
+          return null;
+        },
+      });
+    }
+
+    handleCodeAction(action) {
+      if (!this.selectedCodeFigure || !this.content.contains(this.selectedCodeFigure)) {
+        this.clearMediaSelection();
+        return;
+      }
+
+      if (action === "edit") {
+        this.openCodeModal(this.selectedCodeFigure);
+        return;
+      }
+
+      if (action === "copy") {
+        const { code } = this.getCodeBlockData(this.selectedCodeFigure);
+        if (!code) return;
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          navigator.clipboard.writeText(code).then(
+            () => this.showFeedback("Code copied to clipboard."),
+            () => this.showFeedback("Unable to copy code.")
+          );
+        } else {
+          this.showFeedback("Clipboard copy is not available in this browser.");
+        }
+        return;
+      }
+
+      if (action === "delete") {
+        const figure = this.selectedCodeFigure;
+        this.clearMediaSelection();
+        figure.remove();
+        this.handleContentChange();
+      }
     }
 
     startImageResize(event) {
@@ -1363,7 +1708,7 @@
       document.removeEventListener("pointerup", this.boundImageResizeEnd);
       document.removeEventListener("pointercancel", this.boundImageResizeEnd);
       if (this.selectedImageFigure) {
-        this.selectedImageFigure.classList.add("is-selected");
+        this.selectedImageFigure.classList.add("is-selected", "is-media-selected");
       }
       this.positionImageResizeToolbar();
       this.handleContentChange();
@@ -1384,6 +1729,208 @@
         }
       });
       return chosen;
+    }
+
+    positionTableToolbar() {
+      if (!this.selectedTableFigure || !this.tableToolbar || !this.surface || !this.content.contains(this.selectedTableFigure)) {
+        this.clearTableSelection();
+        return;
+      }
+
+      const surfaceRect = this.surface.getBoundingClientRect();
+      const tableRect = this.selectedTableFigure.getBoundingClientRect();
+      this.tableToolbar.hidden = false;
+      const toolbarRect = this.tableToolbar.getBoundingClientRect();
+      let top = tableRect.top - surfaceRect.top - toolbarRect.height - 10;
+      if (top < 10) {
+        top = tableRect.bottom - surfaceRect.top + 10;
+      }
+      const maxLeft = Math.max(10, surfaceRect.width - toolbarRect.width - 10);
+      const left = Math.min(Math.max(10, tableRect.left - surfaceRect.left), maxLeft);
+      this.tableToolbar.style.top = `${Math.round(top)}px`;
+      this.tableToolbar.style.left = `${Math.round(left)}px`;
+    }
+
+    focusTableCell(cell) {
+      if (!cell) return;
+      const selection = window.getSelection();
+      if (!selection) return;
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      this.selectedTableCell = cell;
+      this.saveSelection();
+    }
+
+    createTableRow(columnCount, useHeader) {
+      const row = document.createElement("tr");
+      for (let index = 0; index < columnCount; index += 1) {
+        const cell = document.createElement(useHeader ? "th" : "td");
+        cell.textContent = useHeader ? `Header ${index + 1}` : "Cell";
+        row.appendChild(cell);
+      }
+      return row;
+    }
+
+    buildTableHtml(rows, columns, caption, hasHeaderRow) {
+      const safeRows = Math.max(1, Math.min(20, Number(rows) || 1));
+      const safeColumns = Math.max(1, Math.min(12, Number(columns) || 1));
+      const totalBodyRows = hasHeaderRow ? Math.max(1, safeRows - 1) : safeRows;
+
+      let thead = "";
+      if (hasHeaderRow) {
+        const headerCells = Array.from({ length: safeColumns }, (_, index) => `<th>Header ${index + 1}</th>`).join("");
+        thead = `<thead><tr>${headerCells}</tr></thead>`;
+      }
+
+      const bodyRows = Array.from({ length: totalBodyRows }, () => {
+        const cells = Array.from({ length: safeColumns }, () => "<td>Cell</td>").join("");
+        return `<tr>${cells}</tr>`;
+      }).join("");
+
+      return `<figure class="ollow-editor-table" data-type="table"><div class="ollow-editor-table-scroll"><table>${thead}<tbody>${bodyRows}</tbody></table></div>${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ""}</figure>`;
+    }
+
+    openTableModal() {
+      this.openModal({
+        title: "Insert Table",
+        copy: "Create an editable table with optional caption and header row.",
+        confirmLabel: "Insert Table",
+        fields: [
+          { name: "rows", label: "Rows", type: "number", placeholder: "3", value: "3" },
+          { name: "columns", label: "Columns", type: "number", placeholder: "4", value: "4" },
+          { name: "caption", label: "Table caption", type: "text", placeholder: "Optional caption" },
+          { name: "headerRow", label: "Header row", type: "checkbox", checked: true },
+        ],
+        onConfirm: (values) => {
+          const rows = Math.max(1, Math.min(20, Number(values.rows) || 0));
+          const columns = Math.max(1, Math.min(12, Number(values.columns) || 0));
+          if (!rows || !columns) {
+            return "Rows and columns are required.";
+          }
+          this.insertHTML(this.buildTableHtml(rows, columns, values.caption.trim(), Boolean(values.headerRow)));
+          return null;
+        },
+      });
+    }
+
+    updateCodeFigure(figure, values) {
+      if (!figure || !this.content.contains(figure)) return null;
+      const replacement = document.createElement("div");
+      replacement.innerHTML = this.buildCodeBlockHtml(values.language, values.code, values.filename.trim());
+      const nextFigure = replacement.firstElementChild;
+      figure.replaceWith(nextFigure);
+      return nextFigure;
+    }
+
+    handleTableAction(action) {
+      if (!this.selectedTableFigure || !this.selectedTableCell) return;
+      const table = this.selectedTableFigure.querySelector("table");
+      const currentRow = this.selectedTableCell.parentElement;
+      if (!table || !currentRow) return;
+
+      const rows = Array.from(table.querySelectorAll("tr"));
+      const currentIndex = rows.indexOf(currentRow);
+      const cellIndex = Array.from(currentRow.children).indexOf(this.selectedTableCell);
+      if (currentIndex === -1 || cellIndex === -1) return;
+
+      let focusCell = this.selectedTableCell;
+      const currentTag = this.selectedTableCell.tagName.toLowerCase();
+
+      switch (action) {
+        case "row-above": {
+          const newRow = this.createTableRow(currentRow.children.length, currentTag === "th");
+          currentRow.parentElement.insertBefore(newRow, currentRow);
+          focusCell = newRow.children[Math.min(cellIndex, newRow.children.length - 1)] || newRow.firstElementChild;
+          break;
+        }
+        case "row-below": {
+          const newRow = this.createTableRow(currentRow.children.length, currentTag === "th");
+          currentRow.insertAdjacentElement("afterend", newRow);
+          focusCell = newRow.children[Math.min(cellIndex, newRow.children.length - 1)] || newRow.firstElementChild;
+          break;
+        }
+        case "delete-row": {
+          const siblingRow = currentRow.nextElementSibling || currentRow.previousElementSibling;
+          currentRow.remove();
+          if (!table.querySelector("tr")) {
+            this.selectedTableFigure.remove();
+            this.clearTableSelection();
+            this.handleContentChange();
+            return;
+          }
+          if (table.tBodies.length && !table.tBodies[0].rows.length) {
+            const fallbackRow = this.createTableRow(table.querySelector("tr").children.length, false);
+            table.tBodies[0].appendChild(fallbackRow);
+          }
+          focusCell = siblingRow ? siblingRow.children[Math.min(cellIndex, siblingRow.children.length - 1)] : table.querySelector("td,th");
+          break;
+        }
+        case "col-left":
+        case "col-right": {
+          Array.from(table.querySelectorAll("tr")).forEach((row) => {
+            const sourceCell = row.children[Math.min(cellIndex, row.children.length - 1)];
+            const newCell = document.createElement(sourceCell && sourceCell.tagName.toUpperCase() === "TH" ? "th" : "td");
+            newCell.textContent = newCell.tagName.toUpperCase() === "TH" ? "Header" : "Cell";
+            const referenceCell = row.children[cellIndex] || row.lastElementChild;
+            if (!referenceCell) {
+              row.appendChild(newCell);
+              return;
+            }
+            if (action === "col-left") {
+              row.insertBefore(newCell, referenceCell);
+            } else {
+              referenceCell.insertAdjacentElement("afterend", newCell);
+            }
+          });
+          focusCell = currentRow.children[action === "col-left" ? cellIndex : cellIndex + 1] || currentRow.lastElementChild;
+          break;
+        }
+        case "delete-col": {
+          Array.from(table.querySelectorAll("tr")).forEach((row) => {
+            if (row.children[cellIndex]) {
+              row.children[cellIndex].remove();
+            }
+          });
+          const hasCells = table.querySelector("td,th");
+          if (!hasCells) {
+            this.selectedTableFigure.remove();
+            this.clearTableSelection();
+            this.handleContentChange();
+            return;
+          }
+          focusCell = currentRow.children[Math.min(cellIndex, currentRow.children.length - 1)] || table.querySelector("td,th");
+          break;
+        }
+        case "delete-table": {
+          const tableFigure = this.selectedTableFigure;
+          this.clearTableSelection();
+          tableFigure.remove();
+          this.handleContentChange();
+          return;
+        }
+        default:
+          return;
+      }
+
+      if (table.tHead && !table.tHead.rows.length) {
+        table.tHead.remove();
+      }
+      if (table.tBodies[0] && !table.tBodies[0].rows.length) {
+        table.tBodies[0].remove();
+      }
+      if (!table.tBodies.length) {
+        table.appendChild(document.createElement("tbody"));
+      }
+
+      const nextCell = focusCell || table.querySelector("td,th");
+      if (nextCell) {
+        this.selectTableCell(nextCell);
+        this.focusTableCell(nextCell);
+      }
+      this.handleContentChange();
     }
 
     setDragState(isActive) {
@@ -1743,9 +2290,23 @@
         if (field.type === "textarea") {
           input = document.createElement("textarea");
           input.className = "nw-modal-textarea";
+        } else if (field.type === "select") {
+          input = document.createElement("select");
+          input.className = "nw-modal-input";
+          (field.options || []).forEach((option) => {
+            const optionElement = document.createElement("option");
+            if (typeof option === "string") {
+              optionElement.value = option;
+              optionElement.textContent = option;
+            } else {
+              optionElement.value = option.value;
+              optionElement.textContent = option.label;
+            }
+            input.appendChild(optionElement);
+          });
         } else {
           input = document.createElement("input");
-          input.className = "nw-modal-input";
+          input.className = field.type === "checkbox" ? "nw-modal-checkbox" : "nw-modal-input";
           input.type = field.type || "text";
         }
         input.id = `${this.id}-${field.name}`;
@@ -1757,8 +2318,25 @@
         if (field.multiple) {
           input.multiple = true;
         }
-        if (field.type !== "file") {
+        if (field.type === "checkbox") {
+          input.checked = Boolean(field.checked);
+        } else if (field.type !== "file") {
           input.value = field.value || "";
+        }
+        if (field.list && input.tagName === "INPUT") {
+          const listId = `${this.id}-${field.name}-list`;
+          input.setAttribute("list", listId);
+          const datalist = document.createElement("datalist");
+          datalist.id = listId;
+          field.list.forEach((item) => {
+            const option = document.createElement("option");
+            option.value = item;
+            datalist.appendChild(option);
+          });
+          wrapper.appendChild(datalist);
+        }
+        if (field.spellcheck === false) {
+          input.spellcheck = false;
         }
         wrapper.appendChild(label);
         wrapper.appendChild(input);
@@ -1779,6 +2357,9 @@
             Object.entries(fieldRefs).map(([key, input]) => {
               if (input.type === "file") {
                 return [key, input.multiple ? Array.from(input.files || []) : (input.files && input.files[0]) || null];
+              }
+              if (input.type === "checkbox") {
+                return [key, Boolean(input.checked)];
               }
               return [key, input.value || ""];
             })
@@ -1912,7 +2493,7 @@
     getHTML() {
       const clone = this.content.cloneNode(true);
       Array.from(clone.querySelectorAll("*")).forEach((element) => {
-        element.classList.remove(...IMAGE_SELECTION_CLASSES);
+        element.classList.remove(...TEMP_SELECTION_CLASSES);
       });
       return sanitizeFragment(clone.innerHTML);
     }
@@ -1923,6 +2504,7 @@
       const clean = source ? sanitizeFragment(source) : "";
       this.content.innerHTML = clean;
       this.clearMediaSelection();
+      this.clearTableSelection();
       this.isDirty = false;
       if (!config.skipSync) {
         this.sync({ autosave: false, silent: Boolean(config.silent) });
@@ -1991,6 +2573,8 @@
       document.removeEventListener("pointerdown", this.boundDocumentPointerDown);
       window.removeEventListener("resize", this.boundRepositionImageToolbar);
       window.removeEventListener("scroll", this.boundRepositionImageToolbar, true);
+      window.removeEventListener("resize", this.boundRepositionTableToolbar);
+      window.removeEventListener("scroll", this.boundRepositionTableToolbar, true);
       document.removeEventListener("pointermove", this.boundImageResizeMove);
       document.removeEventListener("pointerup", this.boundImageResizeEnd);
       document.removeEventListener("pointercancel", this.boundImageResizeEnd);

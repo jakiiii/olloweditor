@@ -27,6 +27,8 @@ Ollow Editor is designed for newsroom-style writing, blog publishing, CMS forms,
 - Image upload from local machine
 - Drag-and-drop image upload
 - Media alignment controls
+- Code block support
+- Table support
 - Image URL insertion
 - Multiple-image gallery block
 - YouTube embed rendering
@@ -159,6 +161,7 @@ Ollow Editor currently supports:
 | Numbered List | Insert ordered list             |
 | Pull Quote    | Insert styled quote block       |
 | Image         | Insert uploaded or URL image    |
+| Code          | Insert editable code block      |
 | Gallery       | Insert multiple uploaded images |
 | Embed         | Insert YouTube video            |
 | Related       | Insert related-content block    |
@@ -232,7 +235,9 @@ Local test flow:
 
 ### Media Alignment
 
-Click a supported media block to show the floating media toolbar. Alignment controls support:
+Click a supported media block to show the floating media toolbar. A smaller alignment group is also visible in the main editor toolbar and becomes enabled when a media block is selected.
+
+Alignment controls support:
 
 - `Left`
 - `Center`
@@ -247,6 +252,7 @@ Supported media blocks:
 - Gallery sections
 - YouTube embed figures
 - Attachment preview blocks
+- Code block figures
 
 Saved alignment classes:
 
@@ -256,7 +262,87 @@ Saved alignment classes:
 - `ollow-align-wide`
 - `ollow-align-full`
 
+The floating toolbar shows:
+
+- alignment controls for all supported media blocks
+- image size controls only for images
+
 Alignment classes are saved in the synced HTML. Temporary selection classes used by the floating toolbar are not saved.
+
+### Code Blocks
+
+Use the `Code` toolbar button to insert a code figure with:
+
+- language input with common suggestions
+- code textarea
+- optional filename or title
+
+Saved output uses clean HTML:
+
+```html
+<figure class="ollow-editor-code" data-type="code" data-language="python">
+  <figcaption>example.py</figcaption>
+  <pre><code class="language-python">print(&quot;Hello&quot;)</code></pre>
+</figure>
+```
+
+Notes:
+
+- code text is HTML-escaped before it is inserted
+- indentation and line breaks are preserved
+- clicking a code block shows floating controls for `Edit Code`, `Copy`, and `Delete`
+- temporary UI selection classes are not saved into the synced textarea HTML
+
+Local test flow:
+
+1. Open `ollow.html`
+2. Click `Code`
+3. Choose a language, add code, and optionally add a filename
+4. Insert the block and confirm formatting is preserved
+5. Click the block to edit, copy, or delete it
+
+### Tables
+
+Use the `Table` toolbar button to insert a table with:
+
+- row count
+- column count
+- optional caption
+- optional header row
+
+Inserted tables use editable HTML like:
+
+```html
+<figure class="ollow-editor-table">
+  <div class="ollow-editor-table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Header 1</th>
+          <th>Header 2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cell</td>
+          <td>Cell</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <figcaption>Optional caption</figcaption>
+</figure>
+```
+
+When the cursor is inside a table, Ollow Editor shows table editing controls for:
+
+- add row above
+- add row below
+- delete row
+- add column left
+- add column right
+- delete column
+- delete table
 
 ---
 

@@ -8,6 +8,8 @@
   const TEXT_COLOR_RECENTS_STORAGE_KEY = "ollow-editor-recent-colors";
   const SPECIAL_CHAR_RECENTS_STORAGE_KEY = "ollow-recent-special-chars";
   const EMOJI_RECENTS_STORAGE_KEY = "ollow-recent-emojis";
+  const FIND_REPLACE_HIGHLIGHT_CLASS = "ollow-find-highlight";
+  const FIND_REPLACE_CURRENT_CLASS = "ollow-find-highlight-current";
   const DEFAULT_FONT_FAMILY_KEY = "arial";
   const DEFAULT_FONT_SIZE = 16;
   const DEFAULT_TEXT_COLOR = "#111827";
@@ -304,6 +306,7 @@
     h3: "Mod+Alt+3",
     h4: "Mod+Alt+4",
     code: "Mod+Shift+C",
+    "find-replace": "Mod+F / Mod+H",
   };
   const ALLOWED_TAGS = new Set([
     "A",
@@ -449,6 +452,10 @@
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
       .replace(/^-|-$/g, "");
+  }
+
+  function escapeRegExp(value) {
+    return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
   function getFontSizeClassName(size) {
@@ -2146,6 +2153,10 @@
       this.imageResizeHandle = null;
       this.tableToolbar = null;
       this.bookmarkToolbar = null;
+      this.findReplacePanel = null;
+      this.findReplaceState = null;
+      this.findReplaceElements = {};
+      this.findReplaceSelectionBeforeOpen = null;
       this.selectedMediaBlock = null;
       this.selectedBookmark = null;
       this.selectedImageFigure = null;
@@ -2277,10 +2288,12 @@
       this.imageResizeHandle = this.buildImageResizeHandle();
       this.tableToolbar = this.buildTableToolbar();
       this.bookmarkToolbar = this.buildBookmarkToolbar();
+      this.findReplacePanel = this.buildFindReplacePanel();
       surface.appendChild(this.imageResizeToolbar);
       surface.appendChild(this.imageResizeHandle);
       surface.appendChild(this.tableToolbar);
       surface.appendChild(this.bookmarkToolbar);
+      surface.appendChild(this.findReplacePanel);
 
       const status = document.createElement("div");
       status.className = "nw-editor-status";
@@ -2939,6 +2952,7 @@
         ["code", "Code", "code_blocks"],
         ["table", "Table", "table"],
         ["bookmark", "Bookmark", "bookmark"],
+        ["find-replace", "Find / Replace", "search"],
         ["special-characters", "Ω Symbols", ""],
         ["emoji", "Emoji", ""],
         ["import-markdown", "Import MD", "upload_file"],
@@ -3147,6 +3161,93 @@
       });
 
       return toolbar;
+    }
+
+    buildFindReplacePanel() {
+      const panel = document.createElement("div");
+      panel.className = "ollow-find-replace-panel";
+      panel.hidden = true;
+      panel.innerHTML = `
+        <div class="ollow-find-replace-row">
+          <input type="search" class="nw-modal-input" data-role="find" placeholder="Find">
+          <input type="text" class="nw-modal-input" data-role="replace" placeholder="Replace">
+          <button type="button" class="nw-modal-button nw-modal-button--secondary" data-action="close">Close</button>
+        </div>
+        <div class="ollow-find-replace-row ollow-find-replace-row--options">
+          <label><input type="checkbox" data-role="match-case"> Match case</label>
+          <label><input type="checkbox" data-role="whole-word"> Whole word</label>
+          <label><input type="checkbox" data-role="highlight-all" checked> Highlight all</label>
+          <label><input type="checkbox" data-role="include-code"> Include code blocks</label>
+          <span class="ollow-find-replace-count" data-role="count">0 of 0</span>
+        </div>
+        <div class="ollow-find-replace-row ollow-find-replace-row--actions">
+          <button type="button" class="nw-modal-button nw-modal-button--secondary" data-action="previous">Previous</button>
+          <button type="button" class="nw-modal-button nw-modal-button--secondary" data-action="next">Next</button>
+          <button type="button" class="nw-modal-button nw-modal-button--secondary" data-action="replace">Replace</button>
+          <button type="button" class="nw-modal-button nw-modal-button--primary" data-action="replace-all">Replace All</button>
+        </div>
+      `;
+
+      this.findReplaceElements = {
+        find: panel.querySelector('[data-role="find"]'),
+        replace: panel.querySelector('[data-role="replace"]'),
+        matchCase: panel.querySelector('[data-role="match-case"]'),
+        wholeWord: panel.querySelector('[data-role="whole-word"]'),
+        highlightAll: panel.querySelector('[data-role="highlight-all"]'),
+        includeCode: panel.querySelector('[data-role="include-code"]'),
+        count: panel.querySelector('[data-role="count"]'),
+      };
+
+      panel.addEventListener("mousedown", (event) => {
+        event.stopPropagation();
+      });
+
+      panel.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-action]");
+        if (!button) return;
+        event.preventDefault();
+        const action = button.dataset.action;
+        if (action === "close") {
+          this.closeFindReplacePanel({ restoreSelection: true });
+        } else if (action === "previous") {
+          this.moveFindMatch(-1);
+        } else if (action === "next") {
+          this.moveFindMatch(1);
+        } else if (action === "replace") {
+          this.replaceCurrentFindMatch();
+        } else if (action === "replace-all") {
+          this.replaceAllFindMatches();
+        }
+      });
+
+      const refresh = () => this.refreshFindReplaceResults({ preserveCurrent: true });
+      this.findReplaceElements.find?.addEventListener("input", refresh);
+      this.findReplaceElements.matchCase?.addEventListener("change", refresh);
+      this.findReplaceElements.wholeWord?.addEventListener("change", refresh);
+      this.findReplaceElements.highlightAll?.addEventListener("change", () => {
+        this.updateFindHighlightVisibility();
+      });
+      this.findReplaceElements.includeCode?.addEventListener("change", refresh);
+      this.findReplaceElements.find?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          this.moveFindMatch(event.shiftKey ? -1 : 1);
+        } else if (event.key === "Escape") {
+          event.preventDefault();
+          this.closeFindReplacePanel({ restoreSelection: true });
+        }
+      });
+      this.findReplaceElements.replace?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          this.replaceCurrentFindMatch();
+        } else if (event.key === "Escape") {
+          event.preventDefault();
+          this.closeFindReplacePanel({ restoreSelection: true });
+        }
+      });
+
+      return panel;
     }
 
     makeDivider() {
@@ -4405,6 +4506,12 @@
       this.addShortcut("mod+shift+c", () => {
         this.openCodeModal();
       });
+      this.addShortcut("mod+f", () => {
+        this.openFindReplacePanel("find");
+      });
+      this.addShortcut("mod+h", () => {
+        this.openFindReplacePanel("replace");
+      });
       this.addShortcut("mod+s", () => {
         this.sync({ autosave: false });
       });
@@ -4652,6 +4759,9 @@
       this.updateMetrics();
       this.updateStatus();
       this.updateToolbarState();
+      if (this.isFindReplaceOpen()) {
+        this.refreshFindReplaceResults({ preserveCurrent: true });
+      }
       this.scheduleAutosave();
       this.dispatch("nationwire-editor:change");
       this.emit("change", { editor: this, html: this.textarea.value });
@@ -4757,6 +4867,10 @@
         return;
       }
 
+      if (this.findReplacePanel && this.findReplacePanel.contains(event.target)) {
+        return;
+      }
+
       if (getTableCell(event.target, this.content)) {
         return;
       }
@@ -4803,6 +4917,11 @@
         this.closeThemeMenu();
         return;
       }
+      if (this.isFindReplaceOpen()) {
+        event.preventDefault();
+        this.closeFindReplacePanel({ restoreSelection: true });
+        return;
+      }
       if (this.modal && !this.modal.hidden) {
         event.preventDefault();
         this.closeModal();
@@ -4828,6 +4947,9 @@
       this.closeFontSizeMenu();
       this.closeTextColorPopover();
       this.closeHighlightPopover();
+      if (this.isFindReplaceOpen()) {
+        this.refreshFindReplaceResults({ preserveCurrent: true });
+      }
       if (this.selectedMediaBlock && !this.isDraggingImageResize) {
         this.positionImageResizeToolbar();
       }
@@ -4933,6 +5055,9 @@
           return;
         case "bookmark":
           this.openBookmarkModal();
+          return;
+        case "find-replace":
+          this.openFindReplacePanel("find");
           return;
         case "special-characters":
           this.openSpecialCharacterModal();
@@ -7113,6 +7238,242 @@
       });
     }
 
+    isFindReplaceOpen() {
+      return Boolean(this.findReplacePanel && !this.findReplacePanel.hidden);
+    }
+
+    getFindReplaceOptions() {
+      return {
+        query: String(this.findReplaceElements.find?.value || ""),
+        replace: String(this.findReplaceElements.replace?.value || ""),
+        matchCase: Boolean(this.findReplaceElements.matchCase?.checked),
+        wholeWord: Boolean(this.findReplaceElements.wholeWord?.checked),
+        highlightAll: Boolean(this.findReplaceElements.highlightAll?.checked),
+        includeCode: Boolean(this.findReplaceElements.includeCode?.checked),
+      };
+    }
+
+    buildFindReplaceRegex(options) {
+      const query = String(options.query || "");
+      if (!query) return null;
+      const escaped = escapeRegExp(query);
+      const pattern = options.wholeWord ? `\\b${escaped}\\b` : escaped;
+      return new RegExp(pattern, options.matchCase ? "g" : "gi");
+    }
+
+    unwrapFindHighlightSpan(span) {
+      if (!span || !span.parentNode) return;
+      const text = document.createTextNode(span.textContent || "");
+      span.replaceWith(text);
+    }
+
+    clearFindReplaceHighlights() {
+      if (!this.content) return;
+      Array.from(this.content.querySelectorAll(`span.${FIND_REPLACE_HIGHLIGHT_CLASS}`)).forEach((span) => {
+        this.unwrapFindHighlightSpan(span);
+      });
+      this.content.classList.remove("ollow-find-hide-others");
+      if (this.findReplaceState) {
+        this.findReplaceState.matches = [];
+        this.findReplaceState.currentIndex = -1;
+      }
+    }
+
+    getFindReplaceTextNodes(includeCode) {
+      const nodes = [];
+      const walker = document.createTreeWalker(this.content, NodeFilter.SHOW_TEXT, {
+        acceptNode: (node) => {
+          if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+          const parent = node.parentNode;
+          if (!(parent instanceof Element)) return NodeFilter.FILTER_REJECT;
+          if (parent.closest(`.${BOOKMARK_CLASS}`)) return NodeFilter.FILTER_REJECT;
+          if (parent.closest(`span.${FIND_REPLACE_HIGHLIGHT_CLASS}`)) return NodeFilter.FILTER_REJECT;
+          if (!includeCode && parent.closest("figure.ollow-editor-code, pre")) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        },
+      });
+      let current = walker.nextNode();
+      while (current) {
+        nodes.push(current);
+        current = walker.nextNode();
+      }
+      return nodes;
+    }
+
+    updateFindReplaceCount() {
+      if (!this.findReplaceElements.count) return;
+      const total = this.findReplaceState && Array.isArray(this.findReplaceState.matches) ? this.findReplaceState.matches.length : 0;
+      const current = total ? (this.findReplaceState.currentIndex + 1) : 0;
+      this.findReplaceElements.count.textContent = `${current} of ${total}`;
+    }
+
+    updateFindHighlightVisibility() {
+      if (!this.content) return;
+      const shouldHighlightAll = Boolean(this.findReplaceElements.highlightAll?.checked);
+      this.content.classList.toggle("ollow-find-hide-others", !shouldHighlightAll);
+    }
+
+    focusCurrentFindMatch() {
+      const matches = this.findReplaceState?.matches || [];
+      const current = matches[this.findReplaceState.currentIndex] || null;
+      matches.forEach((match) => match.classList.remove(FIND_REPLACE_CURRENT_CLASS));
+      if (!current) {
+        this.updateFindReplaceCount();
+        return;
+      }
+      current.classList.add(FIND_REPLACE_CURRENT_CLASS);
+      current.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
+      const selection = window.getSelection();
+      if (selection) {
+        const range = document.createRange();
+        range.selectNodeContents(current);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      this.updateFindReplaceCount();
+      this.updateFindHighlightVisibility();
+    }
+
+    refreshFindReplaceResults(options) {
+      if (!this.findReplacePanel) return;
+      const config = Object.assign({ preserveCurrent: false }, options || {});
+      const previousText = config.preserveCurrent && this.findReplaceState?.matches?.[this.findReplaceState.currentIndex]
+        ? this.findReplaceState.matches[this.findReplaceState.currentIndex].textContent
+        : "";
+      this.clearFindReplaceHighlights();
+
+      const searchOptions = this.getFindReplaceOptions();
+      const regex = this.buildFindReplaceRegex(searchOptions);
+      this.findReplaceState = {
+        options: searchOptions,
+        matches: [],
+        currentIndex: -1,
+      };
+      if (!regex) {
+        this.updateFindReplaceCount();
+        return;
+      }
+
+      this.getFindReplaceTextNodes(searchOptions.includeCode).forEach((textNode) => {
+        const text = textNode.nodeValue || "";
+        regex.lastIndex = 0;
+        const matches = Array.from(text.matchAll(regex));
+        if (!matches.length) return;
+
+        const fragment = document.createDocumentFragment();
+        let lastIndex = 0;
+        matches.forEach((match) => {
+          const start = match.index || 0;
+          const end = start + match[0].length;
+          if (start > lastIndex) {
+            fragment.appendChild(document.createTextNode(text.slice(lastIndex, start)));
+          }
+          const span = document.createElement("span");
+          span.className = FIND_REPLACE_HIGHLIGHT_CLASS;
+          span.textContent = match[0];
+          fragment.appendChild(span);
+          this.findReplaceState.matches.push(span);
+          lastIndex = end;
+        });
+        if (lastIndex < text.length) {
+          fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+        }
+        textNode.parentNode.replaceChild(fragment, textNode);
+      });
+
+      if (this.findReplaceState.matches.length) {
+        const preservedIndex = previousText
+          ? this.findReplaceState.matches.findIndex((match) => match.textContent === previousText)
+          : -1;
+        this.findReplaceState.currentIndex = preservedIndex >= 0 ? preservedIndex : 0;
+      }
+      this.focusCurrentFindMatch();
+    }
+
+    moveFindMatch(direction) {
+      if (!this.findReplaceState?.matches?.length) {
+        this.refreshFindReplaceResults();
+        return;
+      }
+      const total = this.findReplaceState.matches.length;
+      this.findReplaceState.currentIndex = (this.findReplaceState.currentIndex + (direction > 0 ? 1 : -1) + total) % total;
+      this.focusCurrentFindMatch();
+    }
+
+    replaceCurrentFindMatch() {
+      const match = this.findReplaceState?.matches?.[this.findReplaceState.currentIndex];
+      if (!match) return;
+      const replacement = document.createTextNode(this.getFindReplaceOptions().replace);
+      match.replaceWith(replacement);
+      this.handleContentChange();
+      this.refreshFindReplaceResults();
+    }
+
+    replaceAllFindMatches() {
+      const options = this.getFindReplaceOptions();
+      const regex = this.buildFindReplaceRegex(options);
+      if (!regex) return;
+      this.clearFindReplaceHighlights();
+      let replacements = 0;
+      this.getFindReplaceTextNodes(options.includeCode).forEach((textNode) => {
+        const original = textNode.nodeValue || "";
+        regex.lastIndex = 0;
+        if (!regex.test(original)) return;
+        regex.lastIndex = 0;
+        textNode.nodeValue = original.replace(regex, () => {
+          replacements += 1;
+          return options.replace;
+        });
+      });
+      if (replacements) {
+        this.handleContentChange();
+      }
+      this.refreshFindReplaceResults();
+    }
+
+    openFindReplacePanel(mode) {
+      if (!this.findReplacePanel) return;
+      this.saveSelection();
+      if (this.findReplacePanel.hidden) {
+        this.findReplaceSelectionBeforeOpen = this.savedSelection ? this.savedSelection.cloneRange() : null;
+      }
+      const selection = window.getSelection();
+      const selectedText = selection && selection.toString().trim();
+      if (selectedText && this.findReplaceElements.find && !this.findReplaceElements.find.value) {
+        this.findReplaceElements.find.value = selectedText;
+      }
+      this.findReplacePanel.hidden = false;
+      this.refreshFindReplaceResults();
+      const target = mode === "replace" ? this.findReplaceElements.replace : this.findReplaceElements.find;
+      if (target) {
+        window.setTimeout(() => {
+          target.focus();
+          target.select();
+        }, 0);
+      }
+    }
+
+    closeFindReplacePanel(options) {
+      if (!this.findReplacePanel) return;
+      const config = Object.assign({ restoreSelection: false }, options || {});
+      this.clearFindReplaceHighlights();
+      this.findReplacePanel.hidden = true;
+      if (config.restoreSelection) {
+        this.focus();
+        if (this.findReplaceSelectionBeforeOpen) {
+          const selection = window.getSelection();
+          if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(this.findReplaceSelectionBeforeOpen.cloneRange());
+          }
+          this.savedSelection = this.findReplaceSelectionBeforeOpen.cloneRange();
+        } else {
+          this.restoreSelection();
+        }
+      }
+      this.findReplaceSelectionBeforeOpen = null;
+    }
+
     openLinkModal() {
       const selection = window.getSelection();
       const selectedText = selection && selection.toString().trim();
@@ -7858,9 +8219,14 @@
 
     getHTML() {
       const clone = this.content.cloneNode(true);
+      Array.from(clone.querySelectorAll(`span.${FIND_REPLACE_HIGHLIGHT_CLASS}`)).forEach((span) => {
+        const text = clone.ownerDocument.createTextNode(span.textContent || "");
+        span.replaceWith(text);
+      });
       Array.from(clone.querySelectorAll("*")).forEach((element) => {
         element.classList.remove(...TEMP_SELECTION_CLASSES);
         element.classList.remove("is-selected-cell", "is-selected-cell-primary");
+        element.classList.remove(FIND_REPLACE_HIGHLIGHT_CLASS, FIND_REPLACE_CURRENT_CLASS);
       });
       return this.sanitizeHTML(clone.innerHTML);
     }
@@ -7870,6 +8236,7 @@
       const source = String(html || "").trim();
       const clean = source ? this.sanitizeHTML(source) : "";
       this.content.innerHTML = clean;
+      this.closeFindReplacePanel();
       this.clearMediaSelection();
       this.clearTableSelection();
       this.clearBookmarkSelection();
@@ -7897,6 +8264,7 @@
         return clean;
       }
       this.content.innerHTML = clean;
+      this.closeFindReplacePanel();
       this.clearMediaSelection();
       this.clearTableSelection();
       this.clearBookmarkSelection();

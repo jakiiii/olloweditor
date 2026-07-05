@@ -25,6 +25,7 @@ Ollow Editor is designed for newsroom-style writing, blog publishing, CMS forms,
 - Bookmark / anchor support
 - Special character picker
 - Emoji picker
+- Find and replace
 - Bullet and numbered lists
 - Pull quote block
 - Image upload from local machine
@@ -182,6 +183,7 @@ Ollow Editor currently supports:
 | Bookmark      | Insert an internal anchor       |
 | Ω Symbols     | Insert special characters       |
 | Emoji         | Insert emoji                    |
+| Find / Replace| Search and replace text         |
 | Bullet List   | Insert unordered list           |
 | Numbered List | Insert ordered list             |
 | Pull Quote    | Insert styled quote block       |
@@ -327,6 +329,39 @@ Insertion behavior:
 - inserts the chosen emoji at the cursor
 - replaces the current text selection if one exists
 - stores the emoji as normal Unicode text inside the editor HTML
+
+## Find and Replace
+
+Use the `Find / Replace` toolbar button to open the editor search panel.
+
+Options:
+
+- find
+- replace
+- match case
+- whole word
+- highlight all
+- include code blocks
+
+Shortcuts:
+
+- `Ctrl/Cmd + F` opens find
+- `Ctrl/Cmd + H` opens replace
+- `Enter` in the find field goes to the next match
+- `Shift + Enter` goes to the previous match
+- `Esc` closes the panel
+
+Behavior:
+
+- matches are highlighted temporarily in the editor UI
+- the current match gets a stronger highlight
+- code blocks are excluded by default
+- replace and replace all operate on editable text nodes only
+
+Temporary highlight behavior:
+
+- highlight spans use temporary classes only
+- they are stripped before textarea sync and are not saved into output HTML
 
 ## Font Family and Size
 

@@ -1951,6 +1951,73 @@
   background: color-mix(in srgb, var(--ollow-danger) 10%, var(--ollow-surface) 90%);
 }
 
+.ollow-find-replace-panel {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1005;
+  display: grid;
+  gap: 10px;
+  width: min(100%, 560px);
+  border: 1px solid var(--nw-border);
+  border-radius: 14px;
+  background: var(--ollow-surface);
+  box-shadow: var(--ollow-shadow-float);
+  padding: 12px;
+}
+
+.ollow-find-replace-panel[hidden] {
+  display: none !important;
+}
+
+.ollow-find-replace-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.ollow-find-replace-row--options {
+  grid-template-columns: repeat(4, auto) 1fr;
+}
+
+.ollow-find-replace-row--options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--nw-text-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ollow-find-replace-row--actions {
+  grid-template-columns: repeat(4, auto);
+  justify-content: flex-start;
+}
+
+.ollow-find-replace-count {
+  justify-self: end;
+  color: var(--nw-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.nw-editor-content .ollow-find-highlight {
+  border-radius: 4px;
+  background: color-mix(in srgb, #fde68a 78%, transparent 22%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #f59e0b 28%, transparent 72%);
+}
+
+.nw-editor-content .ollow-find-highlight-current {
+  background: color-mix(in srgb, var(--ollow-primary-soft) 86%, transparent 14%);
+  box-shadow: inset 0 0 0 2px var(--ollow-primary-border);
+}
+
+.nw-editor-content.ollow-find-hide-others .ollow-find-highlight:not(.ollow-find-highlight-current) {
+  background: transparent;
+  box-shadow: none;
+}
+
 .nw-editor-content > .ollow-align-left {
   margin-left: 0;
   margin-right: auto;
@@ -2647,6 +2714,18 @@
   .ollow-special-chars-preview {
     grid-template-columns: 72px 1fr;
   }
+
+  .ollow-find-replace-panel {
+    width: min(100%, 520px);
+  }
+
+  .ollow-find-replace-row--options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ollow-find-replace-count {
+    justify-self: start;
+  }
 }
 
 @media (max-width: 640px) {
@@ -2719,6 +2798,24 @@
 
   .ollow-special-chars-preview-char {
     min-height: 64px;
+  }
+
+  .ollow-find-replace-panel {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 12px;
+    width: auto;
+    z-index: 10020;
+  }
+
+  .ollow-find-replace-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ollow-find-replace-row--actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .nw-editor-surface {

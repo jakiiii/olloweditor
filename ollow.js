@@ -1,8 +1,9 @@
 (function () {
-  const DEFAULT_SELECTOR = "textarea[data-nw-editor]";
+  const DEFAULT_SELECTOR = 'textarea[data-nw-editor], textarea[data-ollow-editor]';
   const DEFAULT_AUTOSAVE_DELAY = 1500;
   const DEFAULT_PLACEHOLDER = "Start writing your story here…";
   const DEFAULT_READ_SPEED = 220;
+  const DEFAULT_THEME_STORAGE_KEY = "ollow-editor-theme";
   const ALLOWED_TAGS = new Set([
     "A",
     "BLOCKQUOTE",
@@ -94,6 +95,7 @@
   };
   const instances = new Map();
   const formBindings = new WeakMap();
+  const pluginRegistry = new Map();
 
   function escapeHtml(value) {
     return String(value || "")
@@ -150,6 +152,24 @@
       return typeof candidate === "string" ? candidate.trim() : "";
     }
     return "";
+  }
+
+  function extractUploadUrls(payload) {
+    if (!payload) return [];
+    if (Array.isArray(payload)) {
+      return payload.map((value) => (typeof value === "string" ? value.trim() : "")).filter(Boolean);
+    }
+    if (typeof payload === "object") {
+      if (Array.isArray(payload.urls)) {
+        return payload.urls.map((value) => (typeof value === "string" ? value.trim() : "")).filter(Boolean);
+      }
+      const single = extractUploadUrl(payload);
+      return single ? [single] : [];
+    }
+    if (typeof payload === "string") {
+      return payload.trim() ? [payload.trim()] : [];
+    }
+    return [];
   }
 
   function parseYouTubeTime(value) {
@@ -218,6 +238,48 @@
       .join("");
   }
 
+  function resolveSanitizerRules(rules) {
+    const extensions = {
+      tags: new Set(),
+      classes: new Set(),
+      attributes: new Map(),
+      transforms: [],
+    };
+
+    Array.from(rules || []).forEach((rule) => {
+      if (!rule) return;
+      if (typeof rule === "function") {
+        extensions.transforms.push(rule);
+        return;
+      }
+      if (Array.isArray(rule.tags)) {
+        rule.tags.forEach((tag) => {
+          if (tag) extensions.tags.add(String(tag).toUpperCase());
+        });
+      }
+      if (Array.isArray(rule.classes)) {
+        rule.classes.forEach((className) => {
+          if (className) extensions.classes.add(String(className));
+        });
+      }
+      if (rule.attributes && typeof rule.attributes === "object") {
+        Object.entries(rule.attributes).forEach(([tag, attrs]) => {
+          const key = String(tag || "*").toUpperCase();
+          const existing = extensions.attributes.get(key) || new Set();
+          Array.from(attrs || []).forEach((attr) => {
+            if (attr) existing.add(String(attr).toLowerCase());
+          });
+          extensions.attributes.set(key, existing);
+        });
+      }
+      if (typeof rule.transform === "function") {
+        extensions.transforms.push(rule.transform);
+      }
+    });
+
+    return extensions;
+  }
+
   function parseInlineMarkdown(text) {
     const source = String(text || "");
     const codeTokens = [];
@@ -270,6 +332,23 @@
       return watch.toString();
     } catch (error) {
       return "";
+    }
+  }
+
+  function readStoredTheme(storageKey) {
+    try {
+      const value = window.localStorage.getItem(storageKey || DEFAULT_THEME_STORAGE_KEY);
+      return ["light", "dark", "auto"].includes(value) ? value : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function writeStoredTheme(storageKey, value) {
+    try {
+      window.localStorage.setItem(storageKey || DEFAULT_THEME_STORAGE_KEY, value);
+    } catch (error) {
+      // Ignore storage failures.
     }
   }
 
@@ -550,12 +629,13 @@
     return blocks.filter(Boolean).join("\n\n").replace(/\n{3,}/g, "\n\n").trim();
   }
 
-  function sanitizeFragment(input) {
+  function sanitizeFragment(input, rules) {
     const source = String(input || "");
     if (!source.trim()) return "";
     const parser = new DOMParser();
     const doc = parser.parseFromString(source, "text/html");
     const fragment = document.createDocumentFragment();
+    const sanitizerExtensions = resolveSanitizerRules(rules);
 
     function cloneAllowed(node) {
       if (node.nodeType === Node.TEXT_NODE) {
@@ -571,7 +651,7 @@
         return document.createDocumentFragment();
       }
 
-      if (!ALLOWED_TAGS.has(tagName)) {
+      if (!ALLOWED_TAGS.has(tagName) && !sanitizerExtensions.tags.has(tagName)) {
         const wrapper = document.createDocumentFragment();
         Array.from(node.childNodes).forEach((child) => {
           wrapper.appendChild(cloneAllowed(child));
@@ -621,7 +701,7 @@
         if (name === "class") {
           const classes = value
             .split(/\s+/)
-            .filter((className) => CLASS_ALLOWLIST.has(className) || /^language-[a-z0-9+._-]+$/i.test(className));
+            .filter((className) => CLASS_ALLOWLIST.has(className) || sanitizerExtensions.classes.has(className) || /^language-[a-z0-9+._-]+$/i.test(className));
           if (classes.length) {
             clean.setAttribute("class", classes.join(" "));
           }
@@ -634,6 +714,13 @@
         }
 
         if (name === "data-language" && tagName === "FIGURE") {
+          clean.setAttribute(name, value);
+          return;
+        }
+
+        const extraTagAttrs = sanitizerExtensions.attributes.get(tagName) || new Set();
+        const extraGlobalAttrs = sanitizerExtensions.attributes.get("*") || new Set();
+        if (extraTagAttrs.has(name) || extraGlobalAttrs.has(name)) {
           clean.setAttribute(name, value);
           return;
         }
@@ -680,6 +767,13 @@
 
     const container = document.createElement("div");
     container.appendChild(fragment);
+    sanitizerExtensions.transforms.forEach((transform) => {
+      try {
+        transform(container);
+      } catch (error) {
+        console.warn("OllowEditor sanitizer rule failed.", error);
+      }
+    });
     return normalizeOutputHtml(container.innerHTML);
   }
 
@@ -768,6 +862,38 @@
       justify: ["M3 5h14", "M3 8h14", "M3 11h14", "M3 14h14"],
     };
     return `<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">${(paths[alignment] || paths.left).map((path) => `<path d="${path}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>`).join("")}</svg>`;
+  }
+
+  function getThemeIcon(theme) {
+    if (theme === "dark") {
+      return `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 1 0 9.8 9.8Z"></path>
+        </svg>
+      `;
+    }
+    if (theme === "auto") {
+      return `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="12" rx="2"></rect>
+          <path d="M8 20h8"></path>
+          <path d="M12 16v4"></path>
+        </svg>
+      `;
+    }
+    return `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2.5"></path>
+        <path d="M12 19.5V22"></path>
+        <path d="m4.93 4.93 1.77 1.77"></path>
+        <path d="m17.3 17.3 1.77 1.77"></path>
+        <path d="M2 12h2.5"></path>
+        <path d="M19.5 12H22"></path>
+        <path d="m4.93 19.07 1.77-1.77"></path>
+        <path d="m17.3 6.7 1.77-1.77"></path>
+      </svg>
+    `;
   }
 
   function getSelectionAncestor(root) {
@@ -994,7 +1120,11 @@
       this.statusSave = null;
       this.statusDot = null;
       this.toolbarButtons = {};
+      this.toolbarRows = {};
+      this.toolbarGroups = {};
       this.headingSelect = null;
+      this.themeToggleButton = null;
+      this.themeMenu = null;
       this.modal = null;
       this.modalTitle = null;
       this.modalCopy = null;
@@ -1008,9 +1138,19 @@
       this.dragDepth = 0;
       this.isDirty = false;
       this.isFocused = false;
+      this.theme = options.theme || "light";
+      this.themeStorageKey = options.themeStorageKey || DEFAULT_THEME_STORAGE_KEY;
+      this.persistTheme = Boolean(options.persistTheme);
+      this.systemThemeQuery = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+      this.commands = new Map();
+      this.eventHandlers = new Map();
+      this.shortcuts = [];
+      this.sanitizerRules = [];
       this.boundSelectionChange = this.handleSelectionChange.bind(this);
       this.boundModalClose = this.closeModal.bind(this);
       this.boundDocumentPointerDown = this.handleDocumentPointerDown.bind(this);
+      this.boundDocumentKeydown = this.handleDocumentKeydown.bind(this);
+      this.boundSystemThemeChange = this.handleSystemThemeChange.bind(this);
       this.boundRepositionImageToolbar = this.positionImageResizeToolbar.bind(this);
       this.boundImageResizeMove = this.handleImageResizeMove.bind(this);
       this.boundImageResizeEnd = this.handleImageResizeEnd.bind(this);
@@ -1022,11 +1162,13 @@
       this.hideSource();
       this.setHTML(this.textarea.value || "", { skipSync: true, skipAutosave: true });
       this.bind();
+      this.runConfiguredPlugins();
       this.sync({ autosave: false, silent: true });
       this.updateMetrics();
       this.updateToolbarState();
       this.updateStatus();
       this.dispatch("nationwire-editor:ready");
+      this.emit("ready", { editor: this });
       return this;
     }
 
@@ -1034,6 +1176,7 @@
       this.wrapper = document.createElement("div");
       this.wrapper.className = "nw-editor";
       this.wrapper.dataset.editorId = this.id;
+      this.applyTheme();
 
       const card = document.createElement("div");
       card.className = "nw-editor-card";
@@ -1102,9 +1245,11 @@
     buildToolbarPrimary() {
       const row = document.createElement("div");
       row.className = "nw-toolbar-row";
+      this.toolbarRows.primary = row;
 
       const groupUndo = document.createElement("div");
       groupUndo.className = "nw-toolbar-group";
+      this.toolbarGroups.undo = groupUndo;
       groupUndo.appendChild(this.makeToolbarButton("undo", "Undo", '<span class="material-symbols-outlined">undo</span>'));
       groupUndo.appendChild(this.makeToolbarButton("redo", "Redo", '<span class="material-symbols-outlined">redo</span>'));
 
@@ -1120,12 +1265,14 @@
 
       const groupText = document.createElement("div");
       groupText.className = "nw-toolbar-group";
+      this.toolbarGroups.text = groupText;
       groupText.appendChild(this.makeToolbarButton("h2", "Heading 2", "H2", "nw-toolbar-button nw-text-button"));
       groupText.appendChild(this.makeToolbarButton("h3", "Heading 3", "H3", "nw-toolbar-button nw-text-button"));
       groupText.appendChild(this.makeToolbarButton("h4", "Heading 4", "H4", "nw-toolbar-button nw-text-button"));
 
       const groupInline = document.createElement("div");
       groupInline.className = "nw-toolbar-group";
+      this.toolbarGroups.inline = groupInline;
       groupInline.appendChild(this.makeToolbarButton("bold", "Bold", "B", "nw-toolbar-button nw-text-button"));
       groupInline.appendChild(this.makeToolbarButton("italic", "Italic", "I", "nw-toolbar-button nw-text-button"));
       groupInline.appendChild(this.makeToolbarButton("underline", "Underline", "U", "nw-toolbar-button nw-text-button"));
@@ -1134,6 +1281,7 @@
 
       const groupBlocks = document.createElement("div");
       groupBlocks.className = "nw-toolbar-group";
+      this.toolbarGroups.blocks = groupBlocks;
       groupBlocks.appendChild(this.makeToolbarButton("bulleted-list", "Bullet list", '<span class="material-symbols-outlined">format_list_bulleted</span>'));
       groupBlocks.appendChild(this.makeToolbarButton("numbered-list", "Numbered list", '<span class="material-symbols-outlined">format_list_numbered</span>'));
       groupBlocks.appendChild(this.makeToolbarButton("quote", "Quote", '<span class="material-symbols-outlined">format_quote</span>'));
@@ -1141,10 +1289,16 @@
 
       const groupMediaAlign = document.createElement("div");
       groupMediaAlign.className = "nw-toolbar-group nw-toolbar-group--media-align";
+      this.toolbarGroups.alignment = groupMediaAlign;
       groupMediaAlign.appendChild(this.makeToolbarButton("align-left", "Align left", getAlignmentIcon("left")));
       groupMediaAlign.appendChild(this.makeToolbarButton("align-center", "Align center", getAlignmentIcon("center")));
       groupMediaAlign.appendChild(this.makeToolbarButton("align-right", "Align right", getAlignmentIcon("right")));
       groupMediaAlign.appendChild(this.makeToolbarButton("align-justify", "Justify", getAlignmentIcon("justify")));
+
+      const groupTheme = document.createElement("div");
+      groupTheme.className = "nw-toolbar-group nw-toolbar-group--theme";
+      this.toolbarGroups.theme = groupTheme;
+      groupTheme.appendChild(this.buildThemeControl());
 
       row.appendChild(groupUndo);
       row.appendChild(this.makeDivider());
@@ -1156,12 +1310,65 @@
       row.appendChild(groupBlocks);
       row.appendChild(this.makeDivider());
       row.appendChild(groupMediaAlign);
+      row.appendChild(groupTheme);
       return row;
+    }
+
+    buildThemeControl() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "ollow-theme-control";
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "nw-toolbar-button ollow-theme-toggle";
+      button.title = "Change editor theme";
+      button.setAttribute("aria-label", "Change editor theme");
+      button.setAttribute("aria-haspopup", "menu");
+      button.setAttribute("aria-expanded", "false");
+      button.dataset.action = "theme-toggle";
+      button.innerHTML = getThemeIcon(this.theme);
+      button.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        this.toggleThemeMenu();
+      });
+
+      const menu = document.createElement("div");
+      menu.className = "ollow-theme-menu";
+      menu.hidden = true;
+      menu.setAttribute("role", "menu");
+      menu.setAttribute("aria-label", "Editor theme");
+      menu.innerHTML = `
+        <button type="button" role="menuitemradio" data-theme-choice="light">${getThemeIcon("light")}<span>Light</span></button>
+        <button type="button" role="menuitemradio" data-theme-choice="dark">${getThemeIcon("dark")}<span>Dark</span></button>
+        <button type="button" role="menuitemradio" data-theme-choice="auto">${getThemeIcon("auto")}<span>Auto</span></button>
+      `;
+      menu.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      menu.addEventListener("click", (event) => {
+        const choice = event.target.closest("[data-theme-choice]");
+        if (!choice) return;
+        event.preventDefault();
+        this.setTheme(choice.dataset.themeChoice);
+        this.closeThemeMenu();
+      });
+
+      this.themeToggleButton = button;
+      this.themeMenu = menu;
+      wrapper.appendChild(button);
+      wrapper.appendChild(menu);
+      this.updateThemeControlState();
+      return wrapper;
     }
 
     buildToolbarInsert() {
       const row = document.createElement("div");
       row.className = "nw-insert-row";
+      this.toolbarRows.insert = row;
+      this.toolbarGroups.insert = row;
 
       const insertItems = [
         ["pull-quote", "Pull Quote", "format_quote"],
@@ -1340,6 +1547,266 @@
       return button;
     }
 
+    getTheme() {
+      return this.theme;
+    }
+
+    getEffectiveTheme() {
+      if (this.theme === "auto") {
+        return this.systemThemeQuery && this.systemThemeQuery.matches ? "dark" : "light";
+      }
+      return this.theme === "dark" ? "dark" : "light";
+    }
+
+    applyTheme() {
+      if (!this.wrapper) return;
+      this.wrapper.classList.remove("ollow-theme-light", "ollow-theme-dark", "ollow-theme-auto");
+      this.wrapper.classList.add(`ollow-theme-${this.theme}`);
+      this.wrapper.dataset.theme = this.getEffectiveTheme();
+      this.updateThemeControlState();
+    }
+
+    handleSystemThemeChange() {
+      if (this.theme === "auto") {
+        this.applyTheme();
+        this.dispatchThemeChange();
+      }
+    }
+
+    setTheme(theme) {
+      const nextTheme = ["light", "dark", "auto"].includes(theme) ? theme : "light";
+      if (this.theme === nextTheme) {
+        this.applyTheme();
+        return this.theme;
+      }
+      this.theme = nextTheme;
+      if (this.persistTheme) {
+        writeStoredTheme(this.themeStorageKey, this.theme);
+      }
+      this.applyTheme();
+      this.dispatchThemeChange();
+      return this.theme;
+    }
+
+    updateThemeControlState() {
+      if (this.themeToggleButton) {
+        this.themeToggleButton.innerHTML = getThemeIcon(this.theme);
+        this.themeToggleButton.title = `Theme: ${this.theme[0].toUpperCase()}${this.theme.slice(1)}`;
+        this.themeToggleButton.setAttribute("aria-label", `Theme: ${this.theme}`);
+      }
+      if (!this.themeMenu) return;
+      Array.from(this.themeMenu.querySelectorAll("[data-theme-choice]")).forEach((button) => {
+        const isActive = button.dataset.themeChoice === this.theme;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-checked", isActive ? "true" : "false");
+      });
+    }
+
+    openThemeMenu() {
+      if (!this.themeMenu || !this.themeToggleButton) return;
+      this.updateThemeControlState();
+      this.themeMenu.hidden = false;
+      this.themeToggleButton.setAttribute("aria-expanded", "true");
+    }
+
+    closeThemeMenu() {
+      if (!this.themeMenu || !this.themeToggleButton) return;
+      this.themeMenu.hidden = true;
+      this.themeToggleButton.setAttribute("aria-expanded", "false");
+    }
+
+    toggleThemeMenu() {
+      if (!this.themeMenu) return;
+      if (this.themeMenu.hidden) {
+        this.openThemeMenu();
+      } else {
+        this.closeThemeMenu();
+      }
+    }
+
+    dispatchThemeChange() {
+      const detail = {
+        theme: this.theme,
+        resolvedTheme: this.getEffectiveTheme(),
+        editor: this,
+        textarea: this.textarea,
+      };
+      this.textarea.dispatchEvent(
+        new CustomEvent("ollow-editor:themechange", {
+          bubbles: true,
+          detail,
+        })
+      );
+      this.emit("themechange", detail);
+    }
+
+    createPluginButton(config) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = config.className || "nw-toolbar-button";
+      button.title = config.title || config.label || config.name || "";
+      button.setAttribute("aria-label", config.title || config.label || config.name || "");
+      if (config.icon && /<[^>]+>/.test(config.icon)) {
+        button.innerHTML = config.icon;
+      } else if (config.icon) {
+        button.textContent = config.icon;
+      } else {
+        button.textContent = config.label || config.name || "";
+      }
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (typeof config.onClick === "function") {
+          config.onClick(this, event);
+          return;
+        }
+        if (config.command) {
+          this.runCommand(config.command, config.payload);
+        }
+      });
+      return button;
+    }
+
+    getToolbarGroup(name) {
+      return this.toolbarGroups[name] || null;
+    }
+
+    addToolbarGroup(config) {
+      const rowName = config && config.row === "insert" ? "insert" : "primary";
+      const row = this.toolbarRows[rowName];
+      if (!row) return null;
+      const groupName = (config && config.name) || `plugin-group-${Date.now()}`;
+      if (this.toolbarGroups[groupName]) {
+        return this.toolbarGroups[groupName];
+      }
+      const group = document.createElement("div");
+      group.className = config.className || "nw-toolbar-group";
+      this.toolbarGroups[groupName] = group;
+      row.appendChild(group);
+      return group;
+    }
+
+    addToolbarButton(config) {
+      const groupName = (config && config.group) || "insert";
+      const rowName = config && config.row ? config.row : (groupName === "insert" ? "insert" : "primary");
+      const group = this.getToolbarGroup(groupName) || this.addToolbarGroup({ name: groupName, row: rowName });
+      if (!group) return null;
+      const button = this.createPluginButton(config || {});
+      group.appendChild(button);
+      return button;
+    }
+
+    addCommand(name, handler) {
+      if (!name || typeof handler !== "function") return;
+      this.commands.set(name, handler);
+    }
+
+    runCommand(name, payload) {
+      const command = this.commands.get(name);
+      if (!command) return undefined;
+      return command(payload, this);
+    }
+
+    on(eventName, handler) {
+      if (!eventName || typeof handler !== "function") return () => {};
+      const handlers = this.eventHandlers.get(eventName) || new Set();
+      handlers.add(handler);
+      this.eventHandlers.set(eventName, handlers);
+      return () => this.off(eventName, handler);
+    }
+
+    off(eventName, handler) {
+      const handlers = this.eventHandlers.get(eventName);
+      if (!handlers) return;
+      handlers.delete(handler);
+      if (!handlers.size) {
+        this.eventHandlers.delete(eventName);
+      }
+    }
+
+    emit(eventName, detail) {
+      const handlers = this.eventHandlers.get(eventName);
+      if (handlers) {
+        handlers.forEach((handler) => {
+          try {
+            handler(detail, this);
+          } catch (error) {
+            console.warn(`OllowEditor event handler failed for "${eventName}".`, error);
+          }
+        });
+      }
+      return detail;
+    }
+
+    normalizeShortcut(shortcut) {
+      return String(shortcut || "")
+        .toLowerCase()
+        .split("+")
+        .map((token) => token.trim())
+        .filter(Boolean)
+        .join("+");
+    }
+
+    addShortcut(shortcut, handler) {
+      if (!shortcut || typeof handler !== "function") return;
+      this.shortcuts.push({
+        shortcut: this.normalizeShortcut(shortcut),
+        handler,
+      });
+    }
+
+    eventToShortcut(event) {
+      const parts = [];
+      if (event.metaKey || event.ctrlKey) parts.push("mod");
+      if (event.shiftKey) parts.push("shift");
+      if (event.altKey) parts.push("alt");
+      let key = String(event.key || "").toLowerCase();
+      if (key === " ") key = "space";
+      if (!["shift", "control", "meta", "alt"].includes(key)) {
+        parts.push(key);
+      }
+      return parts.join("+");
+    }
+
+    handleShortcutKeydown(event) {
+      const pressed = this.eventToShortcut(event);
+      for (const shortcut of this.shortcuts) {
+        if (shortcut.shortcut === pressed) {
+          event.preventDefault();
+          try {
+            shortcut.handler(event, this);
+          } catch (error) {
+            console.warn(`OllowEditor shortcut failed for "${pressed}".`, error);
+          }
+          return;
+        }
+      }
+    }
+
+    addSanitizerRule(rule) {
+      if (!rule) return;
+      this.sanitizerRules.push(rule);
+    }
+
+    sanitizeHTML(html) {
+      return sanitizeFragment(html, this.sanitizerRules);
+    }
+
+    runConfiguredPlugins() {
+      const pluginOptions = this.options.plugins || {};
+      Object.entries(pluginOptions).forEach(([name, options]) => {
+        const plugin = pluginRegistry.get(name);
+        if (!plugin) {
+          console.warn(`OllowEditor plugin "${name}" is not registered.`);
+          return;
+        }
+        try {
+          plugin(this, options === true ? {} : options || {});
+        } catch (error) {
+          console.warn(`OllowEditor plugin "${name}" failed during initialization.`, error);
+        }
+      });
+    }
+
     hideSource() {
       this.textarea.classList.add("nw-editor-source");
       this.textarea.dataset.nwEditorBound = "true";
@@ -1422,8 +1889,20 @@
         this.updateToolbarState();
       });
 
+      this.content.addEventListener("keydown", (event) => {
+        this.handleShortcutKeydown(event);
+      });
+
       document.addEventListener("selectionchange", this.boundSelectionChange);
       document.addEventListener("pointerdown", this.boundDocumentPointerDown);
+      document.addEventListener("keydown", this.boundDocumentKeydown);
+      if (this.systemThemeQuery) {
+        if (typeof this.systemThemeQuery.addEventListener === "function") {
+          this.systemThemeQuery.addEventListener("change", this.boundSystemThemeChange);
+        } else if (typeof this.systemThemeQuery.addListener === "function") {
+          this.systemThemeQuery.addListener(this.boundSystemThemeChange);
+        }
+      }
       window.addEventListener("resize", this.boundRepositionImageToolbar);
       window.addEventListener("scroll", this.boundRepositionImageToolbar, true);
       window.addEventListener("resize", this.boundRepositionTableToolbar);
@@ -1480,13 +1959,14 @@
       this.updateToolbarState();
       this.scheduleAutosave();
       this.dispatch("nationwire-editor:change");
+      this.emit("change", { editor: this, html: this.textarea.value });
     }
 
     handlePaste(event) {
       event.preventDefault();
       const html = event.clipboardData && event.clipboardData.getData("text/html");
       const text = event.clipboardData && event.clipboardData.getData("text/plain");
-      const clean = html ? sanitizeFragment(html) : sanitizePlainText(text);
+      const clean = html ? this.sanitizeHTML(html) : sanitizePlainText(text);
       if (!clean) return;
       this.insertHTML(clean);
     }
@@ -1509,10 +1989,20 @@
 
     handleDocumentPointerDown(event) {
       if (!this.wrapper || !this.wrapper.contains(event.target)) {
+        this.closeThemeMenu();
         this.clearMediaSelection();
         this.clearTableSelection();
         return;
       }
+
+      if (
+        (this.themeMenu && this.themeMenu.contains(event.target)) ||
+        (this.themeToggleButton && this.themeToggleButton.contains(event.target))
+      ) {
+        return;
+      }
+
+      this.closeThemeMenu();
 
       if (this.imageResizeToolbar && this.imageResizeToolbar.contains(event.target)) {
         return;
@@ -1534,6 +2024,13 @@
         this.clearMediaSelection();
       }
       this.clearTableSelection();
+    }
+
+    handleDocumentKeydown(event) {
+      if (event.key !== "Escape") return;
+      if (this.themeMenu && !this.themeMenu.hidden) {
+        this.closeThemeMenu();
+      }
     }
 
     handleDragEnter(event) {
@@ -2402,49 +2899,122 @@
     }
 
     fileToDataURL(file) {
-      return readImageFileAsDataURL(file);
+      if (!(file instanceof File)) {
+        return Promise.reject(new Error("A file is required."));
+      }
+      return readFileAsDataURL(file);
     }
 
-    async uploadImageFile(file) {
-      if (typeof this.options.uploadAdapter === "function") {
-        const result = await this.options.uploadAdapter(file, this);
-        const url = extractUploadUrl(result);
-        if (!url || !isSafeUrl(url, "IMG")) {
-          throw new Error("The upload adapter must return a valid image URL.");
-        }
-        return url;
+    getUploadUrl(type) {
+      const upload = this.options.upload || {};
+      if (type === "gallery") return upload.galleryUrl || upload.imageUrl || "";
+      if (type === "attachment") return upload.attachmentUrl || "";
+      return upload.imageUrl || "";
+    }
+
+    getCSRFToken() {
+      const upload = this.options.upload || {};
+      if (upload.csrfToken) return String(upload.csrfToken);
+
+      const hiddenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+      if (hiddenInput && hiddenInput.value) {
+        return hiddenInput.value;
       }
 
-      if (this.options.uploadUrl) {
-        const formData = new FormData();
-        formData.append(this.options.uploadFieldName || "image", file);
+      const cookieMatch = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+      return cookieMatch ? decodeURIComponent(cookieMatch[1]) : "";
+    }
 
-        const response = await fetch(this.options.uploadUrl, {
-          method: this.options.uploadMethod || "POST",
-          headers: this.options.uploadHeaders || {},
+    async uploadFile(file, type) {
+      const files = await this.uploadFiles([file], type);
+      return files[0] || "";
+    }
+
+    async uploadFiles(files, type) {
+      const fileList = Array.from(files || []).filter((file) => file instanceof File);
+      if (!fileList.length) {
+        throw new Error("A file is required.");
+      }
+
+      if ((type === "image" || type === "gallery") && fileList.some((file) => !this.isImageFile(file))) {
+        throw new Error("Only image files are supported.");
+      }
+
+      const upload = this.options.upload || {};
+      const uploadUrl = this.getUploadUrl(type);
+      const allowFallback = Boolean(upload.allowFallback);
+
+      if (type === "gallery" && !upload.galleryUrl && upload.imageUrl) {
+        return Promise.all(fileList.map((item) => this.uploadFile(item, "image")));
+      }
+
+      if (!uploadUrl) {
+        if (type === "attachment") {
+          throw new Error("Attachment upload URL is not configured.");
+        }
+        return Promise.all(fileList.map((file) => this.fileToDataURL(file)));
+      }
+
+      const formData = new FormData();
+      const fieldName = type === "attachment" ? "file" : "image";
+      fileList.forEach((file) => {
+        formData.append(fieldName, file);
+      });
+
+      const headers = Object.assign({}, upload.headers || {});
+      const csrfHeaderName = upload.csrfHeaderName || "X-CSRFToken";
+      const csrfHeaderValue = upload.csrfHeaderValue || this.getCSRFToken();
+      if (csrfHeaderName && csrfHeaderValue && !headers[csrfHeaderName]) {
+        headers[csrfHeaderName] = csrfHeaderValue;
+      }
+
+      this.showFeedback(type === "attachment" ? "Uploading attachment..." : "Uploading files...");
+      try {
+        const response = await fetch(uploadUrl, {
+          method: upload.method || "POST",
+          headers,
           body: formData,
+          credentials: upload.credentials || "same-origin",
         });
 
+        let payload = null;
+        const responseType = response.headers.get("content-type") || "";
+        if (responseType.includes("application/json")) {
+          payload = await response.json();
+        } else {
+          const text = await response.text();
+          payload = text ? { detail: text } : null;
+        }
+
         if (!response.ok) {
-          throw new Error("Image upload failed.");
+          const serverMessage = payload && (payload.error || payload.detail || payload.message);
+          throw new Error(serverMessage || `Upload failed with status ${response.status}.`);
         }
 
-        const payload = await response.json();
-        const url = extractUploadUrl(payload);
-        if (!url || !isSafeUrl(url, "IMG")) {
-          throw new Error("The upload endpoint must return a valid image URL.");
+        const urls = extractUploadUrls(payload);
+        const validUrls = urls.filter((url) => isSafeUrl(url, type === "attachment" ? "A" : "IMG"));
+        if (!validUrls.length) {
+          throw new Error("The upload endpoint must return a valid URL.");
         }
-        return url;
+        if (fileList.length > 1 && validUrls.length !== fileList.length) {
+          throw new Error("The upload endpoint returned an unexpected number of files.");
+        }
+        return validUrls;
+      } catch (error) {
+        if (allowFallback && type !== "attachment") {
+          return Promise.all(fileList.map((item) => this.fileToDataURL(item)));
+        }
+        throw error;
+      } finally {
+        this.clearFeedback();
       }
-
-      return this.fileToDataURL(file);
     }
 
     async resolveImageSource(file) {
       if (!this.isImageFile(file)) {
         throw new Error("Only image files are supported.");
       }
-      return this.uploadImageFile(file);
+      return this.uploadFile(file, "image");
     }
 
     buildDroppedImageHtml(src) {
@@ -2595,10 +3165,7 @@
 
           const title = values.title.trim() || "Gallery";
           const note = values.caption.trim();
-          const images = [];
-          for (const file of values.files) {
-            images.push(await this.resolveImageSource(file));
-          }
+          const images = await this.uploadFiles(values.files, "gallery");
           this.insertHTML(
             `<section class="ollow-media ollow-gallery" data-type="gallery"><div class="ollow-gallery-header"><h3>${escapeHtml(title)}</h3>${note ? `<p>${escapeHtml(note)}</p>` : ""}</div><div class="ollow-gallery-grid">${images.map((src, index) => `<figure><img src="${escapeHtml(src)}" alt="${escapeHtml(`${title} image ${index + 1}`)}"></figure>`).join("")}</div></section>`
           );
@@ -2672,19 +3239,23 @@
     openAttachmentModal() {
       this.openModal({
         title: "Insert Attachment",
-        copy: "Add an attachment placeholder with title, URL, type, and visibility.",
+        copy: "Add an attachment placeholder with title, uploaded file or URL, type, and visibility.",
         confirmLabel: "Insert Attachment",
         fields: [
           { name: "title", label: "Attachment title", type: "text", placeholder: "Attachment title" },
+          { name: "file", label: "Upload attachment", type: "file" },
           { name: "url", label: "Attachment URL", type: "url", placeholder: "https://example.com/report.pdf" },
           { name: "type", label: "Attachment type", type: "text", placeholder: "PDF / Report / Document" },
           { name: "visibility", label: "Visibility", type: "text", placeholder: "Public / Private", value: "Public" },
         ],
-        onConfirm: (values) => {
+        onConfirm: async (values) => {
           if (!values.title.trim()) {
             return "Attachment title is required.";
           }
-          const url = values.url.trim();
+          let url = values.url.trim();
+          if (values.file) {
+            url = await this.uploadFile(values.file, "attachment");
+          }
           if (url && !isSafeUrl(url, "A")) {
             return "Enter a valid attachment URL.";
           }
@@ -3001,13 +3572,13 @@
       Array.from(clone.querySelectorAll("*")).forEach((element) => {
         element.classList.remove(...TEMP_SELECTION_CLASSES);
       });
-      return sanitizeFragment(clone.innerHTML);
+      return this.sanitizeHTML(clone.innerHTML);
     }
 
     setHTML(html, options) {
       const config = options || {};
       const source = String(html || "").trim();
-      const clean = source ? sanitizeFragment(source) : "";
+      const clean = source ? this.sanitizeHTML(source) : "";
       this.content.innerHTML = clean;
       this.clearMediaSelection();
       this.clearTableSelection();
@@ -3028,7 +3599,7 @@
     importMarkdown(markdown, options) {
       const mode = options && options.mode === "insert" ? "insert" : "replace";
       const generated = parseMarkdownToHtml(markdown, this);
-      const clean = generated ? sanitizeFragment(generated) : "";
+      const clean = generated ? this.sanitizeHTML(generated) : "";
       if (!clean) return "";
       if (mode === "insert") {
         this.insertHTML(clean);
@@ -3077,6 +3648,7 @@
       this.updateStatus();
       if (!config.silent) {
         this.dispatch("nationwire-editor:sync");
+        this.emit("sync", { editor: this, html: this.textarea.value });
       }
       return this.textarea.value;
     }
@@ -3098,6 +3670,14 @@
       window.clearTimeout(this.autosaveTimer);
       document.removeEventListener("selectionchange", this.boundSelectionChange);
       document.removeEventListener("pointerdown", this.boundDocumentPointerDown);
+      document.removeEventListener("keydown", this.boundDocumentKeydown);
+      if (this.systemThemeQuery) {
+        if (typeof this.systemThemeQuery.removeEventListener === "function") {
+          this.systemThemeQuery.removeEventListener("change", this.boundSystemThemeChange);
+        } else if (typeof this.systemThemeQuery.removeListener === "function") {
+          this.systemThemeQuery.removeListener(this.boundSystemThemeChange);
+        }
+      }
       window.removeEventListener("resize", this.boundRepositionImageToolbar);
       window.removeEventListener("scroll", this.boundRepositionImageToolbar, true);
       window.removeEventListener("resize", this.boundRepositionTableToolbar);
@@ -3119,6 +3699,7 @@
       if (this.wrapper) {
         this.wrapper.remove();
       }
+      this.emit("destroy", { editor: this });
       this.showSource();
       instances.delete(this.textarea);
     }
@@ -3128,10 +3709,52 @@
     const config = Object.assign({}, options || {});
     config.placeholder = config.placeholder || textarea.getAttribute("placeholder") || textarea.dataset.placeholder || DEFAULT_PLACEHOLDER;
     config.autosaveDelay = Number(config.autosaveDelay || textarea.dataset.autosaveDelay || DEFAULT_AUTOSAVE_DELAY) || DEFAULT_AUTOSAVE_DELAY;
+    const explicitTheme = config.theme || textarea.dataset.theme || "";
+    if (typeof config.persistTheme === "undefined") {
+      if (typeof textarea.dataset.persistTheme !== "undefined") {
+        config.persistTheme = textarea.dataset.persistTheme === "true";
+      } else {
+        config.persistTheme = false;
+      }
+    }
+    config.themeStorageKey = config.themeStorageKey || textarea.dataset.themeStorageKey || DEFAULT_THEME_STORAGE_KEY;
+    const storedTheme = config.persistTheme && !explicitTheme ? readStoredTheme(config.themeStorageKey) : "";
+    const resolvedTheme = explicitTheme || storedTheme || "light";
+    config.theme = ["light", "dark", "auto"].includes(resolvedTheme) ? resolvedTheme : "light";
+    const uploadConfig = Object.assign({}, config.upload || {});
+    uploadConfig.imageUrl = uploadConfig.imageUrl || textarea.dataset.imageUploadUrl || config.uploadUrl || "";
+    uploadConfig.galleryUrl = uploadConfig.galleryUrl || textarea.dataset.galleryUploadUrl || "";
+    uploadConfig.attachmentUrl = uploadConfig.attachmentUrl || textarea.dataset.attachmentUploadUrl || "";
+    if (typeof uploadConfig.allowFallback === "undefined") {
+      if (typeof textarea.dataset.uploadAllowFallback !== "undefined") {
+        uploadConfig.allowFallback = textarea.dataset.uploadAllowFallback === "true";
+      } else {
+        uploadConfig.allowFallback = false;
+      }
+    }
+    uploadConfig.headers = Object.assign({}, config.uploadHeaders || {}, uploadConfig.headers || {});
+    uploadConfig.method = uploadConfig.method || config.uploadMethod || "POST";
+    uploadConfig.credentials = uploadConfig.credentials || "same-origin";
+    if (!uploadConfig.csrfHeaderValue && config.uploadHeaders && config.uploadHeaders["X-CSRFToken"]) {
+      uploadConfig.csrfHeaderValue = config.uploadHeaders["X-CSRFToken"];
+    }
+    config.upload = uploadConfig;
     return config;
   }
 
   const api = {
+    registerPlugin(name, factory) {
+      if (!name || typeof factory !== "function") {
+        return null;
+      }
+      if (pluginRegistry.has(name)) {
+        console.warn(`OllowEditor plugin "${name}" is already registered.`);
+        return pluginRegistry.get(name);
+      }
+      pluginRegistry.set(name, factory);
+      return factory;
+    },
+
     initAll(root, options) {
       const scope = root || document;
       return Array.from(scope.querySelectorAll(DEFAULT_SELECTOR)).map((textarea) => api.init(textarea, options));

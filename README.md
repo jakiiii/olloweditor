@@ -27,7 +27,9 @@ Ollow Editor is designed for newsroom-style writing, blog publishing, CMS forms,
 - Image upload from local machine
 - Drag-and-drop image upload
 - Media alignment controls
+- Light / dark / auto themes
 - Markdown import/export
+- Plugin API
 - Code block support
 - Table support
 - Image URL insertion
@@ -83,7 +85,7 @@ http://localhost:8000/ollow.html
 Add a textarea in your form:
 
 ```html
-<textarea id="ollo-editor" name="content"></textarea>
+<textarea id="ollo-editor" name="content" data-theme="dark" data-persist-theme="true"></textarea>
 ```
 
 Include the editor CSS and JavaScript:
@@ -99,7 +101,10 @@ Initialize the editor:
 ```html
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    OllowEditor.init("#ollo-editor");
+    OllowEditor.init("#ollo-editor", {
+      theme: "dark",
+      persistTheme: true
+    });
   });
 </script>
 ```
@@ -108,13 +113,22 @@ After editing, the textarea will contain the synced HTML output.
 
 The global API is available as both `OllowEditor` and `NationWireEditor`.
 
+Plugins can be registered globally before initialization with `OllowEditor.registerPlugin(...)`.
+
+Theme can be configured per editor with `light`, `dark`, or `auto`.
+
 You can also configure image uploads during initialization:
 
 ```html
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     OllowEditor.init("#ollo-editor", {
-      uploadUrl: "/api/uploads/images/"
+      upload: {
+        imageUrl: "/upload/image",
+        galleryUrl: "/upload/gallery",
+        attachmentUrl: "/upload/attachment",
+        allowFallback: false
+      }
     });
   });
 </script>
@@ -175,6 +189,58 @@ Ollow Editor currently supports:
 
 ---
 
+## Themes
+
+Ollow Editor supports three theme modes:
+
+- `light`
+- `dark`
+- `auto`
+
+Configure with a data attribute:
+
+```html
+<textarea
+  id="ollo-editor"
+  name="body"
+  data-ollow-editor
+  data-theme="dark"
+  data-persist-theme="true"></textarea>
+```
+
+Or with JavaScript:
+
+```js
+OllowEditor.init("#ollo-editor", {
+  theme: "auto",
+  persistTheme: true
+});
+```
+
+The theme switch now lives in the editor toolbar. It opens a compact menu with `Light`, `Dark`, and `Auto`.
+
+When `theme` is `auto`, the editor follows `prefers-color-scheme` for that specific editor instance while the toolbar still shows the system-mode icon.
+
+If `persistTheme` is enabled, the selected mode is saved in `localStorage` under `ollow-editor-theme`. Explicit `data-theme` or `theme` config still overrides the stored value.
+
+Public theme API:
+
+```js
+const editor = OllowEditor.get("#ollo-editor");
+
+editor.setTheme("light");
+editor.setTheme("dark");
+editor.setTheme("auto");
+
+const theme = editor.getTheme();
+```
+
+Theme classes are applied to the editor root:
+
+- `ollow-theme-light`
+- `ollow-theme-dark`
+- `ollow-theme-auto`
+
 ## Image Upload
 
 Users can insert images from their local machine or from an external URL.
@@ -188,7 +254,84 @@ Generated HTML example:
 </figure>
 ```
 
-For the static demo, local images are rendered using browser-based file reading. In a production app, you can replace this behavior with your own backend upload API.
+For the static demo, local files are rendered using browser-based file reading. In a production app, you can connect all upload flows to your own backend endpoints through the reusable upload adapter.
+
+### Backend Upload Adapter
+
+You can configure upload endpoints with data attributes:
+
+```html
+<textarea
+  id="ollo-editor"
+  name="body"
+  data-ollow-editor
+  data-image-upload-url="/upload/image"
+  data-gallery-upload-url="/upload/gallery"
+  data-attachment-upload-url="/upload/attachment">
+</textarea>
+```
+
+Or with JavaScript:
+
+```js
+OllowEditor.init("#ollo-editor", {
+  upload: {
+    imageUrl: "/upload/image",
+    galleryUrl: "/upload/gallery",
+    attachmentUrl: "/upload/attachment",
+    allowFallback: false
+  }
+});
+```
+
+The shared adapter is used by:
+
+- image insert
+- gallery insert
+- drag-and-drop image upload
+- attachment upload
+
+### Response Contract
+
+Single file response:
+
+```json
+{
+  "url": "/media/editor/images/file.jpg"
+}
+```
+
+Multiple file response:
+
+```json
+{
+  "urls": [
+    "/media/editor/gallery/1.jpg",
+    "/media/editor/gallery/2.jpg"
+  ]
+}
+```
+
+Field names:
+
+- image and gallery uploads send files as `image`
+- attachment uploads send files as `file`
+
+### CSRF Behavior
+
+The adapter automatically sends a CSRF header when available. It checks, in order:
+
+- custom config header via `upload.headers` or `upload.csrfHeaderValue`
+- hidden input named `csrfmiddlewaretoken`
+- cookie named `csrftoken`
+
+The default CSRF header name is `X-CSRFToken`.
+
+### Fallback Behavior
+
+- if no upload URL is configured, Ollow Editor uses `FileReader`
+- if an upload URL is configured and upload fails, the editor shows an error
+- fallback after a failed upload happens only when `upload.allowFallback` is `true`
 
 ### Drag and Drop
 
@@ -208,7 +351,7 @@ Dropped images use this HTML:
 </figure>
 ```
 
-If `uploadAdapter` or `uploadUrl` is configured, each dropped image is uploaded first and the returned URL is inserted. If neither is configured, Ollow Editor falls back to `FileReader` and inserts a base64 data URL so the image appears immediately.
+If an image upload URL is configured, each dropped image is uploaded first and the returned URL is inserted. If no upload URL is configured, Ollow Editor falls back to `FileReader` and inserts a base64 data URL so the image appears immediately.
 
 ### Image Resize Controls
 
@@ -327,6 +470,67 @@ Available instance methods:
 
 - `editor.importMarkdown(markdown, { mode: "replace" | "insert" })`
 - `editor.exportMarkdown()`
+
+## Plugin API
+
+Register a plugin globally:
+
+```js
+OllowEditor.registerPlugin("alertBox", function (editor, options) {
+  editor.addSanitizerRule({
+    classes: ["ollow-alert-box"]
+  });
+
+  editor.addToolbarButton({
+    name: "alertBox",
+    label: options.label || "Alert",
+    icon: "!",
+    group: "blocks",
+    title: "Insert alert box",
+    onClick() {
+      editor.insertHTML('<section class="ollow-alert-box"><p>Alert text</p></section>');
+    }
+  });
+});
+```
+
+Enable it per editor:
+
+```js
+OllowEditor.init("#ollo-editor", {
+  plugins: {
+    alertBox: {
+      label: "Alert"
+    }
+  }
+});
+```
+
+Available plugin-facing editor methods:
+
+- `editor.addToolbarButton(config)`
+- `editor.addToolbarGroup(config)`
+- `editor.addCommand(name, handler)`
+- `editor.runCommand(name, payload)`
+- `editor.on(eventName, handler)`
+- `editor.off(eventName, handler)`
+- `editor.emit(eventName, detail)`
+- `editor.insertHTML(html)`
+- `editor.openModal(config)`
+- `editor.addShortcut(shortcut, handler)`
+- `editor.addSanitizerRule(rule)`
+- `editor.getHTML()`
+- `editor.setHTML(html)`
+- `editor.sync()`
+- `editor.clear()`
+- `editor.focus()`
+- `editor.destroy()`
+
+Plugin notes:
+
+- plugin failures are caught and logged without breaking the editor
+- duplicate plugin names warn and keep the original registration
+- plugin-added HTML still goes through the editor sanitizer and sync flow
 
 ### Code Blocks
 
@@ -491,42 +695,35 @@ You can use it with:
 * Static HTML forms
 * Any custom CMS
 
-For production image uploads, connect the image insert flow to your own upload endpoint.
+For production uploads, point the shared adapter at your backend endpoints.
 
-Example idea:
-
-```js
-async function uploadImageToServer(file) {
-  const formData = new FormData();
-  formData.append("image", file);
-
-  const response = await fetch("/api/uploads/images/", {
-    method: "POST",
-    body: formData,
-  });
-
-  const data = await response.json();
-  return data.url;
-}
-```
-
-Then initialize the editor with either an upload adapter or a simple upload URL:
+Example:
 
 ```js
 OllowEditor.init("#ollo-editor", {
-  uploadAdapter: async function (file) {
-    return uploadImageToServer(file);
+  upload: {
+    imageUrl: "/upload/image",
+    galleryUrl: "/upload/gallery",
+    attachmentUrl: "/upload/attachment",
+    allowFallback: false
   }
 });
 ```
 
+The editor instance also exposes reusable helpers:
+
 ```js
-OllowEditor.init("#ollo-editor", {
-  uploadUrl: "/api/uploads/images/"
-});
+const editor = OllowEditor.get("#ollo-editor");
+
+await editor.uploadFile(file, "image");
+await editor.uploadFile(file, "attachment");
 ```
 
-`uploadAdapter` should return either a URL string or an object with `url`, `src`, or `location`. `uploadUrl` sends a `POST` request with a `FormData` field named `image` by default and expects the same response shape.
+Supported upload types:
+
+- `image`
+- `gallery`
+- `attachment`
 
 ---
 

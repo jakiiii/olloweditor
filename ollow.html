@@ -62,11 +62,6 @@
       gap: 24px;
     }
 
-    .demo-actions {
-      display: flex;
-      justify-content: flex-end;
-    }
-
     .demo-submit {
       appearance: none;
       border: 0;
@@ -96,7 +91,7 @@
 
   <div class="demo-stack">
     <form id="demo-form" class="demo-grid">
-      <textarea id="story_body" name="body" data-nw-editor data-autosave-delay="1200">
+      <textarea id="story_body" name="body" data-nw-editor data-theme="auto" data-persist-theme="true" data-autosave-delay="1200">
 <h2>Economic Repercussions in the Eurozone</h2>
 <p>The recent policy shifts in the capital have sent ripples through international markets.</p>
 <blockquote><p>Markets reacted with cautious optimism.</p></blockquote>
@@ -108,7 +103,31 @@
 
 <script src="ollow.js"></script>
 <script>
-  NationWireEditor.initAll();
+  OllowEditor.registerPlugin("alertBox", function(editor, options) {
+    const label = options.label || "Alert";
+    editor.addSanitizerRule({
+      classes: ["ollow-alert-box"]
+    });
+    editor.addToolbarButton({
+      name: "alertBox",
+      label: label,
+      icon: "!",
+      group: "blocks",
+      title: "Insert alert box",
+      onClick() {
+        editor.insertHTML('<section class="ollow-alert-box"><p>Alert text</p></section>');
+      }
+    });
+  });
+
+  NationWireEditor.initAll(document, {
+    persistTheme: true,
+    plugins: {
+      alertBox: {
+        label: "Alert"
+      }
+    }
+  });
 
   const output = document.getElementById("submitted-html");
   document.getElementById("demo-form").addEventListener("submit", (event) => {

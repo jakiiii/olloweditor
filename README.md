@@ -237,22 +237,35 @@ The main toolbar includes Microsoft Office-style typography controls near the be
 - font size field
 - decrease font size button
 - increase font size button
+- text color picker
+- highlight color picker
+
+Font size behavior:
+
+- selecting a preset applies that size to the current selection
+- with a collapsed selection, the size is applied to the current block
+- the `−` and `+` buttons move through the preset size list
+- values are clamped between `8` and `96`
+- non-preset values are normalized to the nearest preset size
 
 Supported font families:
 
 - Arial
 - Times New Roman
 - Georgia
+- Verdana
+- Tahoma
+- Trebuchet MS
+- Courier New
 - Roboto
+- Roboto Mono
+- Montserrat
+- Lora
 - Merriweather
 - Playfair Display
-- Lora
-- Montserrat
-- Nunito
-- Oswald
-- Courier New
-- Roboto Mono
 - EB Garamond
+- Oswald
+- Nunito
 - Spectral
 
 Supported size presets:
@@ -302,8 +315,261 @@ Typography sanitizer notes:
 - only approved `ollow-font-size-*` classes are preserved
 - pasted Word and Google Docs font styling is mapped only when it matches an allowed font or size
 - unsafe inline typography styles are removed
+- unknown font-family classes are stripped during sanitization
+- unknown font-size classes are stripped during sanitization
+
+Font dropdown notes:
+
+- the toolbar control sits before paragraph and heading controls
+- the menu has `Recent Fonts` and `All Fonts` sections
+- recent fonts update when a font is chosen and are kept for the current page session
+- the recent list is also stored in localStorage when available
 
 These controls use the same toolbar variables and dropdown surfaces as the rest of the editor, so they work in light, dark, and auto theme modes.
+
+## Text Color
+
+The text color control sits in the main toolbar immediately after the font size control and before the paragraph / heading controls.
+
+The button shows:
+
+- an `A` glyph
+- a live color underline for the current selection
+- a dropdown arrow
+
+The palette includes:
+
+- `Automatic` to remove text color formatting
+- newsroom theme colors
+- standard colors
+- recent colors
+- a custom hex color input
+
+Preset colors save with approved classes, for example:
+
+```html
+<p>
+  <span class="ollow-text-color-red">Red text</span>
+  <span class="ollow-text-color-blue">Blue text</span>
+</p>
+```
+
+Custom colors save as a safe inline style only when the value is a valid hex color:
+
+```html
+<p>
+  <span style="color:#ef4444">Custom red text</span>
+</p>
+```
+
+Sanitizer notes:
+
+- only approved `ollow-text-color-*` classes are preserved
+- inline `color` is preserved only for `#rgb` and `#rrggbb`
+- `rgb()`, `rgba()`, `hsl()`, `var()`, `url()`, `expression()`, and unknown color values are stripped
+- pasted Word and Google Docs color styling is kept only when it maps to a safe hex color
+
+Test steps:
+
+1. Select text in the editor.
+2. Open the `Text color` palette from the toolbar.
+3. Apply a preset such as red or blue.
+4. Apply a custom hex color.
+5. Use `Automatic` and confirm the color formatting is removed.
+6. Sync and inspect the saved HTML.
+
+## Highlight Color
+
+The highlight control sits beside the text color control in the main toolbar. It uses a compact Office-style button with:
+
+- a small `ab` label
+- a live highlight indicator
+- a dropdown arrow
+
+The palette includes:
+
+- `No highlight`
+- yellow
+- green
+- cyan
+- pink
+- red
+- orange
+- purple
+- gray
+- custom hex color
+
+Preset highlights save with approved classes:
+
+```html
+<p>
+  <span class="ollow-highlight-yellow">Highlighted text</span>
+</p>
+```
+
+Custom highlights save as safe inline styles only for valid hex values:
+
+```html
+<p>
+  <span style="background-color:#fef3c7">Custom highlight</span>
+</p>
+```
+
+Sanitizer notes:
+
+- only approved `ollow-highlight-*` classes are preserved
+- inline `background-color` is preserved only for `#rgb` and `#rrggbb`
+- background images and arbitrary CSS are removed
+- pasted Word and Google Docs highlight styling is kept only when it maps to a safe hex color
+
+## Styles Dropdown
+
+The toolbar includes a `Styles` dropdown before the `Paragraph` control. It is intended for reusable writing patterns that go beyond headings.
+
+Available presets:
+
+- `Normal`
+- `Lead paragraph`
+- `Caption`
+- `Small text`
+- `Warning note`
+- `Info note`
+- `Success note`
+- `Editorial note`
+- `Inline code`
+- `Quote emphasis`
+
+Saved HTML examples:
+
+```html
+<p class="ollow-style-lead">Lead copy</p>
+<p class="ollow-style-warning">Warning note</p>
+<code class="ollow-style-inline-code">const value = 1;</code>
+<blockquote class="ollow-style-quote-emphasis">Quoted emphasis</blockquote>
+```
+
+Sanitizer notes:
+
+- only approved `ollow-style-*` classes are preserved
+- `Normal` removes the preset class without stripping unrelated bold, italic, underline, font, or color formatting
+
+## Strikethrough
+
+The inline formatting group now includes a `Strikethrough` button beside `Bold`, `Italic`, and `Underline`.
+
+Shortcut:
+
+- `Ctrl/Cmd + Shift + X`
+
+Saved output uses semantic strike markup:
+
+```html
+<p>Normal <s>struck text</s></p>
+```
+
+Sanitizer notes:
+
+- `strike` pasted from external sources is normalized to `<s>`
+- unsafe attributes are stripped as part of the normal HTML sanitizer
+
+## Subscript and Superscript
+
+The inline formatting group now includes:
+
+- `Subscript` (`x₂`)
+- `Superscript` (`x²`)
+
+Shortcuts:
+
+- `Ctrl/Cmd + ,` for subscript
+- `Ctrl/Cmd + .` for superscript
+
+Saved output uses semantic HTML:
+
+```html
+H<sub>2</sub>O
+x<sup>2</sup>
+```
+
+Behavior notes:
+
+- subscript and superscript are mutually exclusive
+- applying one clears the other first
+- the sanitizer preserves clean `<sub>` and `<sup>` markup and strips unsafe attributes
+
+## Remove Formatting
+
+The inline formatting group now includes a `Remove formatting` button labelled `Tx`.
+
+Shortcut:
+
+- `Ctrl/Cmd + \`
+
+What it removes from selected text or the current text block:
+
+- bold
+- italic
+- underline
+- strikethrough
+- subscript
+- superscript
+- font family classes
+- font size classes
+- text color
+- highlight color
+- inline styles
+- inline code styling
+- block style preset classes when clearing the current block
+
+What it preserves:
+
+- links
+- paragraph alignment
+- headings and block type
+- images, galleries, embeds, tables, code blocks, and attachments
+
+Example:
+
+```html
+<p class="ollow-style-lead"><strong>Hello</strong></p>
+```
+
+becomes:
+
+```html
+<p>Hello</p>
+```
+
+## Format Painter
+
+The inline toolbar now includes a `Format Painter` button with a paint-roller icon.
+
+Workflow:
+
+1. Select styled text or place the cursor inside styled text.
+2. Click `Format Painter`.
+3. Select another text range or click another text block.
+4. The copied formatting is applied and the painter turns off.
+
+Locked mode:
+
+- double-click the button to keep Format Painter armed for multiple applications
+- press `Esc` to cancel locked mode
+
+Copied formatting includes:
+
+- bold, italic, underline, strikethrough
+- subscript and superscript
+- font family and font size
+- text color and highlight color
+- style preset classes
+- text alignment for block-level targets
+
+It does not copy:
+
+- text content
+- links
+- images, galleries, embeds, tables, or code block content
 
 ## Responsive Support
 

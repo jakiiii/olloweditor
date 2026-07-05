@@ -4,12 +4,20 @@
   const DEFAULT_PLACEHOLDER = "Start writing your story here…";
   const DEFAULT_READ_SPEED = 220;
   const DEFAULT_THEME_STORAGE_KEY = "ollow-editor-theme";
+  const FONT_RECENTS_STORAGE_KEY = "ollow-editor-recent-fonts";
+  const TEXT_COLOR_RECENTS_STORAGE_KEY = "ollow-editor-recent-colors";
   const DEFAULT_FONT_FAMILY_KEY = "arial";
   const DEFAULT_FONT_SIZE = 16;
+  const DEFAULT_TEXT_COLOR = "#111827";
+  const DEFAULT_HIGHLIGHT_COLOR = "#fde68a";
   const FONT_FAMILIES = [
     { key: "arial", label: "Arial", stack: 'Arial, "Helvetica Neue", Helvetica, sans-serif' },
     { key: "times-new-roman", label: "Times New Roman", stack: '"Times New Roman", Times, serif' },
     { key: "georgia", label: "Georgia", stack: 'Georgia, "Times New Roman", serif' },
+    { key: "verdana", label: "Verdana", stack: 'Verdana, Geneva, sans-serif' },
+    { key: "tahoma", label: "Tahoma", stack: 'Tahoma, Geneva, sans-serif' },
+    { key: "trebuchet-ms", label: "Trebuchet MS", stack: '"Trebuchet MS", Helvetica, sans-serif' },
+    { key: "courier-new", label: "Courier New", stack: '"Courier New", Courier, monospace' },
     { key: "roboto", label: "Roboto", stack: 'Roboto, "Helvetica Neue", Arial, sans-serif' },
     { key: "merriweather", label: "Merriweather", stack: 'Merriweather, Georgia, serif' },
     { key: "playfair-display", label: "Playfair Display", stack: '"Playfair Display", Georgia, serif' },
@@ -17,24 +25,79 @@
     { key: "montserrat", label: "Montserrat", stack: 'Montserrat, Arial, sans-serif' },
     { key: "nunito", label: "Nunito", stack: 'Nunito, Arial, sans-serif' },
     { key: "oswald", label: "Oswald", stack: 'Oswald, Arial, sans-serif' },
-    { key: "courier-new", label: "Courier New", stack: '"Courier New", Courier, monospace' },
     { key: "roboto-mono", label: "Roboto Mono", stack: '"Roboto Mono", "Courier New", monospace' },
     { key: "eb-garamond", label: "EB Garamond", stack: '"EB Garamond", Georgia, serif' },
     { key: "spectral", label: "Spectral", stack: 'Spectral, Georgia, serif' },
   ];
-  const RECENT_FONT_KEYS = ["arial", "times-new-roman", "georgia", "roboto", "merriweather"];
+  const DEFAULT_RECENT_FONT_KEYS = ["arial", "times-new-roman", "georgia", "verdana", "roboto"];
   const FONT_SIZE_PRESETS = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 48, 60, 72, 96];
+  const TEXT_COLOR_PRESETS = [
+    { key: "black", label: "Black", hex: "#000000", section: "standard" },
+    { key: "gray", label: "Gray", hex: "#6b7280", section: "standard" },
+    { key: "red", label: "Red", hex: "#dc2626", section: "standard" },
+    { key: "orange", label: "Orange", hex: "#ea580c", section: "standard" },
+    { key: "yellow", label: "Yellow", hex: "#ca8a04", section: "standard" },
+    { key: "green", label: "Green", hex: "#16a34a", section: "standard" },
+    { key: "blue", label: "Blue", hex: "#2563eb", section: "standard" },
+    { key: "purple", label: "Purple", hex: "#7c3aed", section: "standard" },
+    { key: "white", label: "White", hex: "#ffffff", section: "standard" },
+    { key: "111827", label: "#111827", hex: "#111827", section: "newsroom" },
+    { key: "374151", label: "#374151", hex: "#374151", section: "newsroom" },
+    { key: "dc2626", label: "#dc2626", hex: "#dc2626", section: "newsroom" },
+    { key: "ea580c", label: "#ea580c", hex: "#ea580c", section: "newsroom" },
+    { key: "ca8a04", label: "#ca8a04", hex: "#ca8a04", section: "newsroom" },
+    { key: "16a34a", label: "#16a34a", hex: "#16a34a", section: "newsroom" },
+    { key: "2563eb", label: "#2563eb", hex: "#2563eb", section: "newsroom" },
+    { key: "7c3aed", label: "#7c3aed", hex: "#7c3aed", section: "newsroom" },
+  ];
+  const HIGHLIGHT_COLOR_PRESETS = [
+    { key: "yellow", label: "Yellow", hex: "#fde68a" },
+    { key: "green", label: "Green", hex: "#bbf7d0" },
+    { key: "cyan", label: "Cyan", hex: "#bfdbfe" },
+    { key: "pink", label: "Pink", hex: "#fbcfe8" },
+    { key: "red", label: "Red", hex: "#fecaca" },
+    { key: "orange", label: "Orange", hex: "#fed7aa" },
+    { key: "purple", label: "Purple", hex: "#ddd6fe" },
+    { key: "gray", label: "Gray", hex: "#e5e7eb" },
+    { key: "soft-yellow", label: "Soft Yellow", hex: "#fef3c7" },
+  ];
   const FONT_FAMILY_LOOKUP = new Map(FONT_FAMILIES.map((font) => [font.key, font]));
+  const TEXT_COLOR_LOOKUP = new Map(TEXT_COLOR_PRESETS.map((color) => [color.key, color]));
+  const TEXT_COLOR_BY_HEX = new Map(TEXT_COLOR_PRESETS.map((color) => [color.hex, color]));
+  const HIGHLIGHT_COLOR_LOOKUP = new Map(HIGHLIGHT_COLOR_PRESETS.map((color) => [color.key, color]));
+  const HIGHLIGHT_COLOR_BY_HEX = new Map(HIGHLIGHT_COLOR_PRESETS.map((color) => [color.hex, color]));
   const FONT_CLASS_PREFIX = "ollow-font-";
   const FONT_SIZE_CLASS_PREFIX = "ollow-font-size-";
+  const TEXT_COLOR_CLASS_PREFIX = "ollow-text-color-";
+  const HIGHLIGHT_CLASS_PREFIX = "ollow-highlight-";
   const ALLOWED_FONT_FAMILY_CLASSES = FONT_FAMILIES.map((font) => `${FONT_CLASS_PREFIX}${font.key}`);
   const ALLOWED_FONT_SIZE_CLASSES = FONT_SIZE_PRESETS.map((size) => `${FONT_SIZE_CLASS_PREFIX}${size}`);
+  const ALLOWED_TEXT_COLOR_CLASSES = TEXT_COLOR_PRESETS.map((color) => `${TEXT_COLOR_CLASS_PREFIX}${color.key}`);
+  const ALLOWED_HIGHLIGHT_CLASSES = HIGHLIGHT_COLOR_PRESETS.map((color) => `${HIGHLIGHT_CLASS_PREFIX}${color.key}`);
+  const STYLE_PRESETS = [
+    { key: "normal", label: "Normal", type: "reset", previewClass: "" },
+    { key: "lead", label: "Lead paragraph", type: "block", className: "ollow-style-lead" },
+    { key: "caption", label: "Caption", type: "block", className: "ollow-style-caption" },
+    { key: "small", label: "Small text", type: "block", className: "ollow-style-small" },
+    { key: "warning", label: "Warning note", type: "block", className: "ollow-style-warning" },
+    { key: "info", label: "Info note", type: "block", className: "ollow-style-info" },
+    { key: "success", label: "Success note", type: "block", className: "ollow-style-success" },
+    { key: "editorial", label: "Editorial note", type: "block", className: "ollow-style-editorial" },
+    { key: "inline-code", label: "Inline code", type: "inline-code", className: "ollow-style-inline-code" },
+    { key: "quote-emphasis", label: "Quote emphasis", type: "blockquote", className: "ollow-style-quote-emphasis" },
+  ];
+  const STYLE_PRESET_LOOKUP = new Map(STYLE_PRESETS.map((preset) => [preset.key, preset]));
+  const STYLE_PRESET_CLASSES = STYLE_PRESETS.map((preset) => preset.className).filter(Boolean);
   const TOOLBAR_SHORTCUT_LABELS = {
     undo: "Mod+Z",
     redo: "Mod+Shift+Z / Mod+Y",
     bold: "Mod+B",
     italic: "Mod+I",
     underline: "Mod+U",
+    strikethrough: "Mod+Shift+X",
+    subscript: "Mod+,",
+    superscript: "Mod+.",
+    "remove-formatting": "Mod+\\",
     link: "Mod+K",
     "bulleted-list": "Mod+Shift+8",
     "numbered-list": "Mod+Shift+7",
@@ -64,9 +127,13 @@
     "OL",
     "P",
     "PRE",
+    "S",
     "SECTION",
     "SPAN",
     "STRONG",
+    "STRIKE",
+    "SUB",
+    "SUP",
     "TABLE",
     "TBODY",
     "TD",
@@ -120,6 +187,9 @@
     "ollow-video-wrapper",
     ...ALLOWED_FONT_FAMILY_CLASSES,
     ...ALLOWED_FONT_SIZE_CLASSES,
+    ...ALLOWED_TEXT_COLOR_CLASSES,
+    ...ALLOWED_HIGHLIGHT_CLASSES,
+    ...STYLE_PRESET_CLASSES,
   ]);
   const DIV_DATA_TYPES = new Set(["attachment", "embed", "fact-box", "gallery", "related"]);
   const FIGURE_DATA_TYPES = new Set(["code", "embed", "image", "table"]);
@@ -236,6 +306,80 @@
     return 0;
   }
 
+  function normalizeHexColor(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    if (!raw) return "";
+    if (/^#[0-9a-f]{3}$/i.test(raw)) {
+      return `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`.toLowerCase();
+    }
+    if (/^#[0-9a-f]{6}$/i.test(raw)) {
+      return raw.toLowerCase();
+    }
+    return "";
+  }
+
+  function getTextColorClassName(key) {
+    return `${TEXT_COLOR_CLASS_PREFIX}${key}`;
+  }
+
+  function getTextColorPresetByHex(value) {
+    const hex = normalizeHexColor(value);
+    return hex ? (TEXT_COLOR_BY_HEX.get(hex) || null) : null;
+  }
+
+  function getHighlightClassName(key) {
+    return `${HIGHLIGHT_CLASS_PREFIX}${key}`;
+  }
+
+  function getHighlightPresetByHex(value) {
+    const hex = normalizeHexColor(value);
+    return hex ? (HIGHLIGHT_COLOR_BY_HEX.get(hex) || null) : null;
+  }
+
+  function getTextColorFromElement(element) {
+    if (!element) return null;
+    if (element.classList) {
+      for (const className of element.classList) {
+        if (!className.startsWith(TEXT_COLOR_CLASS_PREFIX)) continue;
+        const key = className.slice(TEXT_COLOR_CLASS_PREFIX.length);
+        if (TEXT_COLOR_LOOKUP.has(key)) {
+          const preset = TEXT_COLOR_LOOKUP.get(key);
+          return { type: "preset", key: preset.key, hex: preset.hex };
+        }
+      }
+    }
+    const style = String(element.getAttribute && element.getAttribute("style") || "");
+    const colorMatch = style.match(/(?:^|;)\s*color\s*:\s*(#[0-9a-f]{3}|#[0-9a-f]{6})\s*(?:;|$)/i);
+    const hex = normalizeHexColor(colorMatch && colorMatch[1]);
+    return hex ? { type: "custom", key: "", hex } : null;
+  }
+
+  function getHighlightColorFromElement(element) {
+    if (!element) return null;
+    if (element.classList) {
+      for (const className of element.classList) {
+        if (!className.startsWith(HIGHLIGHT_CLASS_PREFIX)) continue;
+        const key = className.slice(HIGHLIGHT_CLASS_PREFIX.length);
+        if (HIGHLIGHT_COLOR_LOOKUP.has(key)) {
+          const preset = HIGHLIGHT_COLOR_LOOKUP.get(key);
+          return { type: "preset", key: preset.key, hex: preset.hex };
+        }
+      }
+    }
+    const style = String(element.getAttribute && element.getAttribute("style") || "");
+    const colorMatch = style.match(/(?:^|;)\s*background-color\s*:\s*(#[0-9a-f]{3}|#[0-9a-f]{6})\s*(?:;|$)/i);
+    const hex = normalizeHexColor(colorMatch && colorMatch[1]);
+    return hex ? { type: "custom", key: "", hex } : null;
+  }
+
+  function cleanupStyleAttribute(element) {
+    if (!element) return;
+    const style = String(element.getAttribute("style") || "").trim();
+    if (!style) {
+      element.removeAttribute("style");
+    }
+  }
+
   function removeFontFamilyClassesFromElement(element) {
     if (!element || !element.classList) return;
     Array.from(element.classList).forEach((className) => {
@@ -254,15 +398,78 @@
     });
   }
 
+  function removeTextColorClassesFromElement(element) {
+    if (!element || !element.classList) return;
+    Array.from(element.classList).forEach((className) => {
+      if (className.startsWith(TEXT_COLOR_CLASS_PREFIX) && TEXT_COLOR_LOOKUP.has(className.slice(TEXT_COLOR_CLASS_PREFIX.length))) {
+        element.classList.remove(className);
+      }
+    });
+    if (element.style) {
+      element.style.removeProperty("color");
+      cleanupStyleAttribute(element);
+    }
+  }
+
+  function removeHighlightClassesFromElement(element) {
+    if (!element || !element.classList) return;
+    Array.from(element.classList).forEach((className) => {
+      if (className.startsWith(HIGHLIGHT_CLASS_PREFIX) && HIGHLIGHT_COLOR_LOOKUP.has(className.slice(HIGHLIGHT_CLASS_PREFIX.length))) {
+        element.classList.remove(className);
+      }
+    });
+    if (element.style) {
+      element.style.removeProperty("background-color");
+      cleanupStyleAttribute(element);
+    }
+  }
+
+  function removeStylePresetClassesFromElement(element) {
+    if (!element || !element.classList) return;
+    element.classList.remove(...STYLE_PRESET_CLASSES);
+  }
+
+  function isInlineFormattingTag(tagName) {
+    return ["STRONG", "EM", "U", "S", "STRIKE", "SUB", "SUP"].includes(String(tagName || "").toUpperCase());
+  }
+
+  function isInlineCodeFormattingElement(element) {
+    if (!element || element.nodeType !== Node.ELEMENT_NODE || element.tagName.toUpperCase() !== "CODE") return false;
+    if (element.closest("pre")) return false;
+    if (element.closest("figure.ollow-editor-code")) return false;
+    return true;
+  }
+
+  function getStylePresetFromElement(element) {
+    if (!element) return null;
+    if (element.classList) {
+      for (const preset of STYLE_PRESETS) {
+        if (preset.className && element.classList.contains(preset.className)) {
+          return preset;
+        }
+      }
+    }
+    if (element.tagName && element.tagName.toUpperCase() === "CODE" && element.classList && element.classList.contains("ollow-style-inline-code")) {
+      return STYLE_PRESET_LOOKUP.get("inline-code") || null;
+    }
+    return null;
+  }
+
   function removeTypographyClasses(container, options) {
     if (!container) return;
-    const config = Object.assign({ fontFamily: false, fontSize: false }, options || {});
+    const config = Object.assign({ fontFamily: false, fontSize: false, textColor: false, highlight: false }, options || {});
     if (container.nodeType === Node.ELEMENT_NODE) {
       if (config.fontFamily) {
         removeFontFamilyClassesFromElement(container);
       }
       if (config.fontSize) {
         removeFontSizeClassesFromElement(container);
+      }
+      if (config.textColor) {
+        removeTextColorClassesFromElement(container);
+      }
+      if (config.highlight) {
+        removeHighlightClassesFromElement(container);
       }
     }
     Array.from((container.querySelectorAll && container.querySelectorAll("*")) || []).forEach((element) => {
@@ -271,6 +478,12 @@
       }
       if (config.fontSize) {
         removeFontSizeClassesFromElement(element);
+      }
+      if (config.textColor) {
+        removeTextColorClassesFromElement(element);
+      }
+      if (config.highlight) {
+        removeHighlightClassesFromElement(element);
       }
     });
   }
@@ -581,7 +794,35 @@
             removeFontSizeClassesFromElement(element);
             element.classList.add(getFontSizeClassName(getClosestFontSize(rawSize)));
           }
+          const colorMatch = value.match(/(?:^|;)\s*color\s*:\s*(#[0-9a-f]{3}|#[0-9a-f]{6})\s*(?:;|$)/i);
+          const textColor = normalizeHexColor(colorMatch && colorMatch[1]);
+          const highlightMatch = value.match(/(?:^|;)\s*background-color\s*:\s*(#[0-9a-f]{3}|#[0-9a-f]{6})\s*(?:;|$)/i);
+          const highlightColor = normalizeHexColor(highlightMatch && highlightMatch[1]);
+          if (textColor) {
+            removeTextColorClassesFromElement(element);
+            const preset = getTextColorPresetByHex(textColor);
+            if (preset) {
+              element.classList.add(getTextColorClassName(preset.key));
+            }
+          }
+          if (highlightColor) {
+            removeHighlightClassesFromElement(element);
+            const preset = getHighlightPresetByHex(highlightColor);
+            if (preset) {
+              element.classList.add(getHighlightClassName(preset.key));
+            }
+          }
           element.removeAttribute("style");
+          const safeStyles = [];
+          if (textColor && !getTextColorPresetByHex(textColor)) {
+            safeStyles.push(`color:${textColor}`);
+          }
+          if (highlightColor && !getHighlightPresetByHex(highlightColor)) {
+            safeStyles.push(`background-color:${highlightColor}`);
+          }
+          if (safeStyles.length) {
+            element.setAttribute("style", safeStyles.join(";"));
+          }
           return;
         }
         if (name === "align") {
@@ -754,6 +995,45 @@
   function writeStoredTheme(storageKey, value) {
     try {
       window.localStorage.setItem(storageKey || DEFAULT_THEME_STORAGE_KEY, value);
+    } catch (error) {
+      // Ignore storage failures.
+    }
+  }
+
+  function readStoredRecentFonts() {
+    try {
+      const raw = window.localStorage.getItem(FONT_RECENTS_STORAGE_KEY);
+      const values = JSON.parse(raw || "[]");
+      if (!Array.isArray(values)) return DEFAULT_RECENT_FONT_KEYS.slice();
+      const filtered = values.filter((key) => FONT_FAMILY_LOOKUP.has(key));
+      return filtered.length ? filtered : DEFAULT_RECENT_FONT_KEYS.slice();
+    } catch (error) {
+      return DEFAULT_RECENT_FONT_KEYS.slice();
+    }
+  }
+
+  function writeStoredRecentFonts(fonts) {
+    try {
+      window.localStorage.setItem(FONT_RECENTS_STORAGE_KEY, JSON.stringify(fonts || []));
+    } catch (error) {
+      // Ignore storage failures.
+    }
+  }
+
+  function readStoredRecentColors() {
+    try {
+      const raw = window.localStorage.getItem(TEXT_COLOR_RECENTS_STORAGE_KEY);
+      const values = JSON.parse(raw || "[]");
+      if (!Array.isArray(values)) return [];
+      return values.map((value) => normalizeHexColor(value)).filter(Boolean).slice(0, 6);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function writeStoredRecentColors(colors) {
+    try {
+      window.localStorage.setItem(TEXT_COLOR_RECENTS_STORAGE_KEY, JSON.stringify((colors || []).slice(0, 6)));
     } catch (error) {
       // Ignore storage failures.
     }
@@ -1053,7 +1333,13 @@
       }
 
       const originalTagName = node.tagName.toUpperCase();
-      const tagName = originalTagName === "B" ? "STRONG" : originalTagName === "I" ? "EM" : originalTagName;
+      const tagName = originalTagName === "B"
+        ? "STRONG"
+        : originalTagName === "I"
+          ? "EM"
+          : originalTagName === "STRIKE"
+            ? "S"
+            : originalTagName;
       if (tagName === "SCRIPT" || tagName === "STYLE") {
         return document.createDocumentFragment();
       }
@@ -1113,10 +1399,30 @@
               sanitizerExtensions.classes.has(className) ||
               /^language-[a-z0-9+._-]+$/i.test(className) ||
               (className.startsWith(FONT_CLASS_PREFIX) && FONT_FAMILY_LOOKUP.has(className.slice(FONT_CLASS_PREFIX.length))) ||
-              Boolean(parseFontSizeClass(className))
+              Boolean(parseFontSizeClass(className)) ||
+              (className.startsWith(TEXT_COLOR_CLASS_PREFIX) && TEXT_COLOR_LOOKUP.has(className.slice(TEXT_COLOR_CLASS_PREFIX.length))) ||
+              (className.startsWith(HIGHLIGHT_CLASS_PREFIX) && HIGHLIGHT_COLOR_LOOKUP.has(className.slice(HIGHLIGHT_CLASS_PREFIX.length)))
             ));
           if (classes.length) {
             clean.setAttribute("class", classes.join(" "));
+          }
+          return;
+        }
+
+        if (name === "style") {
+          const safeStyles = [];
+          const colorMatch = value.match(/(?:^|;)\s*color\s*:\s*(#[0-9a-f]{3}|#[0-9a-f]{6})\s*(?:;|$)/i);
+          const colorHex = normalizeHexColor(colorMatch && colorMatch[1]);
+          if (colorHex) {
+            safeStyles.push(`color:${colorHex}`);
+          }
+          const highlightMatch = value.match(/(?:^|;)\s*background-color\s*:\s*(#[0-9a-f]{3}|#[0-9a-f]{6})\s*(?:;|$)/i);
+          const highlightHex = normalizeHexColor(highlightMatch && highlightMatch[1]);
+          if (highlightHex) {
+            safeStyles.push(`background-color:${highlightHex}`);
+          }
+          if (safeStyles.length) {
+            clean.setAttribute("style", safeStyles.join(";"));
           }
           return;
         }
@@ -1536,11 +1842,25 @@
       this.toolbarRows = {};
       this.toolbarGroups = {};
       this.headingSelect = null;
+      this.formatPainterButton = null;
+      this.formatPainterState = null;
+      this.formatPainterClickTimer = null;
+      this.stylesButton = null;
+      this.stylesMenu = null;
+      this.stylesLabel = null;
       this.fontFamilyButton = null;
       this.fontFamilyMenu = null;
       this.fontFamilyLabel = null;
       this.fontSizeInput = null;
       this.fontSizeMenu = null;
+      this.textColorButton = null;
+      this.textColorBar = null;
+      this.textColorPopover = null;
+      this.textColorCustomInput = null;
+      this.highlightButton = null;
+      this.highlightBar = null;
+      this.highlightPopover = null;
+      this.highlightCustomInput = null;
       this.themeToggleButton = null;
       this.themeMenu = null;
       this.modal = null;
@@ -1559,6 +1879,8 @@
       this.theme = options.theme || "light";
       this.themeStorageKey = options.themeStorageKey || DEFAULT_THEME_STORAGE_KEY;
       this.persistTheme = Boolean(options.persistTheme);
+      this.recentFonts = readStoredRecentFonts();
+      this.recentTextColors = readStoredRecentColors();
       this.systemThemeQuery = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
       this.commands = new Map();
       this.eventHandlers = new Map();
@@ -1676,6 +1998,9 @@
       const typographyControls = this.buildTypographyControls();
       this.toolbarGroups.typography = typographyControls;
 
+      const stylesControl = this.buildStylesControl();
+      this.toolbarGroups.styles = stylesControl;
+
       this.headingSelect = document.createElement("select");
       this.headingSelect.className = "nw-toolbar-select";
       this.headingSelect.innerHTML = `
@@ -1699,6 +2024,11 @@
       groupInline.appendChild(this.makeToolbarButton("bold", "Bold", "B", "nw-toolbar-button nw-text-button"));
       groupInline.appendChild(this.makeToolbarButton("italic", "Italic", "I", "nw-toolbar-button nw-text-button"));
       groupInline.appendChild(this.makeToolbarButton("underline", "Underline", "U", "nw-toolbar-button nw-text-button"));
+      groupInline.appendChild(this.makeToolbarButton("strikethrough", "Strikethrough", "S", "nw-toolbar-button nw-text-button nw-text-button--strikethrough"));
+      groupInline.appendChild(this.makeToolbarButton("subscript", "Subscript", "x₂", "nw-toolbar-button nw-text-button"));
+      groupInline.appendChild(this.makeToolbarButton("superscript", "Superscript", "x²", "nw-toolbar-button nw-text-button"));
+      groupInline.appendChild(this.makeToolbarButton("remove-formatting", "Remove formatting", "Tx", "nw-toolbar-button nw-text-button"));
+      groupInline.appendChild(this.buildFormatPainterButton());
       groupInline.appendChild(this.makeToolbarButton("link", "Link", '<span class="material-symbols-outlined">link</span>'));
       groupInline.appendChild(this.makeToolbarButton("unlink", "Unlink", '<span class="material-symbols-outlined">link_off</span>'));
 
@@ -1727,6 +2057,7 @@
       row.appendChild(this.makeDivider());
       row.appendChild(typographyControls);
       row.appendChild(this.makeDivider());
+      row.appendChild(stylesControl);
       row.appendChild(this.headingSelect);
       row.appendChild(groupText);
       row.appendChild(this.makeDivider());
@@ -1766,16 +2097,7 @@
       fontMenu.className = "ollow-font-menu";
       fontMenu.hidden = true;
       fontMenu.setAttribute("role", "menu");
-      fontMenu.innerHTML = `
-        <div class="ollow-font-menu-section">
-          <div class="ollow-font-menu-label">Recent Fonts</div>
-          ${RECENT_FONT_KEYS.map((key) => this.buildFontOptionMarkup(key)).join("")}
-        </div>
-        <div class="ollow-font-menu-section">
-          <div class="ollow-font-menu-label">All Fonts</div>
-          ${FONT_FAMILIES.map((font) => this.buildFontOptionMarkup(font.key)).join("")}
-        </div>
-      `;
+      fontMenu.innerHTML = this.buildFontMenuMarkup();
       fontMenu.addEventListener("mousedown", (event) => {
         event.preventDefault();
       });
@@ -1876,21 +2198,354 @@
       sizeControl.appendChild(sizeUp);
       sizeControl.appendChild(sizeMenu);
 
+      const colorControl = document.createElement("div");
+      colorControl.className = "ollow-text-color-wrap";
+
+      const colorButton = document.createElement("button");
+      colorButton.type = "button";
+      colorButton.className = "ollow-text-color-btn";
+      colorButton.title = "Text color";
+      colorButton.setAttribute("aria-label", "Text color");
+      colorButton.setAttribute("aria-haspopup", "menu");
+      colorButton.setAttribute("aria-expanded", "false");
+      colorButton.innerHTML = `
+        <span class="ollow-text-color-label" aria-hidden="true">A</span>
+        <span class="ollow-text-color-bar"></span>
+        <span class="ollow-text-color-arrow" aria-hidden="true">▾</span>
+      `;
+      colorButton.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        this.saveSelection();
+      });
+      colorButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        this.toggleTextColorPopover();
+      });
+
+      const colorPopover = document.createElement("div");
+      colorPopover.className = "ollow-text-color-popover";
+      colorPopover.hidden = true;
+      colorPopover.setAttribute("role", "menu");
+      colorPopover.setAttribute("aria-label", "Text color palette");
+      colorPopover.innerHTML = this.buildTextColorPopoverMarkup();
+      colorPopover.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      colorPopover.addEventListener("click", (event) => {
+        const choice = event.target.closest("[data-text-color-choice]");
+        if (choice) {
+          event.preventDefault();
+          this.applyTextColor(choice.dataset.textColorChoice);
+          return;
+        }
+        const automatic = event.target.closest("[data-text-color-reset]");
+        if (automatic) {
+          event.preventDefault();
+          this.removeTextColor();
+        }
+      });
+
+      const customInput = colorPopover.querySelector("[data-text-color-custom]");
+      if (customInput) {
+        customInput.addEventListener("input", () => {
+          const hex = normalizeHexColor(customInput.value);
+          if (!hex) return;
+          this.applyTextColor(hex);
+        });
+      }
+
+      colorControl.appendChild(colorButton);
+      colorControl.appendChild(colorPopover);
+
+      const highlightControl = document.createElement("div");
+      highlightControl.className = "ollow-highlight-wrap";
+
+      const highlightButton = document.createElement("button");
+      highlightButton.type = "button";
+      highlightButton.className = "ollow-highlight-btn";
+      highlightButton.title = "Highlight color";
+      highlightButton.setAttribute("aria-label", "Highlight color");
+      highlightButton.setAttribute("aria-haspopup", "menu");
+      highlightButton.setAttribute("aria-expanded", "false");
+      highlightButton.innerHTML = `
+        <span class="ollow-highlight-label" aria-hidden="true">ab</span>
+        <span class="ollow-highlight-bar"></span>
+        <span class="ollow-highlight-arrow" aria-hidden="true">▾</span>
+      `;
+      highlightButton.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        this.saveSelection();
+      });
+      highlightButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        this.toggleHighlightPopover();
+      });
+
+      const highlightPopover = document.createElement("div");
+      highlightPopover.className = "ollow-highlight-popover";
+      highlightPopover.hidden = true;
+      highlightPopover.setAttribute("role", "menu");
+      highlightPopover.setAttribute("aria-label", "Highlight color palette");
+      highlightPopover.innerHTML = this.buildHighlightPopoverMarkup();
+      highlightPopover.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      highlightPopover.addEventListener("click", (event) => {
+        const choice = event.target.closest("[data-highlight-choice]");
+        if (choice) {
+          event.preventDefault();
+          this.applyHighlightColor(choice.dataset.highlightChoice);
+          return;
+        }
+        const reset = event.target.closest("[data-highlight-reset]");
+        if (reset) {
+          event.preventDefault();
+          this.removeHighlightColor();
+        }
+      });
+
+      const highlightCustomInput = highlightPopover.querySelector("[data-highlight-custom]");
+      if (highlightCustomInput) {
+        highlightCustomInput.addEventListener("input", () => {
+          const hex = normalizeHexColor(highlightCustomInput.value);
+          if (!hex) return;
+          this.applyHighlightColor(hex);
+        });
+      }
+
+      highlightControl.appendChild(highlightButton);
+      highlightControl.appendChild(highlightPopover);
+
       this.fontFamilyButton = fontButton;
       this.fontFamilyMenu = fontMenu;
       this.fontFamilyLabel = fontButton.querySelector(".ollow-current-font");
       this.fontSizeInput = sizeInput;
       this.fontSizeMenu = sizeMenu;
+      this.textColorButton = colorButton;
+      this.textColorBar = colorButton.querySelector(".ollow-text-color-bar");
+      this.textColorPopover = colorPopover;
+      this.textColorCustomInput = customInput;
+      this.highlightButton = highlightButton;
+      this.highlightBar = highlightButton.querySelector(".ollow-highlight-bar");
+      this.highlightPopover = highlightPopover;
+      this.highlightCustomInput = highlightCustomInput;
 
       group.appendChild(fontControl);
       group.appendChild(sizeControl);
+      group.appendChild(colorControl);
+      group.appendChild(highlightControl);
       return group;
+    }
+
+    buildStylesControl() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "ollow-styles-control";
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "ollow-styles-button";
+      button.setAttribute("aria-haspopup", "menu");
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-label", "Styles");
+      button.innerHTML = `<span class="ollow-styles-current">Styles</span><span class="ollow-styles-arrow" aria-hidden="true">▾</span>`;
+      button.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        this.saveSelection();
+      });
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        this.toggleStylesMenu();
+      });
+
+      const menu = document.createElement("div");
+      menu.className = "ollow-styles-menu";
+      menu.hidden = true;
+      menu.setAttribute("role", "menu");
+      menu.innerHTML = this.buildStylesMenuMarkup();
+      menu.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      menu.addEventListener("click", (event) => {
+        const option = event.target.closest("[data-style-preset]");
+        if (!option) return;
+        event.preventDefault();
+        this.applyStylePreset(option.dataset.stylePreset);
+        this.closeStylesMenu();
+      });
+
+      this.stylesButton = button;
+      this.stylesMenu = menu;
+      this.stylesLabel = button.querySelector(".ollow-styles-current");
+
+      wrapper.appendChild(button);
+      wrapper.appendChild(menu);
+      return wrapper;
+    }
+
+    buildFormatPainterButton() {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "nw-toolbar-button ollow-format-painter-button";
+      button.title = "Format Painter";
+      button.setAttribute("aria-label", "Format Painter");
+      button.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 7h10v3l4 4v3h-2v4h-3v-6l-3-3H4z" fill="currentColor"></path>
+          <path d="M6 3h8v3H6z" fill="currentColor"></path>
+        </svg>
+      `;
+      button.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        this.saveSelection();
+      });
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        window.clearTimeout(this.formatPainterClickTimer);
+        this.formatPainterClickTimer = window.setTimeout(() => {
+          this.armFormatPainter(false);
+        }, 180);
+      });
+      button.addEventListener("dblclick", (event) => {
+        event.preventDefault();
+        window.clearTimeout(this.formatPainterClickTimer);
+        this.armFormatPainter(true);
+      });
+      this.toolbarButtons["format-painter"] = button;
+      this.formatPainterButton = button;
+      return button;
+    }
+
+    buildStylesMenuMarkup() {
+      return STYLE_PRESETS.map((preset) => this.buildStyleOptionMarkup(preset)).join("");
+    }
+
+    buildStyleOptionMarkup(preset) {
+      const previewClass = preset.className ? ` ${preset.className}` : "";
+      return `<button type="button" class="ollow-style-option" data-style-preset="${escapeHtml(preset.key)}"><span class="ollow-style-option-check" aria-hidden="true">✓</span><span class="ollow-style-option-preview${previewClass}">${escapeHtml(preset.label)}</span></button>`;
+    }
+
+    buildFontMenuMarkup() {
+      const recentFonts = this.getRecentFonts();
+      return `
+        <div class="ollow-font-menu-section">
+          <div class="ollow-font-menu-label">Recent Fonts</div>
+          ${recentFonts.map((key) => this.buildFontOptionMarkup(key)).join("")}
+        </div>
+        <div class="ollow-font-menu-section">
+          <div class="ollow-font-menu-label">All Fonts</div>
+          ${FONT_FAMILIES.map((font) => this.buildFontOptionMarkup(font.key)).join("")}
+        </div>
+      `;
     }
 
     buildFontOptionMarkup(key) {
       const font = FONT_FAMILY_LOOKUP.get(key);
       if (!font) return "";
       return `<button type="button" class="ollow-font-option" data-font-family="${escapeHtml(font.key)}" style="font-family:${escapeHtml(font.stack)};"><span class="ollow-font-option-check" aria-hidden="true">✓</span><span>${escapeHtml(font.label)}</span></button>`;
+    }
+
+    buildTextColorPopoverMarkup() {
+      const recentColors = this.getRecentTextColors();
+      const standardColors = TEXT_COLOR_PRESETS.filter((color) => color.section === "standard");
+      const newsroomColors = TEXT_COLOR_PRESETS.filter((color) => color.section === "newsroom");
+      return `
+        <div class="ollow-text-color-section">
+          <button type="button" class="ollow-text-color-reset" data-text-color-reset="true">
+            <span class="ollow-text-color-reset-icon">A</span>
+            <span>Automatic</span>
+          </button>
+        </div>
+        ${recentColors.length ? `
+          <div class="ollow-text-color-section">
+            <div class="ollow-text-color-section-label">Recent Colors</div>
+            <div class="ollow-text-color-grid">
+              ${recentColors.map((hex) => this.buildRecentTextColorMarkup(hex)).join("")}
+            </div>
+          </div>
+        ` : ""}
+        <div class="ollow-text-color-section">
+          <div class="ollow-text-color-section-label">Theme Colors</div>
+          <div class="ollow-text-color-grid">
+            ${newsroomColors.map((color) => this.buildTextColorOptionMarkup(color)).join("")}
+          </div>
+        </div>
+        <div class="ollow-text-color-section">
+          <div class="ollow-text-color-section-label">Standard Colors</div>
+          <div class="ollow-text-color-grid">
+            ${standardColors.map((color) => this.buildTextColorOptionMarkup(color)).join("")}
+          </div>
+        </div>
+        <div class="ollow-text-color-section">
+          <div class="ollow-text-color-section-label">Custom Color</div>
+          <label class="ollow-text-color-custom-row">
+            <input type="color" value="${escapeHtml(DEFAULT_TEXT_COLOR)}" data-text-color-custom>
+            <span class="ollow-text-color-custom-value">${escapeHtml(DEFAULT_TEXT_COLOR)}</span>
+          </label>
+        </div>
+      `;
+    }
+
+    buildTextColorOptionMarkup(color) {
+      return `<button type="button" class="ollow-text-color-swatch" data-text-color-choice="${escapeHtml(color.key)}" data-text-color-hex="${escapeHtml(color.hex)}" title="${escapeHtml(color.label)}" aria-label="${escapeHtml(color.label)}"><span class="ollow-text-color-chip" style="background:${escapeHtml(color.hex)};"></span><span class="ollow-text-color-name">${escapeHtml(color.label)}</span></button>`;
+    }
+
+    buildRecentTextColorMarkup(hex) {
+      return `<button type="button" class="ollow-text-color-swatch" data-text-color-choice="${escapeHtml(hex)}" data-text-color-hex="${escapeHtml(hex)}" title="${escapeHtml(hex)}" aria-label="${escapeHtml(hex)}"><span class="ollow-text-color-chip" style="background:${escapeHtml(hex)};"></span><span class="ollow-text-color-name">${escapeHtml(hex.toUpperCase())}</span></button>`;
+    }
+
+    buildHighlightPopoverMarkup() {
+      return `
+        <div class="ollow-highlight-section">
+          <button type="button" class="ollow-highlight-reset" data-highlight-reset="true">
+            <span class="ollow-highlight-reset-icon">ab</span>
+            <span>No highlight</span>
+          </button>
+        </div>
+        <div class="ollow-highlight-section">
+          <div class="ollow-highlight-section-label">Preset Colors</div>
+          <div class="ollow-highlight-grid">
+            ${HIGHLIGHT_COLOR_PRESETS.map((color) => this.buildHighlightOptionMarkup(color)).join("")}
+          </div>
+        </div>
+        <div class="ollow-highlight-section">
+          <div class="ollow-highlight-section-label">Custom Color</div>
+          <label class="ollow-highlight-custom-row">
+            <input type="color" value="${escapeHtml(DEFAULT_HIGHLIGHT_COLOR)}" data-highlight-custom>
+            <span class="ollow-highlight-custom-value">${escapeHtml(DEFAULT_HIGHLIGHT_COLOR)}</span>
+          </label>
+        </div>
+      `;
+    }
+
+    buildHighlightOptionMarkup(color) {
+      return `<button type="button" class="ollow-highlight-swatch" data-highlight-choice="${escapeHtml(color.key)}" data-highlight-hex="${escapeHtml(color.hex)}" title="${escapeHtml(color.label)}" aria-label="${escapeHtml(color.label)}"><span class="ollow-highlight-chip" style="background:${escapeHtml(color.hex)};"></span><span class="ollow-highlight-name">${escapeHtml(color.label)}</span></button>`;
+    }
+
+    openStylesMenu() {
+      if (!this.stylesMenu || !this.stylesButton) return;
+      this.closeThemeMenu();
+      this.closeFontFamilyMenu();
+      this.closeFontSizeMenu();
+      this.closeTextColorPopover();
+      this.closeHighlightPopover();
+      this.stylesMenu.hidden = false;
+      this.stylesButton.setAttribute("aria-expanded", "true");
+      this.updateStylesToolbarState();
+    }
+
+    closeStylesMenu() {
+      if (!this.stylesMenu || !this.stylesButton) return;
+      this.stylesMenu.hidden = true;
+      this.stylesButton.setAttribute("aria-expanded", "false");
+    }
+
+    toggleStylesMenu() {
+      if (!this.stylesMenu) return;
+      if (this.stylesMenu.hidden) {
+        this.openStylesMenu();
+      } else {
+        this.closeStylesMenu();
+      }
     }
 
     buildThemeControl() {
@@ -2201,8 +2856,11 @@
 
     toggleThemeMenu() {
       if (!this.themeMenu) return;
+      this.closeStylesMenu();
       this.closeFontFamilyMenu();
       this.closeFontSizeMenu();
+      this.closeTextColorPopover();
+      this.closeHighlightPopover();
       if (this.themeMenu.hidden) {
         this.openThemeMenu();
       } else {
@@ -2229,7 +2887,11 @@
     openFontFamilyMenu() {
       if (!this.fontFamilyMenu || !this.fontFamilyButton) return;
       this.closeThemeMenu();
+      this.closeStylesMenu();
       this.closeFontSizeMenu();
+      this.closeTextColorPopover();
+      this.closeHighlightPopover();
+      this.refreshFontMenu();
       this.fontFamilyMenu.hidden = false;
       this.fontFamilyButton.setAttribute("aria-expanded", "true");
       this.updateFontToolbarState();
@@ -2253,7 +2915,10 @@
     openFontSizeMenu() {
       if (!this.fontSizeMenu) return;
       this.closeThemeMenu();
+      this.closeStylesMenu();
       this.closeFontFamilyMenu();
+      this.closeTextColorPopover();
+      this.closeHighlightPopover();
       this.fontSizeMenu.hidden = false;
       this.updateFontToolbarState();
     }
@@ -2274,6 +2939,72 @@
       const range = this.getSelectionRangeInEditor() || this.savedSelection;
       if (!range || !this.content.contains(range.commonAncestorContainer)) return null;
       return getClosestAlignableTextBlock(range.commonAncestorContainer, this.content) || closestBlock(range.commonAncestorContainer, this.content);
+    }
+
+    getRecentFonts() {
+      const fonts = Array.isArray(this.recentFonts) ? this.recentFonts : [];
+      const unique = [];
+      fonts.forEach((key) => {
+        if (FONT_FAMILY_LOOKUP.has(key) && !unique.includes(key)) {
+          unique.push(key);
+        }
+      });
+      DEFAULT_RECENT_FONT_KEYS.forEach((key) => {
+        if (FONT_FAMILY_LOOKUP.has(key) && !unique.includes(key) && unique.length < 5) {
+          unique.push(key);
+        }
+      });
+      return unique.slice(0, 5);
+    }
+
+    rememberRecentFont(fontKey) {
+      if (!FONT_FAMILY_LOOKUP.has(fontKey)) return;
+      const recentFonts = this.getRecentFonts().filter((key) => key !== fontKey);
+      recentFonts.unshift(fontKey);
+      this.recentFonts = recentFonts.slice(0, 5);
+      writeStoredRecentFonts(this.recentFonts);
+      this.refreshFontMenu();
+    }
+
+    refreshFontMenu() {
+      if (!this.fontFamilyMenu) return;
+      this.fontFamilyMenu.innerHTML = this.buildFontMenuMarkup();
+    }
+
+    getRecentTextColors() {
+      const colors = Array.isArray(this.recentTextColors) ? this.recentTextColors : [];
+      const unique = [];
+      colors.forEach((value) => {
+        const hex = normalizeHexColor(value);
+        if (hex && !unique.includes(hex)) {
+          unique.push(hex);
+        }
+      });
+      return unique.slice(0, 6);
+    }
+
+    rememberRecentTextColor(value) {
+      const hex = normalizeHexColor(value);
+      if (!hex) return;
+      const recentColors = this.getRecentTextColors().filter((item) => item !== hex);
+      recentColors.unshift(hex);
+      this.recentTextColors = recentColors.slice(0, 6);
+      writeStoredRecentColors(this.recentTextColors);
+      this.refreshTextColorPopover();
+    }
+
+    refreshTextColorPopover() {
+      if (!this.textColorPopover) return;
+      this.textColorPopover.innerHTML = this.buildTextColorPopoverMarkup();
+      this.textColorCustomInput = this.textColorPopover.querySelector("[data-text-color-custom]");
+      if (this.textColorCustomInput) {
+        this.textColorCustomInput.addEventListener("input", () => {
+          const hex = normalizeHexColor(this.textColorCustomInput.value);
+          if (!hex) return;
+          this.applyTextColor(hex);
+        });
+      }
+      this.updateColorToolbarState();
     }
 
     getCurrentFontFamily() {
@@ -2323,6 +3054,611 @@
       }
     }
 
+    getCurrentTextColor() {
+      const range = this.getSelectionRangeInEditor() || this.savedSelection;
+      let current = range ? (range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer) : null;
+      while (current && current !== this.content) {
+        const color = getTextColorFromElement(current);
+        if (color) {
+          return color;
+        }
+        current = current.parentNode;
+      }
+      return { type: "default", key: "", hex: DEFAULT_TEXT_COLOR };
+    }
+
+    updateColorToolbarState() {
+      const current = this.getCurrentTextColor();
+      const activeHex = normalizeHexColor(current && current.hex) || DEFAULT_TEXT_COLOR;
+      if (this.textColorBar) {
+        this.textColorBar.style.background = activeHex;
+      }
+      if (this.textColorButton) {
+        this.textColorButton.setAttribute("aria-expanded", this.textColorPopover && !this.textColorPopover.hidden ? "true" : "false");
+      }
+      if (this.textColorCustomInput) {
+        this.textColorCustomInput.value = activeHex;
+        const valueLabel = this.textColorCustomInput.parentNode && this.textColorCustomInput.parentNode.querySelector(".ollow-text-color-custom-value");
+        if (valueLabel) {
+          valueLabel.textContent = activeHex.toUpperCase();
+        }
+      }
+      if (!this.textColorPopover) return;
+      Array.from(this.textColorPopover.querySelectorAll("[data-text-color-choice]")).forEach((button) => {
+        const choice = String(button.dataset.textColorChoice || "");
+        const swatchHex = normalizeHexColor(button.dataset.textColorHex || choice);
+        const isPresetMatch = current.type === "preset" && choice === current.key;
+        const isCustomMatch = current.type !== "preset" && swatchHex && swatchHex === activeHex;
+        button.classList.toggle("is-active", isPresetMatch || isCustomMatch);
+      });
+      const resetButton = this.textColorPopover.querySelector("[data-text-color-reset]");
+      if (resetButton) {
+        resetButton.classList.toggle("is-active", current.type === "default");
+      }
+    }
+
+    openTextColorPopover() {
+      if (!this.textColorPopover || !this.textColorButton) return;
+      this.closeThemeMenu();
+      this.closeStylesMenu();
+      this.closeFontFamilyMenu();
+      this.closeFontSizeMenu();
+      this.closeHighlightPopover();
+      this.refreshTextColorPopover();
+      this.textColorPopover.hidden = false;
+      this.textColorButton.setAttribute("aria-expanded", "true");
+      this.updateColorToolbarState();
+    }
+
+    closeTextColorPopover() {
+      if (!this.textColorPopover || !this.textColorButton) return;
+      this.textColorPopover.hidden = true;
+      this.textColorButton.setAttribute("aria-expanded", "false");
+    }
+
+    toggleTextColorPopover() {
+      if (!this.textColorPopover) return;
+      if (this.textColorPopover.hidden) {
+        this.openTextColorPopover();
+      } else {
+        this.closeTextColorPopover();
+      }
+    }
+
+    getCurrentHighlightColor() {
+      const range = this.getSelectionRangeInEditor() || this.savedSelection;
+      let current = range ? (range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer) : null;
+      while (current && current !== this.content) {
+        const highlight = getHighlightColorFromElement(current);
+        if (highlight) {
+          return highlight;
+        }
+        current = current.parentNode;
+      }
+      return { type: "default", key: "", hex: DEFAULT_HIGHLIGHT_COLOR };
+    }
+
+    getCurrentStylePreset() {
+      const range = this.getSelectionRangeInEditor() || this.savedSelection;
+      let current = range ? (range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer) : null;
+      while (current && current !== this.content) {
+        const preset = getStylePresetFromElement(current);
+        if (preset) return preset;
+        current = current.parentNode;
+      }
+      const block = this.getCurrentTextBlock();
+      return getStylePresetFromElement(block) || STYLE_PRESET_LOOKUP.get("normal");
+    }
+
+    updateStylesToolbarState() {
+      const currentPreset = this.getCurrentStylePreset() || STYLE_PRESET_LOOKUP.get("normal");
+      if (this.stylesLabel) {
+        this.stylesLabel.textContent = currentPreset ? currentPreset.label : "Styles";
+      }
+      if (this.stylesButton) {
+        this.stylesButton.setAttribute("aria-expanded", this.stylesMenu && !this.stylesMenu.hidden ? "true" : "false");
+      }
+      if (!this.stylesMenu) return;
+      Array.from(this.stylesMenu.querySelectorAll("[data-style-preset]")).forEach((button) => {
+        const isActive = button.dataset.stylePreset === (currentPreset ? currentPreset.key : "normal");
+        button.classList.toggle("is-active", isActive);
+      });
+    }
+
+    updateHighlightToolbarState() {
+      const current = this.getCurrentHighlightColor();
+      const activeHex = normalizeHexColor(current && current.hex) || DEFAULT_HIGHLIGHT_COLOR;
+      if (this.highlightBar) {
+        this.highlightBar.style.background = current.type === "default" ? "transparent" : activeHex;
+      }
+      if (this.highlightButton) {
+        this.highlightButton.setAttribute("aria-expanded", this.highlightPopover && !this.highlightPopover.hidden ? "true" : "false");
+      }
+      if (this.highlightCustomInput) {
+        this.highlightCustomInput.value = activeHex;
+        const valueLabel = this.highlightCustomInput.parentNode && this.highlightCustomInput.parentNode.querySelector(".ollow-highlight-custom-value");
+        if (valueLabel) {
+          valueLabel.textContent = activeHex.toUpperCase();
+        }
+      }
+      if (!this.highlightPopover) return;
+      Array.from(this.highlightPopover.querySelectorAll("[data-highlight-choice]")).forEach((button) => {
+        const choice = String(button.dataset.highlightChoice || "");
+        const swatchHex = normalizeHexColor(button.dataset.highlightHex || choice);
+        const isPresetMatch = current.type === "preset" && choice === current.key;
+        const isCustomMatch = current.type !== "preset" && current.type !== "default" && swatchHex && swatchHex === activeHex;
+        button.classList.toggle("is-active", isPresetMatch || isCustomMatch);
+      });
+      const resetButton = this.highlightPopover.querySelector("[data-highlight-reset]");
+      if (resetButton) {
+        resetButton.classList.toggle("is-active", current.type === "default");
+      }
+    }
+
+    openHighlightPopover() {
+      if (!this.highlightPopover || !this.highlightButton) return;
+      this.closeThemeMenu();
+      this.closeStylesMenu();
+      this.closeFontFamilyMenu();
+      this.closeFontSizeMenu();
+      this.closeTextColorPopover();
+      this.highlightPopover.hidden = false;
+      this.highlightButton.setAttribute("aria-expanded", "true");
+      this.updateHighlightToolbarState();
+    }
+
+    closeHighlightPopover() {
+      if (!this.highlightPopover || !this.highlightButton) return;
+      this.highlightPopover.hidden = true;
+      this.highlightButton.setAttribute("aria-expanded", "false");
+    }
+
+    toggleHighlightPopover() {
+      if (!this.highlightPopover) return;
+      if (this.highlightPopover.hidden) {
+        this.openHighlightPopover();
+      } else {
+        this.closeHighlightPopover();
+      }
+    }
+
+    unwrapInlineCodePreset(codeElement) {
+      if (!codeElement || codeElement.tagName.toUpperCase() !== "CODE") return;
+      codeElement.classList.remove("ollow-style-inline-code");
+      if (!codeElement.classList.length && !codeElement.attributes.length) {
+        unwrapElement(codeElement);
+        return;
+      }
+      if (!codeElement.classList.length) {
+        codeElement.removeAttribute("class");
+      }
+    }
+
+    removeStylePresets(element) {
+      if (!element) return;
+      if (element.nodeType === Node.ELEMENT_NODE) {
+        removeStylePresetClassesFromElement(element);
+        if (element.tagName.toUpperCase() === "CODE" && element.classList.contains("ollow-style-inline-code")) {
+          this.unwrapInlineCodePreset(element);
+        }
+      }
+      Array.from((element.querySelectorAll && element.querySelectorAll("*")) || []).forEach((node) => {
+        removeStylePresetClassesFromElement(node);
+        if (node.tagName.toUpperCase() === "CODE" && node.classList.contains("ollow-style-inline-code")) {
+          this.unwrapInlineCodePreset(node);
+        }
+      });
+    }
+
+    removeKnownFormattingClasses(element, options) {
+      if (!element || element.nodeType !== Node.ELEMENT_NODE) return;
+      const config = Object.assign({ removeBlockStyles: false }, options || {});
+      removeFontFamilyClassesFromElement(element);
+      removeFontSizeClassesFromElement(element);
+      removeTextColorClassesFromElement(element);
+      removeHighlightClassesFromElement(element);
+      if (config.removeBlockStyles) {
+        removeStylePresetClassesFromElement(element);
+      } else if (element.tagName.toUpperCase() === "CODE" && element.classList.contains("ollow-style-inline-code")) {
+        element.classList.remove("ollow-style-inline-code");
+      }
+      if (element.tagName.toUpperCase() === "A") {
+        removeFontFamilyClassesFromElement(element);
+        removeFontSizeClassesFromElement(element);
+        removeTextColorClassesFromElement(element);
+        removeHighlightClassesFromElement(element);
+      }
+      if (element.tagName.toUpperCase() === "SPAN" && !element.classList.length) {
+        element.removeAttribute("class");
+      }
+      if (element.getAttribute("style")) {
+        element.removeAttribute("style");
+      }
+      if (element.classList && !element.classList.length) {
+        element.removeAttribute("class");
+      }
+    }
+
+    unwrapInlineFormatting(node) {
+      if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
+      const tagName = node.tagName.toUpperCase();
+      if (isInlineFormattingTag(tagName)) {
+        unwrapElement(node);
+        return;
+      }
+      if (isInlineCodeFormattingElement(node)) {
+        unwrapElement(node);
+        return;
+      }
+      if (tagName === "SPAN") {
+        this.removeKnownFormattingClasses(node);
+        if (!node.attributes.length) {
+          unwrapElement(node);
+        }
+      }
+    }
+
+    cleanEmptySpans(root) {
+      if (!root || !root.querySelectorAll) return;
+      Array.from(root.querySelectorAll("span")).forEach((span) => {
+        this.removeKnownFormattingClasses(span);
+        if (!span.attributes.length) {
+          unwrapElement(span);
+        }
+      });
+    }
+
+    stripFormattingWithin(root) {
+      if (!root) return;
+      const elements = Array.from((root.querySelectorAll && root.querySelectorAll("*")) || []);
+      elements.reverse().forEach((element) => {
+        if (["IMG", "IFRAME", "TABLE", "TBODY", "THEAD", "TR", "TD", "TH", "FIGURE", "SECTION", "DIV", "PRE"].includes(element.tagName.toUpperCase())) {
+          return;
+        }
+        this.removeKnownFormattingClasses(element);
+        this.unwrapInlineFormatting(element);
+      });
+      if (root.nodeType === Node.ELEMENT_NODE) {
+        this.removeKnownFormattingClasses(root, { removeBlockStyles: true });
+      }
+      this.cleanEmptySpans(root);
+    }
+
+    removeFormattingFromSelection() {
+      this.focus();
+      this.restoreSelection();
+      const selection = window.getSelection();
+      const range = this.getSelectionRangeInEditor();
+      if (!selection || !range) return false;
+
+      if (range.collapsed) {
+        const block = this.getCurrentTextBlock();
+        if (!block) return false;
+        if (["FIGURE", "SECTION", "DIV", "PRE"].includes(block.tagName.toUpperCase()) && !isAlignableTextBlock(block) && block.tagName.toUpperCase() !== "BLOCKQUOTE") {
+          return false;
+        }
+        this.stripFormattingWithin(block);
+        this.saveSelection();
+        this.handleContentChange();
+        return true;
+      }
+
+      const fragment = range.extractContents();
+      this.stripFormattingWithin(fragment);
+      const lastNode = fragment.lastChild;
+      range.insertNode(fragment);
+      if (lastNode) {
+        placeCaretAfter(lastNode);
+      }
+      this.saveSelection();
+      this.handleContentChange();
+      return true;
+    }
+
+    captureCurrentFormat() {
+      const range = this.getSelectionRangeInEditor() || this.savedSelection;
+      if (!range) return null;
+      const ancestor = range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer;
+      const block = this.getCurrentTextBlock();
+      const stylePreset = this.getCurrentStylePreset();
+      const inlineCode = Boolean(ancestor && ancestor.closest && ancestor.closest("code.ollow-style-inline-code") && !ancestor.closest("pre"));
+      return {
+        inlineTags: {
+          bold: safeQueryState("bold"),
+          italic: safeQueryState("italic"),
+          underline: safeQueryState("underline"),
+          strikethrough: safeQueryState("strikeThrough") || safeQueryState("strikethrough"),
+          subscript: safeQueryState("subscript"),
+          superscript: safeQueryState("superscript"),
+          inlineCode,
+        },
+        fontFamily: this.getCurrentFontFamily(),
+        fontSize: this.getCurrentFontSize(),
+        textColor: this.getCurrentTextColor(),
+        highlight: this.getCurrentHighlightColor(),
+        stylePreset: stylePreset && stylePreset.key !== "normal" ? stylePreset.key : "",
+        textAlignment: block ? this.getSelectedTextAlignment() : "",
+      };
+    }
+
+    armFormatPainter(locked) {
+      const format = this.captureCurrentFormat();
+      if (!format) {
+        this.showFeedback("Select styled text first.");
+        return false;
+      }
+      this.formatPainterState = {
+        active: true,
+        locked: Boolean(locked),
+        format,
+      };
+      this.showFeedback(locked ? "Format Painter locked. Select text to apply. Press Esc to cancel." : "Select text to apply formatting.");
+      this.updateToolbarState();
+      return true;
+    }
+
+    clearFormatPainter(options) {
+      const config = options || {};
+      this.formatPainterState = null;
+      window.clearTimeout(this.formatPainterClickTimer);
+      if (!config.keepFeedback) {
+        this.clearFeedback();
+      }
+      this.updateToolbarState();
+    }
+
+    setFormatPainterLocked(value) {
+      if (!this.formatPainterState) return;
+      this.formatPainterState.locked = Boolean(value);
+      this.updateToolbarState();
+    }
+
+    buildInlineFormatWrapper(fragment, format) {
+      let node = fragment;
+      const hasFontFamily = format.fontFamily && format.fontFamily !== DEFAULT_FONT_FAMILY_KEY;
+      const hasFontSize = format.fontSize && format.fontSize !== DEFAULT_FONT_SIZE;
+      const hasTextColor = format.textColor && format.textColor.type && format.textColor.type !== "default";
+      const hasHighlight = format.highlight && format.highlight.type && format.highlight.type !== "default";
+      if (hasFontFamily || hasFontSize || hasTextColor || hasHighlight) {
+        const span = document.createElement("span");
+        if (hasFontFamily) {
+          span.classList.add(getFontFamilyClassName(format.fontFamily));
+        }
+        if (hasFontSize) {
+          span.classList.add(getFontSizeClassName(format.fontSize));
+        }
+        if (hasTextColor) {
+          if (format.textColor.type === "preset") {
+            span.classList.add(getTextColorClassName(format.textColor.key));
+          } else if (format.textColor.type === "custom") {
+            span.style.color = format.textColor.hex;
+          }
+        }
+        if (hasHighlight) {
+          if (format.highlight.type === "preset") {
+            span.classList.add(getHighlightClassName(format.highlight.key));
+          } else if (format.highlight.type === "custom") {
+            span.style.backgroundColor = format.highlight.hex;
+          }
+        }
+        span.appendChild(node);
+        node = span;
+      }
+      const tagOrder = [];
+      if (format.inlineTags.bold) tagOrder.push("strong");
+      if (format.inlineTags.italic) tagOrder.push("em");
+      if (format.inlineTags.underline) tagOrder.push("u");
+      if (format.inlineTags.strikethrough) tagOrder.push("s");
+      if (format.inlineTags.subscript) tagOrder.push("sub");
+      if (format.inlineTags.superscript) tagOrder.push("sup");
+      tagOrder.forEach((tagName) => {
+        const wrapper = document.createElement(tagName);
+        wrapper.appendChild(node);
+        node = wrapper;
+      });
+      if (format.inlineTags.inlineCode) {
+        const code = document.createElement("code");
+        code.className = "ollow-style-inline-code";
+        code.appendChild(node);
+        node = code;
+      }
+      return node;
+    }
+
+    applyCapturedFormatToSelection() {
+      if (!this.formatPainterState || !this.formatPainterState.active) return false;
+      const format = this.formatPainterState.format;
+      this.focus();
+      this.restoreSelection();
+      const range = this.getSelectionRangeInEditor();
+      if (!range || range.collapsed) return false;
+
+      const blocks = this.getCurrentBlocksFromSelection();
+      blocks.forEach((block) => {
+        removeStylePresetClassesFromElement(block);
+        if (format.stylePreset) {
+          const preset = STYLE_PRESET_LOOKUP.get(format.stylePreset);
+          if (preset && preset.type === "block") {
+            block.classList.add(preset.className);
+          } else if (preset && preset.type === "blockquote") {
+            block.classList.add(preset.className);
+          }
+        }
+        if (format.textAlignment) {
+          this.removeTextAlignmentClasses(block);
+          const alignmentClass = getTextAlignmentClass(format.textAlignment);
+          if (alignmentClass) {
+            block.classList.add(alignmentClass);
+          }
+        }
+      });
+
+      const fragment = range.extractContents();
+      this.stripFormattingWithin(fragment);
+      const content = this.buildInlineFormatWrapper(fragment, format);
+      range.insertNode(content);
+      placeCaretAfter(content);
+      this.saveSelection();
+      this.handleContentChange();
+      if (!this.formatPainterState.locked) {
+        this.clearFormatPainter();
+      } else {
+        this.showFeedback("Format Painter locked. Select text to apply. Press Esc to cancel.");
+      }
+      return true;
+    }
+
+    applyCapturedFormatToBlock(block) {
+      if (!this.formatPainterState || !this.formatPainterState.active || !block) return false;
+      const format = this.formatPainterState.format;
+      if (["FIGURE", "SECTION", "DIV", "PRE"].includes(block.tagName.toUpperCase()) && !isAlignableTextBlock(block) && block.tagName.toUpperCase() !== "BLOCKQUOTE") {
+        return false;
+      }
+      removeStylePresetClassesFromElement(block);
+      removeFontFamilyClassesFromElement(block);
+      removeFontSizeClassesFromElement(block);
+      removeTextColorClassesFromElement(block);
+      removeHighlightClassesFromElement(block);
+      if (format.stylePreset) {
+        const preset = STYLE_PRESET_LOOKUP.get(format.stylePreset);
+        if (preset && preset.type !== "inline-code") {
+          block.classList.add(preset.className);
+        }
+      }
+      if (format.textAlignment) {
+        this.removeTextAlignmentClasses(block);
+        const alignmentClass = getTextAlignmentClass(format.textAlignment);
+        if (alignmentClass) {
+          block.classList.add(alignmentClass);
+        }
+      }
+      if (format.fontFamily && format.fontFamily !== DEFAULT_FONT_FAMILY_KEY) {
+        block.classList.add(getFontFamilyClassName(format.fontFamily));
+      }
+      if (format.fontSize && format.fontSize !== DEFAULT_FONT_SIZE) {
+        block.classList.add(getFontSizeClassName(format.fontSize));
+      }
+      if (format.textColor && format.textColor.type && format.textColor.type !== "default") {
+        if (format.textColor.type === "preset") {
+          block.classList.add(getTextColorClassName(format.textColor.key));
+        } else {
+          block.style.color = format.textColor.hex;
+        }
+      }
+      if (format.highlight && format.highlight.type && format.highlight.type !== "default") {
+        if (format.highlight.type === "preset") {
+          block.classList.add(getHighlightClassName(format.highlight.key));
+        } else {
+          block.style.backgroundColor = format.highlight.hex;
+        }
+      }
+      this.saveSelection();
+      this.handleContentChange();
+      if (!this.formatPainterState.locked) {
+        this.clearFormatPainter();
+      } else {
+        this.showFeedback("Format Painter locked. Select text to apply. Press Esc to cancel.");
+      }
+      return true;
+    }
+
+    tryApplyFormatPainterToSelection() {
+      if (!this.formatPainterState || !this.formatPainterState.active) return false;
+      const range = this.getSelectionRangeInEditor();
+      if (!range || range.collapsed) return false;
+      return this.applyCapturedFormatToSelection();
+    }
+
+    resetStylePreset() {
+      const blocks = this.getCurrentBlocksFromSelection();
+      if (blocks.length) {
+        blocks.forEach((block) => {
+          removeStylePresetClassesFromElement(block);
+          if (block.tagName.toUpperCase() === "BLOCKQUOTE" && block.classList.contains("ollow-style-quote-emphasis")) {
+            block.classList.remove("ollow-style-quote-emphasis");
+          }
+        });
+      }
+      const range = this.getSelectionRangeInEditor() || this.savedSelection;
+      let current = range ? (range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer) : null;
+      while (current && current !== this.content) {
+        if (current.tagName && current.tagName.toUpperCase() === "CODE" && current.classList.contains("ollow-style-inline-code")) {
+          this.unwrapInlineCodePreset(current);
+          break;
+        }
+        current = current.parentNode;
+      }
+      this.saveSelection();
+      this.handleContentChange();
+    }
+
+    applyInlineCodePreset() {
+      this.focus();
+      this.restoreSelection();
+      const selection = window.getSelection();
+      const range = this.getSelectionRangeInEditor();
+      if (!selection || !range) return false;
+      if (range.collapsed) {
+        const block = this.getCurrentTextBlock();
+        if (!block) return false;
+        const code = document.createElement("code");
+        code.className = "ollow-style-inline-code";
+        code.textContent = block.textContent || "";
+        block.textContent = "";
+        block.appendChild(code);
+        this.saveSelection();
+        this.handleContentChange();
+        return true;
+      }
+      const wrapper = document.createElement("code");
+      wrapper.className = "ollow-style-inline-code";
+      const fragment = range.extractContents();
+      this.removeStylePresets(fragment);
+      wrapper.appendChild(fragment);
+      range.insertNode(wrapper);
+      placeCaretAfter(wrapper);
+      this.saveSelection();
+      this.handleContentChange();
+      return true;
+    }
+
+    applyBlockStylePreset(preset) {
+      if (preset.type === "blockquote") {
+        this.applyBlock("BLOCKQUOTE");
+      }
+      const blocks = this.getCurrentBlocksFromSelection();
+      if (!blocks.length) {
+        const block = this.getCurrentTextBlock();
+        if (block) blocks.push(block);
+      }
+      if (!blocks.length) return false;
+      blocks.forEach((block) => {
+        removeStylePresetClassesFromElement(block);
+        block.classList.add(preset.className);
+      });
+      this.saveSelection();
+      this.handleContentChange();
+      return true;
+    }
+
+    applyStylePreset(styleName) {
+      const preset = STYLE_PRESET_LOOKUP.get(styleName) || STYLE_PRESET_LOOKUP.get("normal");
+      if (!preset) return false;
+      if (preset.type === "reset") {
+        this.resetStylePreset();
+        this.updateStylesToolbarState();
+        return true;
+      }
+      if (preset.type === "inline-code") {
+        const applied = this.applyInlineCodePreset();
+        this.updateStylesToolbarState();
+        return applied;
+      }
+      const applied = this.applyBlockStylePreset(preset);
+      this.updateStylesToolbarState();
+      return applied;
+    }
+
     applyTypographyToBlock(options) {
       const block = this.getCurrentTextBlock();
       if (!block) return false;
@@ -2333,6 +3669,26 @@
       if (options.fontSize) {
         removeFontSizeClassesFromElement(block);
         block.classList.add(getFontSizeClassName(options.fontSize));
+      }
+      if (options.textColor === null) {
+        removeTextColorClassesFromElement(block);
+      } else if (options.textColor) {
+        removeTextColorClassesFromElement(block);
+        if (options.textColor.type === "preset") {
+          block.classList.add(getTextColorClassName(options.textColor.key));
+        } else if (options.textColor.type === "custom") {
+          block.style.color = options.textColor.hex;
+        }
+      }
+      if (options.highlight === null) {
+        removeHighlightClassesFromElement(block);
+      } else if (options.highlight) {
+        removeHighlightClassesFromElement(block);
+        if (options.highlight.type === "preset") {
+          block.classList.add(getHighlightClassName(options.highlight.key));
+        } else if (options.highlight.type === "custom") {
+          block.style.backgroundColor = options.highlight.hex;
+        }
       }
       this.saveSelection();
       this.handleContentChange();
@@ -2362,11 +3718,35 @@
       if (options.fontSize) {
         wrapper.classList.add(getFontSizeClassName(options.fontSize));
       }
+      if (options.textColor && options.textColor.type === "preset") {
+        wrapper.classList.add(getTextColorClassName(options.textColor.key));
+      } else if (options.textColor && options.textColor.type === "custom") {
+        wrapper.style.color = options.textColor.hex;
+      }
+      if (options.highlight && options.highlight.type === "preset") {
+        wrapper.classList.add(getHighlightClassName(options.highlight.key));
+      } else if (options.highlight && options.highlight.type === "custom") {
+        wrapper.style.backgroundColor = options.highlight.hex;
+      }
       const fragment = range.extractContents();
-      removeTypographyClasses(fragment, { fontFamily: Boolean(options.fontFamily), fontSize: Boolean(options.fontSize) });
-      wrapper.appendChild(fragment);
-      range.insertNode(wrapper);
-      placeCaretAfter(wrapper);
+      removeTypographyClasses(fragment, {
+        fontFamily: Boolean(options.fontFamily),
+        fontSize: Boolean(options.fontSize),
+        textColor: Object.prototype.hasOwnProperty.call(options, "textColor"),
+        highlight: Object.prototype.hasOwnProperty.call(options, "highlight"),
+      });
+      const shouldWrap = wrapper.classList.length > 0 || Boolean(wrapper.getAttribute("style"));
+      if (shouldWrap) {
+        wrapper.appendChild(fragment);
+        range.insertNode(wrapper);
+        placeCaretAfter(wrapper);
+      } else {
+        const lastNode = fragment.lastChild;
+        range.insertNode(fragment);
+        if (lastNode) {
+          placeCaretAfter(lastNode);
+        }
+      }
       this.saveSelection();
       this.handleContentChange();
       return true;
@@ -2374,6 +3754,7 @@
 
     applyFontFamily(fontKey) {
       const key = FONT_FAMILY_LOOKUP.has(fontKey) ? fontKey : DEFAULT_FONT_FAMILY_KEY;
+      this.rememberRecentFont(key);
       this.applyTypographyToSelection({ fontFamily: key });
       this.updateFontToolbarState();
     }
@@ -2382,6 +3763,55 @@
       const normalized = getClosestFontSize(size);
       this.applyTypographyToSelection({ fontSize: normalized });
       this.updateFontToolbarState();
+    }
+
+    applyTextColor(value) {
+      this.focus();
+      this.restoreSelection();
+      const normalizedHex = normalizeHexColor(value);
+      const preset = TEXT_COLOR_LOOKUP.get(value) || getTextColorPresetByHex(value);
+      const textColor = preset
+        ? { type: "preset", key: preset.key, hex: preset.hex }
+        : (normalizedHex ? { type: "custom", key: "", hex: normalizedHex } : null);
+      if (!textColor) return false;
+      const applied = this.applyTypographyToSelection({ textColor });
+      if (!applied) return false;
+      this.rememberRecentTextColor(textColor.hex);
+      this.updateColorToolbarState();
+      return true;
+    }
+
+    removeTextColor() {
+      this.focus();
+      this.restoreSelection();
+      const applied = this.applyTypographyToSelection({ textColor: null });
+      if (!applied) return false;
+      this.updateColorToolbarState();
+      return true;
+    }
+
+    applyHighlightColor(value) {
+      this.focus();
+      this.restoreSelection();
+      const normalizedHex = normalizeHexColor(value);
+      const preset = HIGHLIGHT_COLOR_LOOKUP.get(value) || getHighlightPresetByHex(value);
+      const highlight = preset
+        ? { type: "preset", key: preset.key, hex: preset.hex }
+        : (normalizedHex ? { type: "custom", key: "", hex: normalizedHex } : null);
+      if (!highlight) return false;
+      const applied = this.applyTypographyToSelection({ highlight });
+      if (!applied) return false;
+      this.updateHighlightToolbarState();
+      return true;
+    }
+
+    removeHighlightColor() {
+      this.focus();
+      this.restoreSelection();
+      const applied = this.applyTypographyToSelection({ highlight: null });
+      if (!applied) return false;
+      this.updateHighlightToolbarState();
+      return true;
     }
 
     stepFontSize(direction) {
@@ -2540,6 +3970,18 @@
       });
       this.addShortcut("mod+u", () => {
         this.execCommand("underline");
+      });
+      this.addShortcut("mod+shift+x", () => {
+        this.execCommand("strikeThrough");
+      });
+      this.addShortcut("mod+,", () => {
+        this.execExclusiveInlineCommand("subscript", "superscript");
+      });
+      this.addShortcut("mod+.", () => {
+        this.execExclusiveInlineCommand("superscript", "subscript");
+      });
+      this.addShortcut("mod+\\", () => {
+        this.removeFormattingFromSelection();
       });
       this.addShortcut("mod+k", () => {
         this.openLinkModal();
@@ -2745,7 +4187,11 @@
       });
 
       this.content.addEventListener("mouseup", () => {
-        this.updateToolbarState();
+        window.setTimeout(() => {
+          if (!this.tryApplyFormatPainterToSelection()) {
+            this.updateToolbarState();
+          }
+        }, 0);
       });
 
       this.content.addEventListener("keydown", (event) => {
@@ -2833,6 +4279,14 @@
     }
 
     handleContentClick(event) {
+      if (this.formatPainterState && this.formatPainterState.active) {
+        const block = getClosestAlignableTextBlock(event.target, this.content) || closestBlock(event.target, this.content);
+        if (block && !["FIGURE", "SECTION", "DIV", "PRE"].includes(block.tagName.toUpperCase())) {
+          this.applyCapturedFormatToBlock(block);
+          return;
+        }
+      }
+
       const tableCell = getTableCell(event.target, this.content);
       if (tableCell) {
         this.selectTableCell(tableCell);
@@ -2850,8 +4304,11 @@
 
     handleDocumentPointerDown(event) {
       if (!this.wrapper || !this.wrapper.contains(event.target)) {
+        this.closeStylesMenu();
         this.closeFontFamilyMenu();
         this.closeFontSizeMenu();
+        this.closeTextColorPopover();
+        this.closeHighlightPopover();
         this.closeThemeMenu();
         this.clearMediaSelection();
         this.clearTableSelection();
@@ -2861,15 +4318,24 @@
       if (
         (this.fontFamilyMenu && this.fontFamilyMenu.contains(event.target)) ||
         (this.fontFamilyButton && this.fontFamilyButton.contains(event.target)) ||
+        (this.stylesMenu && this.stylesMenu.contains(event.target)) ||
+        (this.stylesButton && this.stylesButton.contains(event.target)) ||
         (this.fontSizeMenu && this.fontSizeMenu.contains(event.target)) ||
         (this.fontSizeInput && this.fontSizeInput.contains && this.fontSizeInput.contains(event.target)) ||
-        (event.target.closest && event.target.closest(".ollow-size-step"))
+        (event.target.closest && event.target.closest(".ollow-size-step")) ||
+        (this.textColorPopover && this.textColorPopover.contains(event.target)) ||
+        (this.textColorButton && this.textColorButton.contains(event.target)) ||
+        (this.highlightPopover && this.highlightPopover.contains(event.target)) ||
+        (this.highlightButton && this.highlightButton.contains(event.target))
       ) {
         return;
       }
 
+      this.closeStylesMenu();
       this.closeFontFamilyMenu();
       this.closeFontSizeMenu();
+      this.closeTextColorPopover();
+      this.closeHighlightPopover();
 
       if (
         (this.themeMenu && this.themeMenu.contains(event.target)) ||
@@ -2905,12 +4371,28 @@
     handleDocumentKeydown(event) {
       if (String(event.key || "").toLowerCase() !== "escape") return;
       if (!this.wrapper) return;
+      if (this.formatPainterState && this.formatPainterState.active) {
+        this.clearFormatPainter();
+        return;
+      }
+      if (this.stylesMenu && !this.stylesMenu.hidden) {
+        this.closeStylesMenu();
+        return;
+      }
       if (this.fontFamilyMenu && !this.fontFamilyMenu.hidden) {
         this.closeFontFamilyMenu();
         return;
       }
       if (this.fontSizeMenu && !this.fontSizeMenu.hidden) {
         this.closeFontSizeMenu();
+        return;
+      }
+      if (this.textColorPopover && !this.textColorPopover.hidden) {
+        this.closeTextColorPopover();
+        return;
+      }
+      if (this.highlightPopover && !this.highlightPopover.hidden) {
+        this.closeHighlightPopover();
         return;
       }
       if (this.themeMenu && !this.themeMenu.hidden) {
@@ -2934,8 +4416,11 @@
 
     handleViewportChange() {
       this.closeThemeMenu();
+      this.closeStylesMenu();
       this.closeFontFamilyMenu();
       this.closeFontSizeMenu();
+      this.closeTextColorPopover();
+      this.closeHighlightPopover();
       if (this.selectedMediaBlock && !this.isDraggingImageResize) {
         this.positionImageResizeToolbar();
       }
@@ -3018,6 +4503,18 @@
         case "underline":
           this.execCommand("underline");
           return;
+        case "strikethrough":
+          this.execCommand("strikeThrough");
+          return;
+        case "subscript":
+          this.execExclusiveInlineCommand("subscript", "superscript");
+          return;
+        case "superscript":
+          this.execExclusiveInlineCommand("superscript", "subscript");
+          return;
+        case "remove-formatting":
+          this.removeFormattingFromSelection();
+          return;
         case "link":
           this.openLinkModal();
           return;
@@ -3098,6 +4595,16 @@
     execCommand(command, value) {
       this.focus();
       document.execCommand(command, false, value || null);
+      this.handleContentChange();
+    }
+
+    execExclusiveInlineCommand(command, oppositeCommand) {
+      this.focus();
+      const oppositeActive = safeQueryState(oppositeCommand);
+      if (oppositeActive) {
+        document.execCommand(oppositeCommand, false, null);
+      }
+      document.execCommand(command, false, null);
       this.handleContentChange();
     }
 
@@ -4401,6 +5908,9 @@
         bold: inside && safeQueryState("bold"),
         italic: inside && safeQueryState("italic"),
         underline: inside && safeQueryState("underline"),
+        strikethrough: inside && (safeQueryState("strikeThrough") || safeQueryState("strikethrough")),
+        subscript: inside && safeQueryState("subscript"),
+        superscript: inside && safeQueryState("superscript"),
         "bulleted-list": inside && safeQueryState("insertUnorderedList"),
         "numbered-list": inside && safeQueryState("insertOrderedList"),
         link: false,
@@ -4427,12 +5937,19 @@
         current = current.parentNode;
       }
 
-      ["bold", "italic", "underline", "link", "quote", "bulleted-list", "numbered-list", "h2", "h3", "h4"].forEach((key) => {
+      ["bold", "italic", "underline", "strikethrough", "subscript", "superscript", "link", "quote", "bulleted-list", "numbered-list", "h2", "h3", "h4"].forEach((key) => {
         const button = this.toolbarButtons[key];
         if (button) {
           button.classList.toggle("is-active", Boolean(states[key]));
         }
       });
+
+      if (this.formatPainterButton) {
+        this.formatPainterButton.classList.toggle("is-active", Boolean(this.formatPainterState && this.formatPainterState.active));
+      }
+      if (this.wrapper) {
+        this.wrapper.classList.toggle("is-format-painter-active", Boolean(this.formatPainterState && this.formatPainterState.active));
+      }
 
       const activeAlignment = this.selectedMediaBlock
         ? this.getSelectedMediaAlignment()
@@ -4450,7 +5967,10 @@
         this.headingSelect.value = ["H2", "H3", "H4"].includes(blockTag) ? blockTag : "P";
       }
 
+      this.updateStylesToolbarState();
       this.updateFontToolbarState();
+      this.updateColorToolbarState();
+      this.updateHighlightToolbarState();
     }
 
     updateMetrics() {

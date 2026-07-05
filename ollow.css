@@ -215,7 +215,10 @@
 }
 
 .ollow-font-control,
-.ollow-size-control {
+.ollow-size-control,
+.ollow-text-color-wrap,
+.ollow-highlight-wrap,
+.ollow-styles-control {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -225,7 +228,15 @@
 .ollow-size-step,
 .ollow-size-input,
 .ollow-font-option,
-.ollow-size-menu button {
+.ollow-size-menu button,
+.ollow-styles-button,
+.ollow-style-option,
+.ollow-text-color-btn,
+.ollow-text-color-reset,
+.ollow-text-color-swatch,
+.ollow-highlight-btn,
+.ollow-highlight-reset,
+.ollow-highlight-swatch {
   appearance: none;
   border: 1px solid var(--nw-border);
   background: var(--ollow-surface);
@@ -239,6 +250,19 @@
   justify-content: space-between;
   gap: 10px;
   min-width: 170px;
+  max-width: 220px;
+  height: 34px;
+  padding: 0 10px 0 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ollow-styles-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 156px;
   max-width: 220px;
   height: 34px;
   padding: 0 10px 0 12px;
@@ -260,11 +284,33 @@
   font-size: 11px;
 }
 
+.ollow-styles-current {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ollow-styles-arrow {
+  flex: 0 0 auto;
+  color: var(--ollow-muted);
+  font-size: 11px;
+}
+
 .ollow-font-button:hover,
 .ollow-size-step:hover,
 .ollow-size-menu button:hover,
 .ollow-size-input:focus,
-.ollow-font-option:hover {
+.ollow-font-option:hover,
+.ollow-styles-button:hover,
+.ollow-style-option:hover,
+.ollow-text-color-btn:hover,
+.ollow-text-color-reset:hover,
+.ollow-text-color-swatch:hover,
+.ollow-highlight-btn:hover,
+.ollow-highlight-reset:hover,
+.ollow-highlight-swatch:hover {
   background: var(--ollow-surface-muted);
 }
 
@@ -273,8 +319,26 @@
   background: var(--ollow-primary-soft);
 }
 
+.ollow-text-color-btn[aria-expanded="true"] {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+}
+
+.ollow-styles-button[aria-expanded="true"] {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+}
+
+.ollow-highlight-btn[aria-expanded="true"] {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+}
+
 .ollow-font-menu,
-.ollow-size-menu {
+.ollow-size-menu,
+.ollow-styles-menu,
+.ollow-text-color-popover,
+.ollow-highlight-popover {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
@@ -290,7 +354,10 @@
 }
 
 .ollow-font-menu[hidden],
-.ollow-size-menu[hidden] {
+.ollow-size-menu[hidden],
+.ollow-styles-menu[hidden],
+.ollow-text-color-popover[hidden],
+.ollow-highlight-popover[hidden] {
   display: none !important;
 }
 
@@ -310,7 +377,8 @@
 }
 
 .ollow-font-option,
-.ollow-size-menu button {
+.ollow-size-menu button,
+.ollow-style-option {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -326,14 +394,31 @@
   margin-top: 4px;
 }
 
+.ollow-style-option + .ollow-style-option {
+  margin-top: 4px;
+}
+
+.ollow-styles-menu {
+  min-width: 248px;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 8px;
+}
+
 .ollow-font-option-check {
   width: 12px;
   color: transparent;
   font-size: 12px;
 }
 
+.ollow-style-option-check {
+  width: 12px;
+  color: transparent;
+  font-size: 12px;
+}
+
 .ollow-font-option.is-active,
-.ollow-size-menu button.is-active {
+.ollow-size-menu button.is-active,
+.ollow-style-option.is-active {
   border-color: var(--ollow-primary-border);
   background: var(--ollow-primary-soft);
   color: var(--ollow-primary);
@@ -343,8 +428,88 @@
   color: currentColor;
 }
 
+.ollow-style-option.is-active .ollow-style-option-check {
+  color: currentColor;
+}
+
 .ollow-size-control {
   gap: 0;
+}
+
+.ollow-text-color-wrap {
+  flex: 0 0 auto;
+}
+
+.ollow-highlight-wrap {
+  flex: 0 0 auto;
+}
+
+.ollow-styles-control {
+  flex: 0 0 auto;
+}
+
+.ollow-style-option-preview {
+  display: inline-block;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.ollow-text-color-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ollow-text-color-label {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ollow-text-color-bar {
+  width: 18px;
+  height: 3px;
+  border-radius: 999px;
+  background: #111827;
+}
+
+.ollow-text-color-arrow {
+  color: var(--ollow-muted);
+  font-size: 11px;
+}
+
+.ollow-highlight-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ollow-highlight-label {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: lowercase;
+}
+
+.ollow-highlight-bar {
+  width: 18px;
+  height: 10px;
+  border: 1px solid var(--nw-border);
+  border-radius: 4px;
+  background: transparent;
+}
+
+.ollow-highlight-arrow {
+  color: var(--ollow-muted);
+  font-size: 11px;
 }
 
 .ollow-size-step {
@@ -393,6 +558,215 @@
 
 .ollow-size-menu button + button {
   margin-top: 4px;
+}
+
+.ollow-text-color-popover {
+  min-width: 272px;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 10px;
+}
+
+.ollow-highlight-popover {
+  min-width: 248px;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 10px;
+}
+
+.ollow-text-color-section + .ollow-text-color-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--nw-border);
+}
+
+.ollow-text-color-section-label {
+  margin: 0 0 8px;
+  color: var(--ollow-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.ollow-text-color-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ollow-text-color-reset-icon {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ollow-text-color-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ollow-text-color-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ollow-text-color-chip {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 1px solid color-mix(in srgb, var(--nw-border) 85%, #ffffff 15%);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.15);
+}
+
+.ollow-text-color-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ollow-text-color-reset.is-active,
+.ollow-text-color-swatch.is-active {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+  color: var(--ollow-primary);
+}
+
+.ollow-text-color-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 6px 2px 0;
+}
+
+.ollow-text-color-custom-row input[type="color"] {
+  width: 40px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--nw-border);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ollow-text-color-custom-value {
+  color: var(--ollow-text-strong);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.ollow-highlight-section + .ollow-highlight-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--nw-border);
+}
+
+.ollow-highlight-section-label {
+  margin: 0 0 8px;
+  color: var(--ollow-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.ollow-highlight-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ollow-highlight-reset-icon {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.ollow-highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ollow-highlight-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ollow-highlight-chip {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 1px solid color-mix(in srgb, var(--nw-border) 85%, #ffffff 15%);
+  border-radius: 6px;
+}
+
+.ollow-highlight-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ollow-highlight-reset.is-active,
+.ollow-highlight-swatch.is-active {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+  color: var(--ollow-primary);
+}
+
+.ollow-highlight-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 6px 2px 0;
+}
+
+.ollow-highlight-custom-row input[type="color"] {
+  width: 40px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--nw-border);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ollow-highlight-custom-value {
+  color: var(--ollow-text-strong);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .ollow-theme-toggle {
@@ -464,8 +838,21 @@
   font-size: 16px;
 }
 
+.nw-toolbar-button.nw-text-button--strikethrough {
+  text-decoration: line-through;
+}
+
 .nw-toolbar-button .material-symbols-outlined {
   font-size: 18px;
+}
+
+.ollow-format-painter-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.is-format-painter-active .nw-editor-content {
+  cursor: copy;
 }
 
 .nw-toolbar-select {
@@ -663,6 +1050,18 @@
   font-family: Georgia, "Times New Roman", serif;
 }
 
+.nw-editor-content .ollow-font-verdana {
+  font-family: Verdana, Geneva, sans-serif;
+}
+
+.nw-editor-content .ollow-font-tahoma {
+  font-family: Tahoma, Geneva, sans-serif;
+}
+
+.nw-editor-content .ollow-font-trebuchet-ms {
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+}
+
 .nw-editor-content .ollow-font-roboto {
   font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
 }
@@ -725,6 +1124,103 @@
 .nw-editor-content .ollow-font-size-60 { font-size: 60px; }
 .nw-editor-content .ollow-font-size-72 { font-size: 72px; }
 .nw-editor-content .ollow-font-size-96 { font-size: 96px; }
+
+.nw-editor-content .ollow-text-color-black { color: #000000; }
+.nw-editor-content .ollow-text-color-gray { color: #6b7280; }
+.nw-editor-content .ollow-text-color-red { color: #dc2626; }
+.nw-editor-content .ollow-text-color-orange { color: #ea580c; }
+.nw-editor-content .ollow-text-color-yellow { color: #ca8a04; }
+.nw-editor-content .ollow-text-color-green { color: #16a34a; }
+.nw-editor-content .ollow-text-color-blue { color: #2563eb; }
+.nw-editor-content .ollow-text-color-purple { color: #7c3aed; }
+.nw-editor-content .ollow-text-color-white { color: #ffffff; }
+.nw-editor-content .ollow-text-color-111827 { color: #111827; }
+.nw-editor-content .ollow-text-color-374151 { color: #374151; }
+.nw-editor-content .ollow-text-color-dc2626 { color: #dc2626; }
+.nw-editor-content .ollow-text-color-ea580c { color: #ea580c; }
+.nw-editor-content .ollow-text-color-ca8a04 { color: #ca8a04; }
+.nw-editor-content .ollow-text-color-16a34a { color: #16a34a; }
+.nw-editor-content .ollow-text-color-2563eb { color: #2563eb; }
+.nw-editor-content .ollow-text-color-7c3aed { color: #7c3aed; }
+
+.nw-editor-content .ollow-highlight-yellow { background-color: #fde68a; }
+.nw-editor-content .ollow-highlight-green { background-color: #bbf7d0; }
+.nw-editor-content .ollow-highlight-cyan { background-color: #bfdbfe; }
+.nw-editor-content .ollow-highlight-pink { background-color: #fbcfe8; }
+.nw-editor-content .ollow-highlight-red { background-color: #fecaca; }
+.nw-editor-content .ollow-highlight-orange { background-color: #fed7aa; }
+.nw-editor-content .ollow-highlight-purple { background-color: #ddd6fe; }
+.nw-editor-content .ollow-highlight-gray { background-color: #e5e7eb; }
+.nw-editor-content .ollow-highlight-soft-yellow { background-color: #fef3c7; }
+
+.nw-editor-content .ollow-style-lead,
+.ollow-style-option-preview.ollow-style-lead {
+  font-size: 20px;
+  line-height: 1.7;
+  color: var(--ollow-text-strong);
+}
+
+.nw-editor-content .ollow-style-caption,
+.ollow-style-option-preview.ollow-style-caption {
+  font-size: 13px;
+  color: var(--ollow-muted);
+}
+
+.nw-editor-content .ollow-style-small,
+.ollow-style-option-preview.ollow-style-small {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.nw-editor-content .ollow-style-warning,
+.ollow-style-option-preview.ollow-style-warning {
+  padding: 12px 14px;
+  border-left: 3px solid #dc2626;
+  border-radius: 8px;
+  background: color-mix(in srgb, #dc2626 10%, var(--ollow-surface) 90%);
+}
+
+.nw-editor-content .ollow-style-info,
+.ollow-style-option-preview.ollow-style-info {
+  padding: 12px 14px;
+  border-left: 3px solid #2563eb;
+  border-radius: 8px;
+  background: color-mix(in srgb, #2563eb 10%, var(--ollow-surface) 90%);
+}
+
+.nw-editor-content .ollow-style-success,
+.ollow-style-option-preview.ollow-style-success {
+  padding: 12px 14px;
+  border-left: 3px solid #16a34a;
+  border-radius: 8px;
+  background: color-mix(in srgb, #16a34a 10%, var(--ollow-surface) 90%);
+}
+
+.nw-editor-content .ollow-style-editorial,
+.ollow-style-option-preview.ollow-style-editorial {
+  padding: 12px 14px;
+  border: 1px dashed var(--nw-border);
+  border-radius: 8px;
+  background: var(--ollow-surface-soft);
+  font-style: italic;
+}
+
+.nw-editor-content code.ollow-style-inline-code,
+.ollow-style-option-preview.ollow-style-inline-code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--ollow-code-bg);
+  color: var(--ollow-code-text);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+}
+
+.nw-editor-content blockquote.ollow-style-quote-emphasis,
+.ollow-style-option-preview.ollow-style-quote-emphasis {
+  font-size: 20px;
+  font-style: italic;
+  color: var(--ollow-text-strong);
+}
 
 .nw-editor-content hr {
   border: 0;
@@ -1502,6 +1998,9 @@
   .nw-insert-row::-webkit-scrollbar,
   .ollow-font-menu::-webkit-scrollbar,
   .ollow-size-menu::-webkit-scrollbar,
+  .ollow-styles-menu::-webkit-scrollbar,
+  .ollow-text-color-popover::-webkit-scrollbar,
+  .ollow-highlight-popover::-webkit-scrollbar,
   .nw-editor-modal-body::-webkit-scrollbar,
   .ollow-editor-table-scroll::-webkit-scrollbar,
   .nw-editor-content figure.ollow-editor-code pre::-webkit-scrollbar {
@@ -1525,7 +2024,10 @@
 
   .nw-toolbar-button,
   .ollow-theme-toggle,
-  .ollow-size-step {
+  .ollow-size-step,
+  .ollow-styles-button,
+  .ollow-text-color-btn,
+  .ollow-highlight-btn {
     min-width: 40px;
     height: 40px;
   }
@@ -1537,6 +2039,12 @@
 
   .ollow-font-button {
     min-width: 150px;
+    max-width: 180px;
+    height: 40px;
+  }
+
+  .ollow-styles-button {
+    min-width: 140px;
     max-width: 180px;
     height: 40px;
   }
@@ -1609,7 +2117,13 @@
   }
 
   .ollow-font-menu,
-  .ollow-size-menu {
+  .ollow-size-menu,
+  .ollow-styles-menu,
+  .ollow-text-color-popover {
+    max-width: min(260px, calc(100vw - 32px));
+  }
+
+  .ollow-highlight-popover {
     max-width: min(260px, calc(100vw - 32px));
   }
 
@@ -1674,8 +2188,15 @@
     max-width: 160px;
   }
 
+  .ollow-styles-button {
+    min-width: 126px;
+    max-width: 154px;
+  }
+
   .ollow-font-menu,
   .ollow-size-menu,
+  .ollow-styles-menu,
+  .ollow-text-color-popover,
   .ollow-theme-menu {
     position: fixed;
     left: 12px;
@@ -1685,8 +2206,19 @@
   }
 
   .ollow-font-menu,
-  .ollow-size-menu {
+  .ollow-size-menu,
+  .ollow-styles-menu,
+  .ollow-text-color-popover {
     bottom: 72px;
+  }
+
+  .ollow-highlight-popover {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 72px;
+    max-width: none;
   }
 
   .ollow-theme-menu {
@@ -1796,6 +2328,9 @@
   .nw-toolbar-button,
   .ollow-theme-toggle,
   .ollow-size-step,
+  .ollow-styles-button,
+  .ollow-text-color-btn,
+  .ollow-highlight-btn,
   .nw-toolbar-select,
   .ollow-font-button,
   .ollow-size-input {
@@ -1823,6 +2358,9 @@
 
   .ollow-font-menu,
   .ollow-size-menu,
+  .ollow-styles-menu,
+  .ollow-text-color-popover,
+  .ollow-highlight-popover,
   .ollow-theme-menu,
   .ollow-media-toolbar,
   .ollow-table-toolbar {
@@ -1832,6 +2370,9 @@
 
   .ollow-font-menu,
   .ollow-size-menu,
+  .ollow-styles-menu,
+  .ollow-text-color-popover,
+  .ollow-highlight-popover,
   .ollow-theme-menu {
     bottom: 68px;
   }

@@ -189,6 +189,44 @@ Ollow Editor currently supports:
 
 ---
 
+## Keyboard Shortcuts
+
+Shortcuts run only while the editor body is focused. They do not fire inside modal inputs, textareas, selects, file pickers, or other page form fields.
+
+Default shortcuts:
+
+- `Ctrl/Cmd + B` bold
+- `Ctrl/Cmd + I` italic
+- `Ctrl/Cmd + U` underline
+- `Ctrl/Cmd + K` insert or edit link
+- `Ctrl/Cmd + Z` undo
+- `Ctrl/Cmd + Shift + Z` redo
+- `Ctrl/Cmd + Y` redo
+- `Ctrl/Cmd + Alt + 2` H2
+- `Ctrl/Cmd + Alt + 3` H3
+- `Ctrl/Cmd + Alt + 4` H4
+- `Ctrl/Cmd + Alt + 0` paragraph
+- `Ctrl/Cmd + Shift + 7` numbered list
+- `Ctrl/Cmd + Shift + 8` bullet list
+- `Ctrl/Cmd + Shift + Q` blockquote
+- `Ctrl/Cmd + Shift + H` horizontal rule
+- `Ctrl/Cmd + Shift + C` code block
+- `Ctrl/Cmd + S` sync editor HTML and prevent the browser save dialog
+- `Esc` close the open modal or editor floating toolbar
+
+Custom shortcut API:
+
+```js
+const editor = OllowEditor.get("#ollo-editor");
+
+editor.addShortcut("mod+shift+m", () => {
+  editor.insertHTML("<p>Note</p>");
+});
+
+editor.removeShortcut("mod+shift+m");
+const shortcuts = editor.getShortcuts();
+```
+
 ## Themes
 
 Ollow Editor supports three theme modes:
@@ -470,6 +508,9 @@ Available instance methods:
 
 - `editor.importMarkdown(markdown, { mode: "replace" | "insert" })`
 - `editor.exportMarkdown()`
+- `editor.addShortcut(shortcut, handler)`
+- `editor.removeShortcut(shortcut)`
+- `editor.getShortcuts()`
 
 ## Plugin API
 
@@ -518,6 +559,8 @@ Available plugin-facing editor methods:
 - `editor.insertHTML(html)`
 - `editor.openModal(config)`
 - `editor.addShortcut(shortcut, handler)`
+- `editor.removeShortcut(shortcut)`
+- `editor.getShortcuts()`
 - `editor.addSanitizerRule(rule)`
 - `editor.getHTML()`
 - `editor.setHTML(html)`

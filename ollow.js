@@ -4,6 +4,22 @@
   const DEFAULT_PLACEHOLDER = "Start writing your story here…";
   const DEFAULT_READ_SPEED = 220;
   const DEFAULT_THEME_STORAGE_KEY = "ollow-editor-theme";
+  const TOOLBAR_SHORTCUT_LABELS = {
+    undo: "Mod+Z",
+    redo: "Mod+Shift+Z / Mod+Y",
+    bold: "Mod+B",
+    italic: "Mod+I",
+    underline: "Mod+U",
+    link: "Mod+K",
+    "bulleted-list": "Mod+Shift+8",
+    "numbered-list": "Mod+Shift+7",
+    quote: "Mod+Shift+Q",
+    "horizontal-rule": "Mod+Shift+H",
+    h2: "Mod+Alt+2",
+    h3: "Mod+Alt+3",
+    h4: "Mod+Alt+4",
+    code: "Mod+Shift+C",
+  };
   const ALLOWED_TAGS = new Set([
     "A",
     "BLOCKQUOTE",
@@ -1144,7 +1160,7 @@
       this.systemThemeQuery = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
       this.commands = new Map();
       this.eventHandlers = new Map();
-      this.shortcuts = [];
+      this.shortcuts = new Map();
       this.sanitizerRules = [];
       this.boundSelectionChange = this.handleSelectionChange.bind(this);
       this.boundModalClose = this.closeModal.bind(this);
@@ -1162,6 +1178,7 @@
       this.hideSource();
       this.setHTML(this.textarea.value || "", { skipSync: true, skipAutosave: true });
       this.bind();
+      this.registerDefaultShortcuts();
       this.runConfiguredPlugins();
       this.sync({ autosave: false, silent: true });
       this.updateMetrics();
@@ -1389,7 +1406,10 @@
         button.type = "button";
         button.className = `nw-insert-pill${index === 0 ? " is-active" : ""}`;
         button.dataset.action = action;
-        button.title = label;
+        const shortcutLabel = TOOLBAR_SHORTCUT_LABELS[action];
+        const fullTitle = shortcutLabel ? `${label} (${shortcutLabel.replace(/mod/gi, "Ctrl/Cmd")})` : label;
+        button.title = fullTitle;
+        button.setAttribute("aria-label", fullTitle);
         button.innerHTML = `<span class="material-symbols-outlined">${icon}</span>${label}`;
         this.toolbarButtons[action] = button;
         row.appendChild(button);
@@ -1540,8 +1560,10 @@
       button.type = "button";
       button.className = className || "nw-toolbar-button";
       button.dataset.action = action;
-      button.title = title;
-      button.setAttribute("aria-label", title);
+      const shortcutLabel = TOOLBAR_SHORTCUT_LABELS[action];
+      const fullTitle = shortcutLabel ? `${title} (${shortcutLabel.replace(/mod/gi, "Ctrl/Cmd")})` : title;
+      button.title = fullTitle;
+      button.setAttribute("aria-label", fullTitle);
       button.innerHTML = content;
       this.toolbarButtons[action] = button;
       return button;
@@ -1738,19 +1760,97 @@
     }
 
     normalizeShortcut(shortcut) {
-      return String(shortcut || "")
+      const tokens = String(shortcut || "")
         .toLowerCase()
         .split("+")
         .map((token) => token.trim())
-        .filter(Boolean)
-        .join("+");
+        .filter(Boolean);
+      const modifiers = [];
+      const keys = [];
+      tokens.forEach((token) => {
+        if (token === "cmd" || token === "meta" || token === "ctrl" || token === "control" || token === "mod") {
+          if (!modifiers.includes("mod")) modifiers.push("mod");
+          return;
+        }
+        if (token === "option") token = "alt";
+        if (["shift", "alt"].includes(token)) {
+          if (!modifiers.includes(token)) modifiers.push(token);
+          return;
+        }
+        keys.push(token);
+      });
+      return modifiers.concat(keys).join("+");
     }
 
     addShortcut(shortcut, handler) {
-      if (!shortcut || typeof handler !== "function") return;
-      this.shortcuts.push({
-        shortcut: this.normalizeShortcut(shortcut),
-        handler,
+      const normalized = this.normalizeShortcut(shortcut);
+      if (!normalized || typeof handler !== "function") return false;
+      if (this.shortcuts.has(normalized)) return false;
+      this.shortcuts.set(normalized, handler);
+      return true;
+    }
+
+    removeShortcut(shortcut) {
+      const normalized = this.normalizeShortcut(shortcut);
+      if (!normalized) return false;
+      return this.shortcuts.delete(normalized);
+    }
+
+    getShortcuts() {
+      return Array.from(this.shortcuts.keys());
+    }
+
+    registerDefaultShortcuts() {
+      this.addShortcut("mod+b", () => {
+        this.execCommand("bold");
+      });
+      this.addShortcut("mod+i", () => {
+        this.execCommand("italic");
+      });
+      this.addShortcut("mod+u", () => {
+        this.execCommand("underline");
+      });
+      this.addShortcut("mod+k", () => {
+        this.openLinkModal();
+      });
+      this.addShortcut("mod+z", () => {
+        this.execCommand("undo");
+      });
+      this.addShortcut("mod+shift+z", () => {
+        this.execCommand("redo");
+      });
+      this.addShortcut("mod+y", () => {
+        this.execCommand("redo");
+      });
+      this.addShortcut("mod+alt+2", () => {
+        this.applyBlock("H2");
+      });
+      this.addShortcut("mod+alt+3", () => {
+        this.applyBlock("H3");
+      });
+      this.addShortcut("mod+alt+4", () => {
+        this.applyBlock("H4");
+      });
+      this.addShortcut("mod+alt+0", () => {
+        this.applyBlock("P");
+      });
+      this.addShortcut("mod+shift+7", () => {
+        this.execCommand("insertOrderedList");
+      });
+      this.addShortcut("mod+shift+8", () => {
+        this.execCommand("insertUnorderedList");
+      });
+      this.addShortcut("mod+shift+q", () => {
+        this.applyBlock("BLOCKQUOTE");
+      });
+      this.addShortcut("mod+shift+h", () => {
+        this.insertHTML("<hr>");
+      });
+      this.addShortcut("mod+shift+c", () => {
+        this.openCodeModal();
+      });
+      this.addShortcut("mod+s", () => {
+        this.sync({ autosave: false });
       });
     }
 
@@ -1759,26 +1859,45 @@
       if (event.metaKey || event.ctrlKey) parts.push("mod");
       if (event.shiftKey) parts.push("shift");
       if (event.altKey) parts.push("alt");
-      let key = String(event.key || "").toLowerCase();
+      let key = "";
+      const code = String(event.code || "");
+      if (/^Key[A-Z]$/.test(code)) {
+        key = code.slice(3).toLowerCase();
+      } else if (/^Digit\d$/.test(code)) {
+        key = code.slice(5);
+      } else {
+        key = String(event.key || "").toLowerCase();
+      }
       if (key === " ") key = "space";
+      if (key === "esc") key = "escape";
       if (!["shift", "control", "meta", "alt"].includes(key)) {
         parts.push(key);
       }
       return parts.join("+");
     }
 
+    isShortcutContextAllowed(event) {
+      const target = event.target;
+      if (!(target instanceof Element)) return false;
+      if (target.closest(".nw-editor-modal")) {
+        return false;
+      }
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName.toUpperCase())) {
+        return false;
+      }
+      return target === this.content || this.content.contains(target);
+    }
+
     handleShortcutKeydown(event) {
+      if (!this.isFocused || !this.isShortcutContextAllowed(event)) return;
       const pressed = this.eventToShortcut(event);
-      for (const shortcut of this.shortcuts) {
-        if (shortcut.shortcut === pressed) {
-          event.preventDefault();
-          try {
-            shortcut.handler(event, this);
-          } catch (error) {
-            console.warn(`OllowEditor shortcut failed for "${pressed}".`, error);
-          }
-          return;
-        }
+      const handler = this.shortcuts.get(pressed);
+      if (!handler) return;
+      event.preventDefault();
+      try {
+        handler(event, this);
+      } catch (error) {
+        console.warn(`OllowEditor shortcut failed for "${pressed}".`, error);
       }
     }
 
@@ -2027,9 +2146,24 @@
     }
 
     handleDocumentKeydown(event) {
-      if (event.key !== "Escape") return;
+      if (String(event.key || "").toLowerCase() !== "escape") return;
+      if (!this.wrapper) return;
       if (this.themeMenu && !this.themeMenu.hidden) {
         this.closeThemeMenu();
+        return;
+      }
+      if (this.modal && !this.modal.hidden) {
+        event.preventDefault();
+        this.closeModal();
+        return;
+      }
+      if (this.wrapper.contains(document.activeElement) || this.isFocused) {
+        if (this.selectedMediaBlock) {
+          this.clearMediaSelection();
+        }
+        if (this.selectedTableFigure) {
+          this.clearTableSelection();
+        }
       }
     }
 

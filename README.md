@@ -227,6 +227,54 @@ editor.removeShortcut("mod+shift+m");
 const shortcuts = editor.getShortcuts();
 ```
 
+## Paste Cleanup
+
+Ollow Editor cleans pasted rich content before inserting it into the editor. The cleanup is aimed at content copied from:
+
+- Google Docs
+- Microsoft Word
+- LibreOffice
+- browser rich text selections
+- plain text
+
+Paste cleanup keeps useful structure:
+
+- paragraphs
+- H2 / H3 / H4
+- bold, italic, underline
+- links
+- bullet and numbered lists
+- blockquotes
+- horizontal rules
+- tables
+- pre / code
+- safe images
+- safe YouTube embed iframes
+
+Paste cleanup removes document noise and unsafe markup:
+
+- `script`, `style`, `meta`, `link`, and `xml` tags
+- HTML comments
+- `mso-*` inline styles
+- Word and Google Docs classes and IDs
+- Apple converted-space spans
+- empty spans and font tags
+- inline event handlers
+- `javascript:` links
+- non-YouTube iframes
+
+Plain text paste is converted into clean paragraphs with preserved line breaks.
+
+Public paste helpers:
+
+```js
+const editor = OllowEditor.get("#ollo-editor");
+
+const cleanedHtml = editor.cleanPastedHTML(dirtyHtml);
+const cleanedText = editor.cleanPlainText("Line one\n\nLine two");
+const sanitized = editor.sanitizeHTML("<p>Safe HTML</p>");
+```
+
 ## Themes
 
 Ollow Editor supports three theme modes:
@@ -508,6 +556,9 @@ Available instance methods:
 
 - `editor.importMarkdown(markdown, { mode: "replace" | "insert" })`
 - `editor.exportMarkdown()`
+- `editor.cleanPastedHTML(html)`
+- `editor.cleanPlainText(text)`
+- `editor.sanitizeHTML(html)`
 - `editor.addShortcut(shortcut, handler)`
 - `editor.removeShortcut(shortcut)`
 - `editor.getShortcuts()`

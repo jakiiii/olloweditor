@@ -254,6 +254,244 @@
       .join("");
   }
 
+  function unwrapElement(element) {
+    if (!element || !element.parentNode) return;
+    const parent = element.parentNode;
+    while (element.firstChild) {
+      parent.insertBefore(element.firstChild, element);
+    }
+    parent.removeChild(element);
+  }
+
+  function cleanupPastedTextNode(node) {
+    if (!node) return;
+    node.textContent = String(node.textContent || "").replace(/\u00a0/g, " ");
+  }
+
+  function getTextAlignmentClass(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (normalized === "center") return "ollow-text-center";
+    if (normalized === "right") return "ollow-text-right";
+    if (normalized === "justify") return "ollow-text-justify";
+    if (normalized === "left") return "ollow-text-left";
+    return "";
+  }
+
+  function stripListMarkerText(element) {
+    if (!element) return;
+    const firstNode = element.firstChild;
+    if (firstNode && firstNode.nodeType === Node.TEXT_NODE) {
+      firstNode.textContent = String(firstNode.textContent || "")
+        .replace(/^\s*(?:[\u2022\u25e6\u25aa\u25cf\u00b7\u2043\-*o]+|\(?\d+[.)]|[a-zA-Z][.)])\s+/, "")
+        .replace(/^\s+/, "");
+    }
+  }
+
+  function detectOfficeListItem(element) {
+    if (!element || element.nodeType !== Node.ELEMENT_NODE) return null;
+    const tagName = element.tagName.toUpperCase();
+    if (!["P", "DIV"].includes(tagName)) return null;
+    const text = String(element.textContent || "").replace(/\u00a0/g, " ").trim();
+    if (!text) return null;
+    const style = String(element.getAttribute("style") || "").toLowerCase();
+    const className = String(element.getAttribute("class") || "").toLowerCase();
+    const looksOffice = style.includes("mso-list") || className.includes("mso");
+    if (/^(?:[\u2022\u25e6\u25aa\u25cf\u00b7\u2043\-*o])\s+/.test(text)) {
+      return { type: "ul" };
+    }
+    if (/^\(?\d+[.)]\s+/.test(text)) {
+      return { type: "ol" };
+    }
+    if (/^[a-zA-Z][.)]\s+/.test(text) && looksOffice) {
+      return { type: "ol" };
+    }
+    if (looksOffice && /margin-left:\s*\d/i.test(style)) {
+      return { type: "ul" };
+    }
+    return null;
+  }
+
+  function normalizeOfficeLists(root, doc) {
+    if (!root) return;
+
+    function processContainer(container) {
+      const children = Array.from(container.childNodes);
+      let currentList = null;
+      let currentType = "";
+
+      children.forEach((child) => {
+        if (child.nodeType !== Node.ELEMENT_NODE) {
+          currentList = null;
+          currentType = "";
+          return;
+        }
+
+        if (["UL", "OL", "TABLE", "PRE", "BLOCKQUOTE", "FIGURE", "SECTION", "DIV"].includes(child.tagName.toUpperCase()) && child !== container) {
+          if (!["P", "DIV"].includes(child.tagName.toUpperCase())) {
+            currentList = null;
+            currentType = "";
+          }
+          processContainer(child);
+        }
+
+        const listData = detectOfficeListItem(child);
+        if (!listData) {
+          currentList = null;
+          currentType = "";
+          return;
+        }
+
+        if (!currentList || currentType !== listData.type || currentList.parentNode !== container) {
+          currentList = doc.createElement(listData.type);
+          currentType = listData.type;
+          container.insertBefore(currentList, child);
+        }
+
+        const item = doc.createElement("li");
+        while (child.firstChild) {
+          item.appendChild(child.firstChild);
+        }
+        stripListMarkerText(item);
+        currentList.appendChild(item);
+        child.remove();
+      });
+    }
+
+    processContainer(root);
+  }
+
+  function cleanPastedHtmlMarkup(input) {
+    const source = String(input || "");
+    if (!source.trim()) return "";
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(source, "text/html");
+    const root = doc.body;
+    if (!root) return "";
+
+    Array.from(root.querySelectorAll("script, style, meta, link, xml, title")).forEach((node) => node.remove());
+
+    const walker = doc.createTreeWalker(root, NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT);
+    const toRemove = [];
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.nodeType === Node.COMMENT_NODE) {
+        toRemove.push(node);
+      } else if (node.nodeType === Node.TEXT_NODE) {
+        cleanupPastedTextNode(node);
+      }
+    }
+    toRemove.forEach((node) => node.remove());
+
+    Array.from(root.querySelectorAll("*")).forEach((element) => {
+      const tagName = element.tagName.toUpperCase();
+      if (tagName === "H1") {
+        const replacement = doc.createElement("h2");
+        Array.from(element.attributes).forEach((attr) => replacement.setAttribute(attr.name, attr.value));
+        while (element.firstChild) replacement.appendChild(element.firstChild);
+        element.replaceWith(replacement);
+        element = replacement;
+      } else if (tagName === "H5" || tagName === "H6") {
+        const replacement = doc.createElement("h4");
+        Array.from(element.attributes).forEach((attr) => replacement.setAttribute(attr.name, attr.value));
+        while (element.firstChild) replacement.appendChild(element.firstChild);
+        element.replaceWith(replacement);
+        element = replacement;
+      }
+
+      Array.from(element.attributes).forEach((attribute) => {
+        const name = attribute.name.toLowerCase();
+        const value = attribute.value;
+        if (name === "id") {
+          element.removeAttribute(attribute.name);
+          return;
+        }
+        if (name.startsWith("on")) {
+          element.removeAttribute(attribute.name);
+          return;
+        }
+        if (name === "class") {
+          const classes = value
+            .split(/\s+/)
+            .filter(Boolean)
+            .filter((className) => !/^(mso|docs-|c\d+|kix)/i.test(className) && className !== "Apple-converted-space");
+          if (classes.length) {
+            element.setAttribute("class", classes.join(" "));
+          } else {
+            element.removeAttribute("class");
+          }
+          return;
+        }
+        if (name === "style") {
+          const alignMatch = value.match(/text-align\s*:\s*(left|center|right|justify)/i);
+          const alignClass = getTextAlignmentClass(alignMatch && alignMatch[1]);
+          if (alignClass && ["P", "H2", "H3", "H4", "BLOCKQUOTE", "LI"].includes(element.tagName.toUpperCase())) {
+            element.classList.remove(...TEXT_ALIGNMENT_CLASSES);
+            element.classList.add(alignClass);
+          }
+          element.removeAttribute("style");
+          return;
+        }
+        if (name === "align") {
+          const alignClass = getTextAlignmentClass(value);
+          if (alignClass && ["P", "H2", "H3", "H4", "BLOCKQUOTE", "LI"].includes(element.tagName.toUpperCase())) {
+            element.classList.remove(...TEXT_ALIGNMENT_CLASSES);
+            element.classList.add(alignClass);
+          }
+          element.removeAttribute("align");
+          return;
+        }
+      });
+
+      if (tagName === "SPAN") {
+        const className = String(element.getAttribute("class") || "");
+        if (className.includes("Apple-converted-space")) {
+          element.textContent = String(element.textContent || "").replace(/\u00a0/g, " ");
+          unwrapElement(element);
+          return;
+        }
+        if (!element.attributes.length) {
+          unwrapElement(element);
+          return;
+        }
+      }
+
+      if (tagName === "FONT") {
+        unwrapElement(element);
+        return;
+      }
+
+      if (tagName === "A") {
+        const href = element.getAttribute("href") || "";
+        if (!isSafeUrl(href, "A")) {
+          unwrapElement(element);
+        }
+      }
+
+      if (tagName === "IFRAME") {
+        const src = element.getAttribute("src") || "";
+        if (!getYouTubeEmbedUrl(src)) {
+          element.remove();
+        }
+      }
+    });
+
+    normalizeOfficeLists(root, doc);
+
+    Array.from(root.querySelectorAll("span")).forEach((element) => {
+      if (!element.attributes.length) {
+        unwrapElement(element);
+      }
+    });
+
+    Array.from(root.querySelectorAll("p, h2, h3, h4, li, blockquote")).forEach((element) => {
+      if (!element.textContent.trim() && !element.querySelector("img, iframe, table, br, code")) {
+        element.remove();
+      }
+    });
+
+    return root.innerHTML;
+  }
+
   function resolveSanitizerRules(rules) {
     const extensions = {
       tags: new Set(),
@@ -1906,6 +2144,15 @@
       this.sanitizerRules.push(rule);
     }
 
+    cleanPastedHTML(html) {
+      const prepared = cleanPastedHtmlMarkup(html);
+      return prepared ? this.sanitizeHTML(prepared) : "";
+    }
+
+    cleanPlainText(text) {
+      return sanitizePlainText(text);
+    }
+
     sanitizeHTML(html) {
       return sanitizeFragment(html, this.sanitizerRules);
     }
@@ -2085,7 +2332,7 @@
       event.preventDefault();
       const html = event.clipboardData && event.clipboardData.getData("text/html");
       const text = event.clipboardData && event.clipboardData.getData("text/plain");
-      const clean = html ? this.sanitizeHTML(html) : sanitizePlainText(text);
+      const clean = html ? this.cleanPastedHTML(html) : this.cleanPlainText(text);
       if (!clean) return;
       this.insertHTML(clean);
     }

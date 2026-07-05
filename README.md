@@ -27,6 +27,7 @@ Ollow Editor is designed for newsroom-style writing, blog publishing, CMS forms,
 - Image upload from local machine
 - Drag-and-drop image upload
 - Media alignment controls
+- Markdown import/export
 - Code block support
 - Table support
 - Image URL insertion
@@ -105,6 +106,8 @@ Initialize the editor:
 
 After editing, the textarea will contain the synced HTML output.
 
+The global API is available as both `OllowEditor` and `NationWireEditor`.
+
 You can also configure image uploads during initialization:
 
 ```html
@@ -161,6 +164,8 @@ Ollow Editor currently supports:
 | Numbered List | Insert ordered list             |
 | Pull Quote    | Insert styled quote block       |
 | Image         | Insert uploaded or URL image    |
+| Import MD     | Paste Markdown into the editor  |
+| Export MD     | Convert editor HTML to Markdown |
 | Code          | Insert editable code block      |
 | Gallery       | Insert multiple uploaded images |
 | Embed         | Insert YouTube video            |
@@ -280,6 +285,48 @@ The floating toolbar shows:
 - image size controls only for images
 
 Text alignment classes and media alignment classes are saved in the synced HTML. Temporary selection classes used by the floating toolbar are not saved.
+
+## Markdown Import / Export
+
+Use `Import MD` to open a modal, paste Markdown, and choose whether to:
+
+- replace the current editor content
+- insert converted content at the current cursor
+
+Use `Export MD` to convert the current editor HTML into Markdown and copy it from the export modal.
+
+Markdown import supports:
+
+- headings
+- paragraphs
+- bold / italic
+- links
+- images
+- bullet and numbered lists
+- blockquotes
+- horizontal rules
+- inline code
+- fenced code blocks
+- basic tables
+
+The editor still stores synced HTML in the hidden textarea. Markdown is only used for import/export workflows.
+
+### Public API
+
+```js
+const editor = OllowEditor.get("#ollo-editor");
+
+editor.importMarkdown("## Heading\n\nParagraph text", {
+  mode: "replace"
+});
+
+const markdown = editor.exportMarkdown();
+```
+
+Available instance methods:
+
+- `editor.importMarkdown(markdown, { mode: "replace" | "insert" })`
+- `editor.exportMarkdown()`
 
 ### Code Blocks
 

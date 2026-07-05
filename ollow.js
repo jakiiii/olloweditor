@@ -218,6 +218,338 @@
       .join("");
   }
 
+  function parseInlineMarkdown(text) {
+    const source = String(text || "");
+    const codeTokens = [];
+    let html = escapeHtml(source).replace(/`([^`]+)`/g, (_, code) => {
+      const token = `__NW_CODE_${codeTokens.length}__`;
+      codeTokens.push(`<code>${escapeHtml(code)}</code>`);
+      return token;
+    });
+
+    html = html.replace(/!\[([^\]]*)\]\((\S+?)(?:\s+"([^"]*)")?\)/g, (_, alt, url) => {
+      if (!isSafeUrl(url, "IMG")) return escapeHtml(`![${alt}](${url})`);
+      return `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}">`;
+    });
+    html = html.replace(/\[([^\]]+)\]\((\S+?)(?:\s+"([^"]*)")?\)/g, (_, label, url) => {
+      if (!isSafeUrl(url, "A")) return escapeHtml(`[${label}](${url})`);
+      return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    });
+    html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+    html = html.replace(/(^|[^\*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
+    html = html.replace(/(^|[^_])_([^_\n]+)_(?!_)/g, "$1<em>$2</em>");
+
+    codeTokens.forEach((tokenHtml, index) => {
+      html = html.replace(`__NW_CODE_${index}__`, tokenHtml);
+    });
+    return html;
+  }
+
+  function escapeMarkdownText(value) {
+    return String(value || "").replace(/([\\`*_[\]{}()#+\-.!|>])/g, "\\$1");
+  }
+
+  function normalizeMarkdownCell(text) {
+    return String(text || "").replace(/\|/g, "\\|").replace(/\n+/g, " ").trim();
+  }
+
+  function getYouTubeWatchUrl(input) {
+    const embed = getYouTubeEmbedUrl(input);
+    if (!embed) return "";
+    try {
+      const url = new URL(embed);
+      const parts = url.pathname.split("/");
+      const id = parts[parts.length - 1] || "";
+      if (!id) return "";
+      const watch = new URL(`https://www.youtube.com/watch?v=${id}`);
+      const start = url.searchParams.get("start");
+      const list = url.searchParams.get("list");
+      if (start) watch.searchParams.set("t", start);
+      if (list) watch.searchParams.set("list", list);
+      return watch.toString();
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function parseMarkdownToHtml(markdown, editor) {
+    const lines = String(markdown || "").replace(/\r\n?/g, "\n").split("\n");
+    const blocks = [];
+    let index = 0;
+
+    while (index < lines.length) {
+      const line = lines[index];
+      const trimmed = line.trim();
+
+      if (!trimmed) {
+        index += 1;
+        continue;
+      }
+
+      const fenceMatch = trimmed.match(/^```([\w.+-]*)\s*$/);
+      if (fenceMatch) {
+        const language = fenceMatch[1] || "";
+        index += 1;
+        const codeLines = [];
+        while (index < lines.length && !/^```/.test(lines[index].trim())) {
+          codeLines.push(lines[index]);
+          index += 1;
+        }
+        if (index < lines.length) index += 1;
+        blocks.push(editor.buildCodeBlockHtml(language, codeLines.join("\n"), ""));
+        continue;
+      }
+
+      if (/^(\*\s*\*\s*\*|-{3,}|_{3,})$/.test(trimmed)) {
+        blocks.push("<hr>");
+        index += 1;
+        continue;
+      }
+
+      const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
+      if (headingMatch) {
+        const depth = headingMatch[1].length;
+        const text = headingMatch[2].trim();
+        const tag = depth <= 2 ? "h2" : depth === 3 ? "h3" : "h4";
+        blocks.push(`<${tag}>${parseInlineMarkdown(text)}</${tag}>`);
+        index += 1;
+        continue;
+      }
+
+      const imageMatch = trimmed.match(/^!\[([^\]]*)\]\((\S+?)(?:\s+"([^"]*)")?\)$/);
+      if (imageMatch && isSafeUrl(imageMatch[2], "IMG")) {
+        const [, alt, src, caption] = imageMatch;
+        blocks.push(
+          `<figure class="ollow-editor-image" data-type="image"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}">${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ""}</figure>`
+        );
+        index += 1;
+        continue;
+      }
+
+      if (
+        index + 1 < lines.length &&
+        lines[index].includes("|") &&
+        /^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*$/.test(lines[index + 1])
+      ) {
+        const tableLines = [lines[index]];
+        index += 2;
+        while (index < lines.length && lines[index].includes("|") && lines[index].trim()) {
+          tableLines.push(lines[index]);
+          index += 1;
+        }
+        const parseCells = (value) => value.replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
+        const headers = parseCells(tableLines[0]);
+        const bodyRows = tableLines.slice(1).map((row) => parseCells(row));
+        const headerHtml = headers.map((cell) => `<th>${parseInlineMarkdown(cell)}</th>`).join("");
+        const bodyHtml = bodyRows
+          .map((row) => `<tr>${headers.map((_, i) => `<td>${parseInlineMarkdown(row[i] || "")}</td>`).join("")}</tr>`)
+          .join("");
+        blocks.push(`<figure class="ollow-editor-table" data-type="table"><div class="ollow-editor-table-scroll"><table><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></div></figure>`);
+        continue;
+      }
+
+      if (/^>\s?/.test(trimmed)) {
+        const quoteLines = [];
+        while (index < lines.length && /^>\s?/.test(lines[index].trim())) {
+          quoteLines.push(lines[index].replace(/^>\s?/, ""));
+          index += 1;
+        }
+        const quoteText = quoteLines.join(" ").trim();
+        blocks.push(`<blockquote><p>${parseInlineMarkdown(quoteText)}</p></blockquote>`);
+        continue;
+      }
+
+      if (/^[-*]\s+/.test(trimmed)) {
+        const items = [];
+        while (index < lines.length && /^[-*]\s+/.test(lines[index].trim())) {
+          items.push(lines[index].trim().replace(/^[-*]\s+/, ""));
+          index += 1;
+        }
+        blocks.push(`<ul>${items.map((item) => `<li>${parseInlineMarkdown(item)}</li>`).join("")}</ul>`);
+        continue;
+      }
+
+      if (/^\d+\.\s+/.test(trimmed)) {
+        const items = [];
+        while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
+          items.push(lines[index].trim().replace(/^\d+\.\s+/, ""));
+          index += 1;
+        }
+        blocks.push(`<ol>${items.map((item) => `<li>${parseInlineMarkdown(item)}</li>`).join("")}</ol>`);
+        continue;
+      }
+
+      const paragraphLines = [];
+      while (index < lines.length && lines[index].trim()) {
+        const current = lines[index].trim();
+        if (
+          /^```/.test(current) ||
+          /^(#{1,6})\s+/.test(current) ||
+          /^>\s?/.test(current) ||
+          /^[-*]\s+/.test(current) ||
+          /^\d+\.\s+/.test(current) ||
+          /^(\*\s*\*\s*\*|-{3,}|_{3,})$/.test(current)
+        ) {
+          break;
+        }
+        paragraphLines.push(current);
+        index += 1;
+      }
+      blocks.push(`<p>${parseInlineMarkdown(paragraphLines.join(" "))}</p>`);
+    }
+
+    return blocks.join("");
+  }
+
+  function htmlNodeToMarkdown(node) {
+    if (!node) return "";
+    if (node.nodeType === Node.TEXT_NODE) {
+      return escapeMarkdownText(node.textContent || "");
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return "";
+    }
+
+    const tag = node.tagName.toUpperCase();
+    const inlineChildren = () => Array.from(node.childNodes).map((child) => htmlNodeToMarkdown(child)).join("");
+
+    switch (tag) {
+      case "STRONG":
+        return `**${inlineChildren()}**`;
+      case "EM":
+        return `*${inlineChildren()}*`;
+      case "U":
+        return `<u>${inlineChildren()}</u>`;
+      case "A": {
+        const href = node.getAttribute("href") || "";
+        return href ? `[${inlineChildren() || href}](${href})` : inlineChildren();
+      }
+      case "CODE":
+        if (node.parentElement && node.parentElement.tagName.toUpperCase() === "PRE") {
+          return node.textContent || "";
+        }
+        return `\`${node.textContent || ""}\``;
+      case "BR":
+        return "  \n";
+      case "IMG": {
+        const src = node.getAttribute("src") || "";
+        const alt = node.getAttribute("alt") || "";
+        return src ? `![${alt}](${src})` : "";
+      }
+      default:
+        return inlineChildren();
+    }
+  }
+
+  function exportTableToMarkdown(table) {
+    if (!table) return "";
+    const rows = Array.from(table.querySelectorAll("tr"));
+    if (!rows.length) return "";
+    const cellText = (row) => Array.from(row.children).map((cell) => normalizeMarkdownCell(htmlNodeToMarkdown(cell)));
+    const header = cellText(rows[0]);
+    const body = rows.slice(1).map(cellText);
+    const separator = header.map(() => "---");
+    return [
+      `| ${header.join(" | ")} |`,
+      `| ${separator.join(" | ")} |`,
+      ...body.map((row) => `| ${header.map((_, i) => row[i] || "").join(" | ")} |`),
+    ].join("\n");
+  }
+
+  function exportHtmlToMarkdown(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(`<div>${html || ""}</div>`, "text/html");
+    const root = doc.body.firstElementChild;
+    if (!root) return "";
+
+    const blocks = [];
+    Array.from(root.childNodes).forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = String(node.textContent || "").trim();
+        if (text) blocks.push(escapeMarkdownText(text));
+        return;
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+      const tag = node.tagName.toUpperCase();
+      switch (tag) {
+        case "H2":
+          blocks.push(`## ${Array.from(node.childNodes).map((child) => htmlNodeToMarkdown(child)).join("").trim()}`);
+          break;
+        case "H3":
+          blocks.push(`### ${Array.from(node.childNodes).map((child) => htmlNodeToMarkdown(child)).join("").trim()}`);
+          break;
+        case "H4":
+          blocks.push(`#### ${Array.from(node.childNodes).map((child) => htmlNodeToMarkdown(child)).join("").trim()}`);
+          break;
+        case "P":
+          blocks.push(Array.from(node.childNodes).map((child) => htmlNodeToMarkdown(child)).join("").trim());
+          break;
+        case "UL":
+          blocks.push(Array.from(node.children).map((li) => `- ${Array.from(li.childNodes).map((child) => htmlNodeToMarkdown(child)).join("").trim()}`).join("\n"));
+          break;
+        case "OL":
+          blocks.push(Array.from(node.children).map((li, i) => `${i + 1}. ${Array.from(li.childNodes).map((child) => htmlNodeToMarkdown(child)).join("").trim()}`).join("\n"));
+          break;
+        case "BLOCKQUOTE": {
+          const text = Array.from(node.querySelectorAll("p")).map((p) => Array.from(p.childNodes).map((child) => htmlNodeToMarkdown(child)).join("").trim()).join("\n");
+          blocks.push(text.split("\n").map((line) => `> ${line}`).join("\n"));
+          break;
+        }
+        case "HR":
+          blocks.push("---");
+          break;
+        case "FIGURE":
+          if (node.classList.contains("ollow-editor-image") || node.classList.contains("ollow-image")) {
+            const img = node.querySelector("img");
+            if (img) {
+              const src = img.getAttribute("src") || "";
+              const alt = img.getAttribute("alt") || "";
+              const caption = (node.querySelector("figcaption")?.textContent || "").trim();
+              blocks.push(`![${alt}](${src}${caption ? ` "${caption}"` : ""})`);
+            }
+          } else if (node.classList.contains("ollow-editor-code")) {
+            const language = node.getAttribute("data-language") || "";
+            const code = node.querySelector("code")?.textContent || "";
+            blocks.push(`\`\`\`${language}\n${code}\n\`\`\``);
+          } else if (node.classList.contains("ollow-editor-table")) {
+            blocks.push(exportTableToMarkdown(node.querySelector("table")));
+          } else if (node.classList.contains("ollow-embed")) {
+            const iframe = node.querySelector("iframe");
+            const url = iframe ? getYouTubeWatchUrl(iframe.getAttribute("src") || "") : "";
+            if (url) blocks.push(url);
+          }
+          break;
+        case "SECTION":
+          if (node.classList.contains("ollow-gallery")) {
+            const title = node.querySelector(".ollow-gallery-header h3")?.textContent?.trim();
+            if (title) blocks.push(`### ${escapeMarkdownText(title)}`);
+            Array.from(node.querySelectorAll(".ollow-gallery-grid img")).forEach((img) => {
+              const src = img.getAttribute("src") || "";
+              const alt = img.getAttribute("alt") || "";
+              if (src) blocks.push(`![${alt}](${src})`);
+            });
+          }
+          break;
+        case "DIV":
+          if (node.classList.contains("nw-attachment")) {
+            const title = (node.querySelector(".nw-block-title")?.textContent || "Attachment").trim();
+            const href = node.querySelector("a")?.getAttribute("href") || "";
+            blocks.push(href ? `[${escapeMarkdownText(title)}](${href})` : escapeMarkdownText(title));
+          } else if (node.classList.contains("nw-embed")) {
+            const href = node.querySelector("a")?.getAttribute("href") || "";
+            if (href) blocks.push(href);
+          }
+          break;
+        default:
+          blocks.push(Array.from(node.childNodes).map((child) => htmlNodeToMarkdown(child)).join("").trim());
+      }
+    });
+
+    return blocks.filter(Boolean).join("\n\n").replace(/\n{3,}/g, "\n\n").trim();
+  }
+
   function sanitizeFragment(input) {
     const source = String(input || "");
     if (!source.trim()) return "";
@@ -836,6 +1168,8 @@
         ["image", "Image", "image"],
         ["code", "Code", "code_blocks"],
         ["table", "Table", "table"],
+        ["import-markdown", "Import MD", "upload_file"],
+        ["export-markdown", "Export MD", "download"],
         ["gallery", "Gallery", "photo_library"],
         ["embed", "Embed", "smart_display"],
         ["related", "Related", "article"],
@@ -879,6 +1213,7 @@
       this.modalCopy = modal.querySelector(".nw-editor-modal-copy");
       this.modalBody = modal.querySelector(".nw-editor-modal-body");
       this.modalConfirm = modal.querySelector('[data-role="confirm"]');
+      this.modalActions = modal.querySelector(".nw-editor-modal-footer");
       modal.querySelector('[data-role="cancel"]').addEventListener("click", this.boundModalClose);
       modal.addEventListener("click", (event) => {
         if (event.target === modal) {
@@ -1313,6 +1648,12 @@
           return;
         case "table":
           this.openTableModal();
+          return;
+        case "import-markdown":
+          this.openMarkdownImportModal();
+          return;
+        case "export-markdown":
+          this.openMarkdownExportModal();
           return;
         case "gallery":
           this.openGalleryModal();
@@ -2355,12 +2696,67 @@
       });
     }
 
+    openMarkdownImportModal() {
+      this.openModal({
+        title: "Import Markdown",
+        copy: "Paste Markdown and either replace the editor content or insert it at the current cursor.",
+        confirmLabel: "Import Markdown",
+        fields: [
+          { name: "markdown", label: "Markdown", type: "textarea", placeholder: "## Heading\n\nParagraph text", spellcheck: false },
+          {
+            name: "mode",
+            label: "Import mode",
+            type: "select",
+            options: [
+              { value: "replace", label: "Replace current editor content" },
+              { value: "insert", label: "Insert at cursor" },
+            ],
+          },
+        ],
+        onConfirm: (values) => {
+          if (!String(values.markdown || "").trim()) {
+            return "Markdown is required.";
+          }
+          this.importMarkdown(values.markdown, { mode: values.mode || "replace" });
+          return null;
+        },
+      });
+    }
+
+    openMarkdownExportModal() {
+      const markdown = this.exportMarkdown();
+      this.openModal({
+        title: "Export Markdown",
+        copy: "Review the generated Markdown or copy it to your clipboard. The editor textarea still stores HTML.",
+        confirmLabel: "Close",
+        fields: [
+          { name: "markdown", label: "Markdown", type: "textarea", value: markdown, spellcheck: false, readonly: true },
+        ],
+        extraActions: [
+          {
+            label: "Copy Markdown",
+            className: "nw-modal-button nw-modal-button--secondary",
+            onClick: async () => {
+              try {
+                await navigator.clipboard.writeText(this.modalFieldRefs.markdown.value || "");
+                this.showFeedback("Markdown copied to clipboard.");
+              } catch (error) {
+                this.showFeedback("Unable to copy Markdown.");
+              }
+            },
+          },
+        ],
+        onConfirm: () => null,
+      });
+    }
+
     openModal(config) {
       this.saveSelection();
       this.modalTitle.textContent = config.title;
       this.modalCopy.textContent = config.copy || "";
       this.modalConfirm.textContent = config.confirmLabel || "Insert";
       this.modalBody.innerHTML = "";
+      Array.from(this.modal.querySelectorAll("[data-extra-action]")).forEach((button) => button.remove());
 
       const fieldRefs = {};
       (config.fields || []).forEach((field) => {
@@ -2422,6 +2818,9 @@
         if (field.spellcheck === false) {
           input.spellcheck = false;
         }
+        if (field.readonly) {
+          input.readOnly = true;
+        }
         wrapper.appendChild(label);
         wrapper.appendChild(input);
         this.modalBody.appendChild(wrapper);
@@ -2432,6 +2831,16 @@
       this.modalError = document.createElement("div");
       this.modalError.className = "nw-modal-error";
       this.modalBody.appendChild(this.modalError);
+
+      (config.extraActions || []).forEach((action) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = action.className || "nw-modal-button nw-modal-button--secondary";
+        button.textContent = action.label;
+        button.setAttribute("data-extra-action", "true");
+        button.addEventListener("click", () => action.onClick && action.onClick(fieldRefs));
+        this.modalConfirm.insertAdjacentElement("beforebegin", button);
+      });
 
       this.modalConfirm.onclick = async () => {
         this.modalError.textContent = "";
@@ -2616,6 +3025,27 @@
       this.focus();
     }
 
+    importMarkdown(markdown, options) {
+      const mode = options && options.mode === "insert" ? "insert" : "replace";
+      const generated = parseMarkdownToHtml(markdown, this);
+      const clean = generated ? sanitizeFragment(generated) : "";
+      if (!clean) return "";
+      if (mode === "insert") {
+        this.insertHTML(clean);
+        return clean;
+      }
+      this.content.innerHTML = clean;
+      this.clearMediaSelection();
+      this.clearTableSelection();
+      this.focus();
+      this.handleContentChange();
+      return clean;
+    }
+
+    exportMarkdown() {
+      return exportHtmlToMarkdown(this.getHTML());
+    }
+
     focus() {
       this.content.focus();
       if (!selectionInside(this.content)) {
@@ -2731,4 +3161,5 @@
   };
 
   window.NationWireEditor = api;
+  window.OllowEditor = api;
 })();

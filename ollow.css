@@ -136,6 +136,10 @@
   margin-left: auto;
 }
 
+.ollow-typography-controls {
+  gap: 8px;
+}
+
 .nw-toolbar-divider {
   width: 1px;
   height: 18px;
@@ -202,6 +206,187 @@
 
 .ollow-theme-control {
   position: relative;
+}
+
+.ollow-font-control,
+.ollow-size-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ollow-font-button,
+.ollow-size-step,
+.ollow-size-input,
+.ollow-font-option,
+.ollow-size-menu button {
+  appearance: none;
+  border: 1px solid var(--nw-border);
+  background: var(--ollow-surface);
+  color: var(--ollow-text-strong);
+  font: inherit;
+}
+
+.ollow-font-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 170px;
+  max-width: 220px;
+  height: 34px;
+  padding: 0 10px 0 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ollow-current-font {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ollow-font-arrow {
+  flex: 0 0 auto;
+  color: var(--ollow-muted);
+  font-size: 11px;
+}
+
+.ollow-font-button:hover,
+.ollow-size-step:hover,
+.ollow-size-menu button:hover,
+.ollow-size-input:focus,
+.ollow-font-option:hover {
+  background: var(--ollow-surface-muted);
+}
+
+.ollow-font-button[aria-expanded="true"] {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+}
+
+.ollow-font-menu,
+.ollow-size-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 10000;
+  min-width: 240px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid var(--nw-border);
+  border-radius: 12px;
+  background: var(--ollow-surface);
+  box-shadow: var(--ollow-shadow-float);
+}
+
+.ollow-font-menu[hidden],
+.ollow-size-menu[hidden] {
+  display: none !important;
+}
+
+.ollow-font-menu-section + .ollow-font-menu-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--nw-border);
+}
+
+.ollow-font-menu-label {
+  margin: 0 0 6px;
+  color: var(--ollow-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.ollow-font-option,
+.ollow-size-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ollow-font-option + .ollow-font-option {
+  margin-top: 4px;
+}
+
+.ollow-font-option-check {
+  width: 12px;
+  color: transparent;
+  font-size: 12px;
+}
+
+.ollow-font-option.is-active,
+.ollow-size-menu button.is-active {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+  color: var(--ollow-primary);
+}
+
+.ollow-font-option.is-active .ollow-font-option-check {
+  color: currentColor;
+}
+
+.ollow-size-control {
+  gap: 0;
+}
+
+.ollow-size-step {
+  width: 30px;
+  height: 34px;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.ollow-size-step:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.ollow-size-step:last-of-type {
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.ollow-size-input {
+  width: 54px;
+  height: 34px;
+  border-left: 0;
+  border-radius: 0;
+  padding: 0 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ollow-size-input::-webkit-outer-spin-button,
+.ollow-size-input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.ollow-size-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.ollow-size-menu {
+  min-width: 80px;
+  padding: 6px;
+}
+
+.ollow-size-menu button + button {
+  margin-top: 4px;
 }
 
 .ollow-theme-toggle {
@@ -455,6 +640,81 @@
   color: var(--ollow-link);
   text-decoration: underline;
 }
+
+.nw-editor-content .ollow-font-arial {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+.nw-editor-content .ollow-font-times-new-roman {
+  font-family: "Times New Roman", Times, serif;
+}
+
+.nw-editor-content .ollow-font-georgia {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.nw-editor-content .ollow-font-roboto {
+  font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.nw-editor-content .ollow-font-merriweather {
+  font-family: Merriweather, Georgia, serif;
+}
+
+.nw-editor-content .ollow-font-playfair-display {
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+.nw-editor-content .ollow-font-lora {
+  font-family: Lora, Georgia, serif;
+}
+
+.nw-editor-content .ollow-font-montserrat {
+  font-family: Montserrat, Arial, sans-serif;
+}
+
+.nw-editor-content .ollow-font-nunito {
+  font-family: Nunito, Arial, sans-serif;
+}
+
+.nw-editor-content .ollow-font-oswald {
+  font-family: Oswald, Arial, sans-serif;
+}
+
+.nw-editor-content .ollow-font-courier-new {
+  font-family: "Courier New", Courier, monospace;
+}
+
+.nw-editor-content .ollow-font-roboto-mono {
+  font-family: "Roboto Mono", "Courier New", monospace;
+}
+
+.nw-editor-content .ollow-font-eb-garamond {
+  font-family: "EB Garamond", Georgia, serif;
+}
+
+.nw-editor-content .ollow-font-spectral {
+  font-family: Spectral, Georgia, serif;
+}
+
+.nw-editor-content .ollow-font-size-8 { font-size: 8px; }
+.nw-editor-content .ollow-font-size-9 { font-size: 9px; }
+.nw-editor-content .ollow-font-size-10 { font-size: 10px; }
+.nw-editor-content .ollow-font-size-11 { font-size: 11px; }
+.nw-editor-content .ollow-font-size-12 { font-size: 12px; }
+.nw-editor-content .ollow-font-size-14 { font-size: 14px; }
+.nw-editor-content .ollow-font-size-16 { font-size: 16px; }
+.nw-editor-content .ollow-font-size-18 { font-size: 18px; }
+.nw-editor-content .ollow-font-size-20 { font-size: 20px; }
+.nw-editor-content .ollow-font-size-22 { font-size: 22px; }
+.nw-editor-content .ollow-font-size-24 { font-size: 24px; }
+.nw-editor-content .ollow-font-size-28 { font-size: 28px; }
+.nw-editor-content .ollow-font-size-32 { font-size: 32px; }
+.nw-editor-content .ollow-font-size-36 { font-size: 36px; }
+.nw-editor-content .ollow-font-size-48 { font-size: 48px; }
+.nw-editor-content .ollow-font-size-60 { font-size: 60px; }
+.nw-editor-content .ollow-font-size-72 { font-size: 72px; }
+.nw-editor-content .ollow-font-size-96 { font-size: 96px; }
 
 .nw-editor-content hr {
   border: 0;
@@ -1221,6 +1481,16 @@
     right: auto;
     left: 0;
     max-width: min(220px, calc(100vw - 48px));
+  }
+
+  .ollow-font-button {
+    min-width: 140px;
+    max-width: 180px;
+  }
+
+  .ollow-font-menu,
+  .ollow-size-menu {
+    max-width: min(240px, calc(100vw - 48px));
   }
 
   .ollow-media-toolbar-divider {

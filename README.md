@@ -167,6 +167,8 @@ Ollow Editor currently supports:
 | Feature       | Description                     |
 | ------------- | ------------------------------- |
 | Undo / Redo   | Revert or restore changes       |
+| Font Family   | Apply approved font families    |
+| Font Size     | Apply approved font sizes       |
 | Paragraph     | Set normal paragraph text       |
 | H2 / H3 / H4  | Insert heading styles           |
 | Bold          | Make selected text bold         |
@@ -227,6 +229,82 @@ editor.removeShortcut("mod+shift+m");
 const shortcuts = editor.getShortcuts();
 ```
 
+## Font Family and Size
+
+The main toolbar includes Microsoft Office-style typography controls near the beginning of the row:
+
+- font family dropdown
+- font size field
+- decrease font size button
+- increase font size button
+
+Supported font families:
+
+- Arial
+- Times New Roman
+- Georgia
+- Roboto
+- Merriweather
+- Playfair Display
+- Lora
+- Montserrat
+- Nunito
+- Oswald
+- Courier New
+- Roboto Mono
+- EB Garamond
+- Spectral
+
+Supported size presets:
+
+- `8`
+- `9`
+- `10`
+- `11`
+- `12`
+- `14`
+- `16`
+- `18`
+- `20`
+- `22`
+- `24`
+- `28`
+- `32`
+- `36`
+- `48`
+- `60`
+- `72`
+- `96`
+
+Saved HTML uses safe classes:
+
+```html
+<p>
+  Normal text <span class="ollow-font-georgia">Georgia text</span>
+</p>
+```
+
+```html
+<p>
+  Normal text <span class="ollow-font-size-22">22px text</span>
+</p>
+```
+
+```html
+<p>
+  <span class="ollow-font-georgia ollow-font-size-22">Styled text</span>
+</p>
+```
+
+Typography sanitizer notes:
+
+- only approved `ollow-font-*` classes are preserved
+- only approved `ollow-font-size-*` classes are preserved
+- pasted Word and Google Docs font styling is mapped only when it matches an allowed font or size
+- unsafe inline typography styles are removed
+
+These controls use the same toolbar variables and dropdown surfaces as the rest of the editor, so they work in light, dark, and auto theme modes.
+
 ## Paste Cleanup
 
 Ollow Editor cleans pasted rich content before inserting it into the editor. The cleanup is aimed at content copied from:
@@ -264,6 +342,8 @@ Paste cleanup removes document noise and unsafe markup:
 - non-YouTube iframes
 
 Plain text paste is converted into clean paragraphs with preserved line breaks.
+
+When pasted content includes font family or font size styling from Word or Google Docs, Ollow Editor keeps it only when it can be mapped to the supported typography classes.
 
 Public paste helpers:
 
@@ -556,6 +636,8 @@ Available instance methods:
 
 - `editor.importMarkdown(markdown, { mode: "replace" | "insert" })`
 - `editor.exportMarkdown()`
+- `editor.applyFontFamily(fontKey)`
+- `editor.applyFontSize(size)`
 - `editor.cleanPastedHTML(html)`
 - `editor.cleanPlainText(text)`
 - `editor.sanitizeHTML(html)`

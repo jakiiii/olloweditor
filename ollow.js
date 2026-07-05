@@ -4,6 +4,31 @@
   const DEFAULT_PLACEHOLDER = "Start writing your story here…";
   const DEFAULT_READ_SPEED = 220;
   const DEFAULT_THEME_STORAGE_KEY = "ollow-editor-theme";
+  const DEFAULT_FONT_FAMILY_KEY = "arial";
+  const DEFAULT_FONT_SIZE = 16;
+  const FONT_FAMILIES = [
+    { key: "arial", label: "Arial", stack: 'Arial, "Helvetica Neue", Helvetica, sans-serif' },
+    { key: "times-new-roman", label: "Times New Roman", stack: '"Times New Roman", Times, serif' },
+    { key: "georgia", label: "Georgia", stack: 'Georgia, "Times New Roman", serif' },
+    { key: "roboto", label: "Roboto", stack: 'Roboto, "Helvetica Neue", Arial, sans-serif' },
+    { key: "merriweather", label: "Merriweather", stack: 'Merriweather, Georgia, serif' },
+    { key: "playfair-display", label: "Playfair Display", stack: '"Playfair Display", Georgia, serif' },
+    { key: "lora", label: "Lora", stack: 'Lora, Georgia, serif' },
+    { key: "montserrat", label: "Montserrat", stack: 'Montserrat, Arial, sans-serif' },
+    { key: "nunito", label: "Nunito", stack: 'Nunito, Arial, sans-serif' },
+    { key: "oswald", label: "Oswald", stack: 'Oswald, Arial, sans-serif' },
+    { key: "courier-new", label: "Courier New", stack: '"Courier New", Courier, monospace' },
+    { key: "roboto-mono", label: "Roboto Mono", stack: '"Roboto Mono", "Courier New", monospace' },
+    { key: "eb-garamond", label: "EB Garamond", stack: '"EB Garamond", Georgia, serif' },
+    { key: "spectral", label: "Spectral", stack: 'Spectral, Georgia, serif' },
+  ];
+  const RECENT_FONT_KEYS = ["arial", "times-new-roman", "georgia", "roboto", "merriweather"];
+  const FONT_SIZE_PRESETS = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 48, 60, 72, 96];
+  const FONT_FAMILY_LOOKUP = new Map(FONT_FAMILIES.map((font) => [font.key, font]));
+  const FONT_CLASS_PREFIX = "ollow-font-";
+  const FONT_SIZE_CLASS_PREFIX = "ollow-font-size-";
+  const ALLOWED_FONT_FAMILY_CLASSES = FONT_FAMILIES.map((font) => `${FONT_CLASS_PREFIX}${font.key}`);
+  const ALLOWED_FONT_SIZE_CLASSES = FONT_SIZE_PRESETS.map((size) => `${FONT_SIZE_CLASS_PREFIX}${size}`);
   const TOOLBAR_SHORTCUT_LABELS = {
     undo: "Mod+Z",
     redo: "Mod+Shift+Z / Mod+Y",
@@ -93,6 +118,8 @@
     "ollow-text-right",
     "ollow-media",
     "ollow-video-wrapper",
+    ...ALLOWED_FONT_FAMILY_CLASSES,
+    ...ALLOWED_FONT_SIZE_CLASSES,
   ]);
   const DIV_DATA_TYPES = new Set(["attachment", "embed", "fact-box", "gallery", "related"]);
   const FIGURE_DATA_TYPES = new Set(["code", "embed", "image", "table"]);
@@ -132,6 +159,120 @@
       return /^(https?:\/\/|\/|\.\/|\.\.\/|data:image\/)/i.test(trimmed);
     }
     return /^(https?:\/\/|mailto:|tel:|\/|#|\.\.?\/)/i.test(trimmed);
+  }
+
+  function getFontFamilyClassName(key) {
+    return `${FONT_CLASS_PREFIX}${key}`;
+  }
+
+  function getFontSizeClassName(size) {
+    return `${FONT_SIZE_CLASS_PREFIX}${size}`;
+  }
+
+  function parseFontFamilyKey(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    if (!raw) return "";
+    const normalized = raw.replace(/^["']|["']$/g, "");
+    for (const font of FONT_FAMILIES) {
+      const firstFamily = font.stack.split(",")[0].trim().replace(/^["']|["']$/g, "").toLowerCase();
+      if (normalized === font.key || normalized === font.label.toLowerCase() || normalized === firstFamily) {
+        return font.key;
+      }
+    }
+    return "";
+  }
+
+  function parseFontFamilyList(value) {
+    const tokens = String(value || "")
+      .split(",")
+      .map((token) => token.trim())
+      .filter(Boolean);
+    for (const token of tokens) {
+      const key = parseFontFamilyKey(token);
+      if (key) return key;
+    }
+    return "";
+  }
+
+  function clampFontSize(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return DEFAULT_FONT_SIZE;
+    return Math.min(96, Math.max(8, Math.round(parsed)));
+  }
+
+  function getClosestFontSize(value) {
+    const size = clampFontSize(value);
+    return FONT_SIZE_PRESETS.reduce((closest, current) => (
+      Math.abs(current - size) < Math.abs(closest - size) ? current : closest
+    ), FONT_SIZE_PRESETS[0]);
+  }
+
+  function parseFontSizeClass(className) {
+    const match = String(className || "").match(/^ollow-font-size-(\d{1,2})$/);
+    if (!match) return 0;
+    const size = Number(match[1]);
+    return FONT_SIZE_PRESETS.includes(size) ? size : 0;
+  }
+
+  function getFontFamilyFromElement(element) {
+    if (!element || !element.classList) return "";
+    for (const className of element.classList) {
+      if (className.startsWith(FONT_CLASS_PREFIX)) {
+        const key = className.slice(FONT_CLASS_PREFIX.length);
+        if (FONT_FAMILY_LOOKUP.has(key)) {
+          return key;
+        }
+      }
+    }
+    return "";
+  }
+
+  function getFontSizeFromElement(element) {
+    if (!element || !element.classList) return 0;
+    for (const className of element.classList) {
+      const size = parseFontSizeClass(className);
+      if (size) return size;
+    }
+    return 0;
+  }
+
+  function removeFontFamilyClassesFromElement(element) {
+    if (!element || !element.classList) return;
+    Array.from(element.classList).forEach((className) => {
+      if (className.startsWith(FONT_CLASS_PREFIX) && FONT_FAMILY_LOOKUP.has(className.slice(FONT_CLASS_PREFIX.length))) {
+        element.classList.remove(className);
+      }
+    });
+  }
+
+  function removeFontSizeClassesFromElement(element) {
+    if (!element || !element.classList) return;
+    Array.from(element.classList).forEach((className) => {
+      if (parseFontSizeClass(className)) {
+        element.classList.remove(className);
+      }
+    });
+  }
+
+  function removeTypographyClasses(container, options) {
+    if (!container) return;
+    const config = Object.assign({ fontFamily: false, fontSize: false }, options || {});
+    if (container.nodeType === Node.ELEMENT_NODE) {
+      if (config.fontFamily) {
+        removeFontFamilyClassesFromElement(container);
+      }
+      if (config.fontSize) {
+        removeFontSizeClassesFromElement(container);
+      }
+    }
+    Array.from((container.querySelectorAll && container.querySelectorAll("*")) || []).forEach((element) => {
+      if (config.fontFamily) {
+        removeFontFamilyClassesFromElement(element);
+      }
+      if (config.fontSize) {
+        removeFontSizeClassesFromElement(element);
+      }
+    });
   }
 
   function readFileAsDataURL(file) {
@@ -427,6 +568,18 @@
           if (alignClass && ["P", "H2", "H3", "H4", "BLOCKQUOTE", "LI"].includes(element.tagName.toUpperCase())) {
             element.classList.remove(...TEXT_ALIGNMENT_CLASSES);
             element.classList.add(alignClass);
+          }
+          const fontFamilyMatch = value.match(/font-family\s*:\s*([^;]+)/i);
+          const fontFamilyKey = parseFontFamilyList(fontFamilyMatch && fontFamilyMatch[1]);
+          if (fontFamilyKey) {
+            removeFontFamilyClassesFromElement(element);
+            element.classList.add(getFontFamilyClassName(fontFamilyKey));
+          }
+          const fontSizeMatch = value.match(/font-size\s*:\s*([\d.]+)\s*(px|pt)?/i);
+          const rawSize = fontSizeMatch ? Number(fontSizeMatch[1]) * (fontSizeMatch[2] && fontSizeMatch[2].toLowerCase() === "pt" ? 4 / 3 : 1) : 0;
+          if (rawSize) {
+            removeFontSizeClassesFromElement(element);
+            element.classList.add(getFontSizeClassName(getClosestFontSize(rawSize)));
           }
           element.removeAttribute("style");
           return;
@@ -955,7 +1108,13 @@
         if (name === "class") {
           const classes = value
             .split(/\s+/)
-            .filter((className) => CLASS_ALLOWLIST.has(className) || sanitizerExtensions.classes.has(className) || /^language-[a-z0-9+._-]+$/i.test(className));
+            .filter((className) => (
+              CLASS_ALLOWLIST.has(className) ||
+              sanitizerExtensions.classes.has(className) ||
+              /^language-[a-z0-9+._-]+$/i.test(className) ||
+              (className.startsWith(FONT_CLASS_PREFIX) && FONT_FAMILY_LOOKUP.has(className.slice(FONT_CLASS_PREFIX.length))) ||
+              Boolean(parseFontSizeClass(className))
+            ));
           if (classes.length) {
             clean.setAttribute("class", classes.join(" "));
           }
@@ -1377,6 +1536,11 @@
       this.toolbarRows = {};
       this.toolbarGroups = {};
       this.headingSelect = null;
+      this.fontFamilyButton = null;
+      this.fontFamilyMenu = null;
+      this.fontFamilyLabel = null;
+      this.fontSizeInput = null;
+      this.fontSizeMenu = null;
       this.themeToggleButton = null;
       this.themeMenu = null;
       this.modal = null;
@@ -1508,6 +1672,9 @@
       groupUndo.appendChild(this.makeToolbarButton("undo", "Undo", '<span class="material-symbols-outlined">undo</span>'));
       groupUndo.appendChild(this.makeToolbarButton("redo", "Redo", '<span class="material-symbols-outlined">redo</span>'));
 
+      const typographyControls = this.buildTypographyControls();
+      this.toolbarGroups.typography = typographyControls;
+
       this.headingSelect = document.createElement("select");
       this.headingSelect.className = "nw-toolbar-select";
       this.headingSelect.innerHTML = `
@@ -1557,6 +1724,8 @@
 
       row.appendChild(groupUndo);
       row.appendChild(this.makeDivider());
+      row.appendChild(typographyControls);
+      row.appendChild(this.makeDivider());
       row.appendChild(this.headingSelect);
       row.appendChild(groupText);
       row.appendChild(this.makeDivider());
@@ -1567,6 +1736,160 @@
       row.appendChild(groupMediaAlign);
       row.appendChild(groupTheme);
       return row;
+    }
+
+    buildTypographyControls() {
+      const group = document.createElement("div");
+      group.className = "nw-toolbar-group ollow-typography-controls";
+
+      const fontControl = document.createElement("div");
+      fontControl.className = "ollow-font-control";
+
+      const fontButton = document.createElement("button");
+      fontButton.type = "button";
+      fontButton.className = "ollow-font-button";
+      fontButton.setAttribute("data-font-menu-toggle", "true");
+      fontButton.setAttribute("aria-haspopup", "menu");
+      fontButton.setAttribute("aria-expanded", "false");
+      fontButton.innerHTML = `<span class="ollow-current-font">${FONT_FAMILY_LOOKUP.get(DEFAULT_FONT_FAMILY_KEY).label}</span><span class="ollow-font-arrow" aria-hidden="true">▾</span>`;
+      fontButton.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        this.saveSelection();
+      });
+      fontButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        this.toggleFontFamilyMenu();
+      });
+
+      const fontMenu = document.createElement("div");
+      fontMenu.className = "ollow-font-menu";
+      fontMenu.hidden = true;
+      fontMenu.setAttribute("role", "menu");
+      fontMenu.innerHTML = `
+        <div class="ollow-font-menu-section">
+          <div class="ollow-font-menu-label">Recent Fonts</div>
+          ${RECENT_FONT_KEYS.map((key) => this.buildFontOptionMarkup(key)).join("")}
+        </div>
+        <div class="ollow-font-menu-section">
+          <div class="ollow-font-menu-label">All Fonts</div>
+          ${FONT_FAMILIES.map((font) => this.buildFontOptionMarkup(font.key)).join("")}
+        </div>
+      `;
+      fontMenu.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      fontMenu.addEventListener("click", (event) => {
+        const option = event.target.closest("[data-font-family]");
+        if (!option) return;
+        event.preventDefault();
+        this.applyFontFamily(option.dataset.fontFamily);
+        this.closeFontFamilyMenu();
+      });
+
+      fontControl.appendChild(fontButton);
+      fontControl.appendChild(fontMenu);
+
+      const sizeControl = document.createElement("div");
+      sizeControl.className = "ollow-size-control";
+
+      const sizeDown = document.createElement("button");
+      sizeDown.type = "button";
+      sizeDown.className = "ollow-size-step";
+      sizeDown.setAttribute("aria-label", "Decrease font size");
+      sizeDown.textContent = "−";
+      sizeDown.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        this.saveSelection();
+      });
+      sizeDown.addEventListener("click", (event) => {
+        event.preventDefault();
+        this.stepFontSize(-1);
+      });
+
+      const sizeInput = document.createElement("input");
+      sizeInput.type = "number";
+      sizeInput.className = "ollow-size-input";
+      sizeInput.min = "8";
+      sizeInput.max = "96";
+      sizeInput.step = "1";
+      sizeInput.value = String(DEFAULT_FONT_SIZE);
+      sizeInput.setAttribute("aria-label", "Font size");
+      sizeInput.addEventListener("focus", () => {
+        this.saveSelection();
+      });
+      sizeInput.addEventListener("mousedown", (event) => {
+        event.stopPropagation();
+      });
+      sizeInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          this.applyFontSize(sizeInput.value);
+          this.closeFontSizeMenu();
+        } else if (event.key === "Escape") {
+          event.preventDefault();
+          this.closeFontSizeMenu();
+          this.focus();
+        } else {
+          event.stopPropagation();
+        }
+      });
+      sizeInput.addEventListener("change", () => {
+        this.applyFontSize(sizeInput.value);
+      });
+
+      const sizeUp = document.createElement("button");
+      sizeUp.type = "button";
+      sizeUp.className = "ollow-size-step";
+      sizeUp.setAttribute("aria-label", "Increase font size");
+      sizeUp.textContent = "+";
+      sizeUp.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        this.saveSelection();
+      });
+      sizeUp.addEventListener("click", (event) => {
+        event.preventDefault();
+        this.stepFontSize(1);
+      });
+
+      const sizeMenu = document.createElement("div");
+      sizeMenu.className = "ollow-size-menu";
+      sizeMenu.hidden = true;
+      sizeMenu.innerHTML = FONT_SIZE_PRESETS.map((size) => `<button type="button" data-font-size-choice="${size}">${size}</button>`).join("");
+      sizeMenu.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      sizeMenu.addEventListener("click", (event) => {
+        const option = event.target.closest("[data-font-size-choice]");
+        if (!option) return;
+        event.preventDefault();
+        this.applyFontSize(option.dataset.fontSizeChoice);
+        this.closeFontSizeMenu();
+      });
+
+      sizeInput.addEventListener("focus", () => {
+        this.openFontSizeMenu();
+      });
+
+      sizeControl.appendChild(sizeDown);
+      sizeControl.appendChild(sizeInput);
+      sizeControl.appendChild(sizeUp);
+      sizeControl.appendChild(sizeMenu);
+
+      this.fontFamilyButton = fontButton;
+      this.fontFamilyMenu = fontMenu;
+      this.fontFamilyLabel = fontButton.querySelector(".ollow-current-font");
+      this.fontSizeInput = sizeInput;
+      this.fontSizeMenu = sizeMenu;
+
+      group.appendChild(fontControl);
+      group.appendChild(sizeControl);
+      return group;
+    }
+
+    buildFontOptionMarkup(key) {
+      const font = FONT_FAMILY_LOOKUP.get(key);
+      if (!font) return "";
+      return `<button type="button" class="ollow-font-option" data-font-family="${escapeHtml(font.key)}" style="font-family:${escapeHtml(font.stack)};"><span class="ollow-font-option-check" aria-hidden="true">✓</span><span>${escapeHtml(font.label)}</span></button>`;
     }
 
     buildThemeControl() {
@@ -1877,6 +2200,8 @@
 
     toggleThemeMenu() {
       if (!this.themeMenu) return;
+      this.closeFontFamilyMenu();
+      this.closeFontSizeMenu();
       if (this.themeMenu.hidden) {
         this.openThemeMenu();
       } else {
@@ -1898,6 +2223,173 @@
         })
       );
       this.emit("themechange", detail);
+    }
+
+    openFontFamilyMenu() {
+      if (!this.fontFamilyMenu || !this.fontFamilyButton) return;
+      this.closeThemeMenu();
+      this.closeFontSizeMenu();
+      this.fontFamilyMenu.hidden = false;
+      this.fontFamilyButton.setAttribute("aria-expanded", "true");
+      this.updateFontToolbarState();
+    }
+
+    closeFontFamilyMenu() {
+      if (!this.fontFamilyMenu || !this.fontFamilyButton) return;
+      this.fontFamilyMenu.hidden = true;
+      this.fontFamilyButton.setAttribute("aria-expanded", "false");
+    }
+
+    toggleFontFamilyMenu() {
+      if (!this.fontFamilyMenu) return;
+      if (this.fontFamilyMenu.hidden) {
+        this.openFontFamilyMenu();
+      } else {
+        this.closeFontFamilyMenu();
+      }
+    }
+
+    openFontSizeMenu() {
+      if (!this.fontSizeMenu) return;
+      this.closeThemeMenu();
+      this.closeFontFamilyMenu();
+      this.fontSizeMenu.hidden = false;
+      this.updateFontToolbarState();
+    }
+
+    closeFontSizeMenu() {
+      if (!this.fontSizeMenu) return;
+      this.fontSizeMenu.hidden = true;
+    }
+
+    getSelectionRangeInEditor() {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return null;
+      const range = selection.getRangeAt(0);
+      return this.content.contains(range.commonAncestorContainer) ? range : null;
+    }
+
+    getCurrentTextBlock() {
+      const range = this.getSelectionRangeInEditor() || this.savedSelection;
+      if (!range || !this.content.contains(range.commonAncestorContainer)) return null;
+      return getClosestAlignableTextBlock(range.commonAncestorContainer, this.content) || closestBlock(range.commonAncestorContainer, this.content);
+    }
+
+    getCurrentFontFamily() {
+      const range = this.getSelectionRangeInEditor() || this.savedSelection;
+      let current = range ? (range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer) : null;
+      while (current && current !== this.content) {
+        const key = getFontFamilyFromElement(current);
+        if (key) return key;
+        current = current.parentNode;
+      }
+      return DEFAULT_FONT_FAMILY_KEY;
+    }
+
+    getCurrentFontSize() {
+      const range = this.getSelectionRangeInEditor() || this.savedSelection;
+      let current = range ? (range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer) : null;
+      while (current && current !== this.content) {
+        const size = getFontSizeFromElement(current);
+        if (size) return size;
+        current = current.parentNode;
+      }
+      return DEFAULT_FONT_SIZE;
+    }
+
+    updateFontToolbarState() {
+      const currentFont = this.getCurrentFontFamily();
+      const currentSize = this.getCurrentFontSize();
+      const font = FONT_FAMILY_LOOKUP.get(currentFont) || FONT_FAMILY_LOOKUP.get(DEFAULT_FONT_FAMILY_KEY);
+      if (this.fontFamilyLabel) {
+        this.fontFamilyLabel.textContent = font.label;
+        this.fontFamilyLabel.style.fontFamily = font.stack;
+      }
+      if (this.fontSizeInput) {
+        this.fontSizeInput.value = String(currentSize || DEFAULT_FONT_SIZE);
+      }
+      if (this.fontFamilyMenu) {
+        Array.from(this.fontFamilyMenu.querySelectorAll("[data-font-family]")).forEach((button) => {
+          const isActive = button.dataset.fontFamily === currentFont;
+          button.classList.toggle("is-active", isActive);
+        });
+      }
+      if (this.fontSizeMenu) {
+        Array.from(this.fontSizeMenu.querySelectorAll("[data-font-size-choice]")).forEach((button) => {
+          const isActive = Number(button.dataset.fontSizeChoice) === currentSize;
+          button.classList.toggle("is-active", isActive);
+        });
+      }
+    }
+
+    applyTypographyToBlock(options) {
+      const block = this.getCurrentTextBlock();
+      if (!block) return false;
+      if (options.fontFamily) {
+        removeFontFamilyClassesFromElement(block);
+        block.classList.add(getFontFamilyClassName(options.fontFamily));
+      }
+      if (options.fontSize) {
+        removeFontSizeClassesFromElement(block);
+        block.classList.add(getFontSizeClassName(options.fontSize));
+      }
+      this.saveSelection();
+      this.handleContentChange();
+      return true;
+    }
+
+    applyTypographyToSelection(options) {
+      this.focus();
+      this.restoreSelection();
+      const selection = window.getSelection();
+      const range = this.getSelectionRangeInEditor();
+      if (!selection || !range) return false;
+      if (range.collapsed) {
+        return this.applyTypographyToBlock(options);
+      }
+
+      const startBlock = closestBlock(range.startContainer, this.content);
+      const endBlock = closestBlock(range.endContainer, this.content);
+      if (!startBlock || !endBlock || startBlock !== endBlock) {
+        return this.applyTypographyToBlock(options);
+      }
+
+      const wrapper = document.createElement("span");
+      if (options.fontFamily) {
+        wrapper.classList.add(getFontFamilyClassName(options.fontFamily));
+      }
+      if (options.fontSize) {
+        wrapper.classList.add(getFontSizeClassName(options.fontSize));
+      }
+      const fragment = range.extractContents();
+      removeTypographyClasses(fragment, { fontFamily: Boolean(options.fontFamily), fontSize: Boolean(options.fontSize) });
+      wrapper.appendChild(fragment);
+      range.insertNode(wrapper);
+      placeCaretAfter(wrapper);
+      this.saveSelection();
+      this.handleContentChange();
+      return true;
+    }
+
+    applyFontFamily(fontKey) {
+      const key = FONT_FAMILY_LOOKUP.has(fontKey) ? fontKey : DEFAULT_FONT_FAMILY_KEY;
+      this.applyTypographyToSelection({ fontFamily: key });
+      this.updateFontToolbarState();
+    }
+
+    applyFontSize(size) {
+      const normalized = getClosestFontSize(size);
+      this.applyTypographyToSelection({ fontSize: normalized });
+      this.updateFontToolbarState();
+    }
+
+    stepFontSize(direction) {
+      const current = this.getCurrentFontSize();
+      const index = FONT_SIZE_PRESETS.indexOf(current);
+      const fallbackIndex = FONT_SIZE_PRESETS.findIndex((size) => size >= current);
+      const currentIndex = index >= 0 ? index : (fallbackIndex >= 0 ? fallbackIndex : FONT_SIZE_PRESETS.length - 1);
+      const nextIndex = Math.max(0, Math.min(FONT_SIZE_PRESETS.length - 1, currentIndex + (direction > 0 ? 1 : -1)));
+      this.applyFontSize(FONT_SIZE_PRESETS[nextIndex]);
     }
 
     createPluginButton(config) {
@@ -2355,11 +2847,26 @@
 
     handleDocumentPointerDown(event) {
       if (!this.wrapper || !this.wrapper.contains(event.target)) {
+        this.closeFontFamilyMenu();
+        this.closeFontSizeMenu();
         this.closeThemeMenu();
         this.clearMediaSelection();
         this.clearTableSelection();
         return;
       }
+
+      if (
+        (this.fontFamilyMenu && this.fontFamilyMenu.contains(event.target)) ||
+        (this.fontFamilyButton && this.fontFamilyButton.contains(event.target)) ||
+        (this.fontSizeMenu && this.fontSizeMenu.contains(event.target)) ||
+        (this.fontSizeInput && this.fontSizeInput.contains && this.fontSizeInput.contains(event.target)) ||
+        (event.target.closest && event.target.closest(".ollow-size-step"))
+      ) {
+        return;
+      }
+
+      this.closeFontFamilyMenu();
+      this.closeFontSizeMenu();
 
       if (
         (this.themeMenu && this.themeMenu.contains(event.target)) ||
@@ -2395,6 +2902,14 @@
     handleDocumentKeydown(event) {
       if (String(event.key || "").toLowerCase() !== "escape") return;
       if (!this.wrapper) return;
+      if (this.fontFamilyMenu && !this.fontFamilyMenu.hidden) {
+        this.closeFontFamilyMenu();
+        return;
+      }
+      if (this.fontSizeMenu && !this.fontSizeMenu.hidden) {
+        this.closeFontSizeMenu();
+        return;
+      }
       if (this.themeMenu && !this.themeMenu.hidden) {
         this.closeThemeMenu();
         return;
@@ -3919,6 +4434,8 @@
       if (this.headingSelect) {
         this.headingSelect.value = ["H2", "H3", "H4"].includes(blockTag) ? blockTag : "P";
       }
+
+      this.updateFontToolbarState();
     }
 
     updateMetrics() {

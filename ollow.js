@@ -6,6 +6,7 @@
   const DEFAULT_THEME_STORAGE_KEY = "ollow-editor-theme";
   const FONT_RECENTS_STORAGE_KEY = "ollow-editor-recent-fonts";
   const TEXT_COLOR_RECENTS_STORAGE_KEY = "ollow-editor-recent-colors";
+  const SPECIAL_CHAR_RECENTS_STORAGE_KEY = "ollow-recent-special-chars";
   const DEFAULT_FONT_FAMILY_KEY = "arial";
   const DEFAULT_FONT_SIZE = 16;
   const DEFAULT_TEXT_COLOR = "#111827";
@@ -61,6 +62,105 @@
     { key: "gray", label: "Gray", hex: "#e5e7eb" },
     { key: "soft-yellow", label: "Soft Yellow", hex: "#fef3c7" },
   ];
+  const SPECIAL_CHARACTER_CATEGORIES = [
+    {
+      key: "punctuation",
+      label: "Punctuation",
+      chars: [
+        { char: "—", label: "Em dash" },
+        { char: "–", label: "En dash" },
+        { char: "‘", label: "Left single quote" },
+        { char: "’", label: "Right single quote" },
+        { char: "“", label: "Left double quote" },
+        { char: "”", label: "Right double quote" },
+        { char: "…", label: "Ellipsis" },
+        { char: "•", label: "Bullet" },
+        { char: "·", label: "Middle dot" },
+      ],
+    },
+    {
+      key: "currency",
+      label: "Currency",
+      chars: [
+        { char: "$", label: "Dollar" },
+        { char: "€", label: "Euro" },
+        { char: "£", label: "Pound sterling" },
+        { char: "¥", label: "Yen" },
+        { char: "₹", label: "Indian rupee" },
+        { char: "৳", label: "Bangladeshi taka" },
+      ],
+    },
+    {
+      key: "math",
+      label: "Math",
+      chars: [
+        { char: "±", label: "Plus minus" },
+        { char: "×", label: "Multiplication" },
+        { char: "÷", label: "Division" },
+        { char: "≠", label: "Not equal" },
+        { char: "≈", label: "Approximately equal" },
+        { char: "≤", label: "Less than or equal" },
+        { char: "≥", label: "Greater than or equal" },
+        { char: "∞", label: "Infinity" },
+        { char: "√", label: "Square root" },
+        { char: "∑", label: "Summation" },
+        { char: "π", label: "Pi" },
+      ],
+    },
+    {
+      key: "arrows",
+      label: "Arrows",
+      chars: [
+        { char: "←", label: "Left arrow" },
+        { char: "→", label: "Right arrow" },
+        { char: "↑", label: "Up arrow" },
+        { char: "↓", label: "Down arrow" },
+        { char: "↔", label: "Left right arrow" },
+        { char: "⇒", label: "Right double arrow" },
+        { char: "⇐", label: "Left double arrow" },
+      ],
+    },
+    {
+      key: "legal-editorial",
+      label: "Legal / Editorial",
+      chars: [
+        { char: "©", label: "Copyright" },
+        { char: "®", label: "Registered trademark" },
+        { char: "™", label: "Trademark" },
+        { char: "§", label: "Section sign" },
+        { char: "¶", label: "Paragraph sign" },
+        { char: "†", label: "Dagger" },
+        { char: "‡", label: "Double dagger" },
+      ],
+    },
+    {
+      key: "fractions",
+      label: "Fractions",
+      chars: [
+        { char: "½", label: "One half" },
+        { char: "⅓", label: "One third" },
+        { char: "⅔", label: "Two thirds" },
+        { char: "¼", label: "One quarter" },
+        { char: "¾", label: "Three quarters" },
+      ],
+    },
+    {
+      key: "newsroom",
+      label: "Newsroom",
+      chars: [
+        { char: "★", label: "Star filled" },
+        { char: "☆", label: "Star outline" },
+        { char: "✓", label: "Check mark" },
+        { char: "✔", label: "Heavy check mark" },
+        { char: "✕", label: "Multiplication x" },
+        { char: "✖", label: "Heavy multiplication x" },
+        { char: "⚠", label: "Warning" },
+      ],
+    },
+  ];
+  const SPECIAL_CHARACTER_LOOKUP = new Map(
+    SPECIAL_CHARACTER_CATEGORIES.flatMap((category) => category.chars.map((item) => [item.char, Object.assign({ category: category.key, categoryLabel: category.label }, item)]))
+  );
   const FONT_FAMILY_LOOKUP = new Map(FONT_FAMILIES.map((font) => [font.key, font]));
   const TEXT_COLOR_LOOKUP = new Map(TEXT_COLOR_PRESETS.map((color) => [color.key, color]));
   const TEXT_COLOR_BY_HEX = new Map(TEXT_COLOR_PRESETS.map((color) => [color.hex, color]));
@@ -1059,6 +1159,25 @@
     }
   }
 
+  function readStoredRecentSpecialCharacters() {
+    try {
+      const raw = window.localStorage.getItem(SPECIAL_CHAR_RECENTS_STORAGE_KEY);
+      const values = JSON.parse(raw || "[]");
+      if (!Array.isArray(values)) return [];
+      return values.filter((value) => SPECIAL_CHARACTER_LOOKUP.has(value)).slice(0, 12);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function writeStoredRecentSpecialCharacters(chars) {
+    try {
+      window.localStorage.setItem(SPECIAL_CHAR_RECENTS_STORAGE_KEY, JSON.stringify((chars || []).slice(0, 12)));
+    } catch (error) {
+      // Ignore storage failures.
+    }
+  }
+
   function parseMarkdownToHtml(markdown, editor) {
     const lines = String(markdown || "").replace(/\r\n?/g, "\n").split("\n");
     const blocks = [];
@@ -1970,6 +2089,7 @@
       this.persistTheme = Boolean(options.persistTheme);
       this.recentFonts = readStoredRecentFonts();
       this.recentTextColors = readStoredRecentColors();
+      this.recentSpecialCharacters = readStoredRecentSpecialCharacters();
       this.systemThemeQuery = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
       this.commands = new Map();
       this.eventHandlers = new Map();
@@ -2703,6 +2823,7 @@
         ["code", "Code", "code_blocks"],
         ["table", "Table", "table"],
         ["bookmark", "Bookmark", "bookmark"],
+        ["special-characters", "Ω Symbols", ""],
         ["import-markdown", "Import MD", "upload_file"],
         ["export-markdown", "Export MD", "download"],
         ["gallery", "Gallery", "photo_library"],
@@ -2721,7 +2842,9 @@
         const fullTitle = shortcutLabel ? `${label} (${shortcutLabel.replace(/mod/gi, "Ctrl/Cmd")})` : label;
         button.title = fullTitle;
         button.setAttribute("aria-label", fullTitle);
-        button.innerHTML = `<span class="material-symbols-outlined">${icon}</span>${label}`;
+        button.innerHTML = action === "special-characters"
+          ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">Ω</span>${label}`
+          : `<span class="material-symbols-outlined">${icon}</span>${label}`;
         this.toolbarButtons[action] = button;
         row.appendChild(button);
       });
@@ -4692,6 +4815,9 @@
         case "bookmark":
           this.openBookmarkModal();
           return;
+        case "special-characters":
+          this.openSpecialCharacterModal();
+          return;
         case "bulleted-list":
           this.execCommand("insertUnorderedList");
           return;
@@ -6539,6 +6665,169 @@
       this.insertHTML(
         '<div class="nw-fact-box" data-type="fact-box"><span class="nw-block-label">Fact Box</span><p>Key context, verification point, or newsroom note.</p></div>'
       );
+    }
+
+    getRecentSpecialCharacters() {
+      const chars = Array.isArray(this.recentSpecialCharacters) ? this.recentSpecialCharacters : [];
+      return chars.filter((char) => SPECIAL_CHARACTER_LOOKUP.has(char)).slice(0, 12);
+    }
+
+    rememberRecentSpecialCharacter(char) {
+      if (!SPECIAL_CHARACTER_LOOKUP.has(char)) return;
+      const chars = this.getRecentSpecialCharacters().filter((item) => item !== char);
+      chars.unshift(char);
+      this.recentSpecialCharacters = chars.slice(0, 12);
+      writeStoredRecentSpecialCharacters(this.recentSpecialCharacters);
+    }
+
+    insertSpecialCharacter(char) {
+      if (!char) return;
+      this.focus();
+      this.restoreSelection();
+      insertHtmlAtSelection(this.content, escapeHtml(char), this.savedSelection);
+      this.saveSelection();
+      this.rememberRecentSpecialCharacter(char);
+      this.handleContentChange();
+    }
+
+    getSpecialCharacterResults(searchTerm, category) {
+      const query = String(searchTerm || "").trim().toLowerCase();
+      return SPECIAL_CHARACTER_CATEGORIES
+        .filter((group) => category === "all" || group.key === category)
+        .flatMap((group) => group.chars.map((item) => Object.assign({ category: group.key, categoryLabel: group.label }, item)))
+        .filter((item) => {
+          if (!query) return true;
+          return item.char.includes(query) ||
+            item.label.toLowerCase().includes(query) ||
+            item.categoryLabel.toLowerCase().includes(query);
+        });
+    }
+
+    openSpecialCharacterModal() {
+      let selectedChar = "";
+      let activeCategory = "all";
+      let searchTerm = "";
+      this.openModal({
+        title: "Special Characters",
+        copy: "Search, preview, and insert symbols into the current story position.",
+        confirmLabel: "Insert Character",
+        panelClass: "ollow-special-characters-modal-panel",
+        fields: [
+          {
+            name: "picker",
+            label: "Character picker",
+            type: "html",
+            html: `
+              <div class="ollow-special-chars-picker">
+                <div class="ollow-special-chars-search-row">
+                  <input type="search" class="nw-modal-input ollow-special-chars-search" placeholder="Search characters, labels, or categories">
+                </div>
+                <div class="ollow-special-chars-tabs">
+                  <button type="button" class="is-active" data-special-category="all">All</button>
+                  ${SPECIAL_CHARACTER_CATEGORIES.map((category) => `<button type="button" data-special-category="${escapeHtml(category.key)}">${escapeHtml(category.label)}</button>`).join("")}
+                </div>
+                <div class="ollow-special-chars-section" data-role="recent-wrap" hidden>
+                  <div class="ollow-special-chars-section-label">Recent</div>
+                  <div class="ollow-special-chars-grid ollow-special-chars-grid--compact" data-role="recent-grid"></div>
+                </div>
+                <div class="ollow-special-chars-grid" data-role="results-grid"></div>
+                <div class="ollow-special-chars-preview">
+                  <div class="ollow-special-chars-preview-char" data-role="preview-char">Ω</div>
+                  <div class="ollow-special-chars-preview-meta">
+                    <strong data-role="preview-label">Special character</strong>
+                    <span data-role="preview-category">Choose a symbol to insert.</span>
+                  </div>
+                </div>
+              </div>
+            `,
+          },
+        ],
+        onOpen: () => {
+          const root = this.modalBody.querySelector(".ollow-special-chars-picker");
+          if (!root) return;
+          const searchInput = root.querySelector(".ollow-special-chars-search");
+          const tabButtons = Array.from(root.querySelectorAll("[data-special-category]"));
+          const recentWrap = root.querySelector('[data-role="recent-wrap"]');
+          const recentGrid = root.querySelector('[data-role="recent-grid"]');
+          const resultsGrid = root.querySelector('[data-role="results-grid"]');
+          const previewChar = root.querySelector('[data-role="preview-char"]');
+          const previewLabel = root.querySelector('[data-role="preview-label"]');
+          const previewCategory = root.querySelector('[data-role="preview-category"]');
+
+          const setPreview = (char) => {
+            const item = SPECIAL_CHARACTER_LOOKUP.get(char);
+            selectedChar = char;
+            if (!item) {
+              previewChar.textContent = "Ω";
+              previewLabel.textContent = "Special character";
+              previewCategory.textContent = "Choose a symbol to insert.";
+              return;
+            }
+            previewChar.textContent = item.char;
+            previewLabel.textContent = item.label;
+            previewCategory.textContent = item.categoryLabel;
+          };
+
+          const renderRecent = () => {
+            const recent = this.getRecentSpecialCharacters();
+            recentWrap.hidden = !recent.length;
+            recentGrid.innerHTML = recent.map((char) => {
+              const item = SPECIAL_CHARACTER_LOOKUP.get(char);
+              return `<button type="button" class="ollow-special-char-option ollow-special-char-option--compact${selectedChar === item.char ? " is-active" : ""}" data-special-char="${escapeHtml(item.char)}" title="${escapeHtml(item.label)}">${escapeHtml(item.char)}</button>`;
+            }).join("");
+          };
+
+          const renderResults = () => {
+            const results = this.getSpecialCharacterResults(searchTerm, activeCategory);
+            resultsGrid.innerHTML = results.length
+              ? results.map((item) => `
+                <button type="button" class="ollow-special-char-option${selectedChar === item.char ? " is-active" : ""}" data-special-char="${escapeHtml(item.char)}" title="${escapeHtml(item.label)}">
+                  <span class="ollow-special-char-glyph">${escapeHtml(item.char)}</span>
+                  <span class="ollow-special-char-name">${escapeHtml(item.label)}</span>
+                </button>
+              `).join("")
+              : `<div class="ollow-special-chars-empty">No characters match that search.</div>`;
+          };
+
+          const handleChoice = (char) => {
+            setPreview(char);
+            renderRecent();
+            renderResults();
+          };
+
+          renderRecent();
+          renderResults();
+          setPreview(selectedChar);
+
+          searchInput?.addEventListener("input", () => {
+            searchTerm = searchInput.value || "";
+            renderResults();
+          });
+
+          tabButtons.forEach((button) => {
+            button.addEventListener("click", (event) => {
+              event.preventDefault();
+              activeCategory = button.dataset.specialCategory || "all";
+              tabButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+              renderResults();
+            });
+          });
+
+          root.addEventListener("click", (event) => {
+            const option = event.target.closest("[data-special-char]");
+            if (!option) return;
+            event.preventDefault();
+            handleChoice(option.dataset.specialChar || "");
+          });
+        },
+        onConfirm: () => {
+          if (!selectedChar) {
+            return "Choose a character to insert.";
+          }
+          this.insertSpecialCharacter(selectedChar);
+          return null;
+        },
+      });
     }
 
     openLinkModal() {

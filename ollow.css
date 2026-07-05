@@ -918,6 +918,15 @@
   font-size: 14px;
 }
 
+.ollow-special-char-pill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  font-size: 15px;
+  line-height: 1;
+}
+
 .nw-editor-surface {
   position: relative;
   width: 100%;
@@ -2147,6 +2156,159 @@
   width: min(92vw, 640px);
 }
 
+.nw-editor-modal-panel.ollow-special-characters-modal-panel {
+  width: min(92vw, 760px);
+}
+
+.ollow-special-chars-picker {
+  display: grid;
+  gap: 16px;
+}
+
+.ollow-special-chars-search-row {
+  display: grid;
+}
+
+.ollow-special-chars-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ollow-special-chars-tabs button {
+  appearance: none;
+  border: 1px solid var(--nw-border);
+  border-radius: 999px;
+  background: var(--ollow-surface);
+  color: var(--ollow-text-strong);
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ollow-special-chars-tabs button:hover,
+.ollow-special-chars-tabs button.is-active {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+  color: var(--ollow-primary);
+}
+
+.ollow-special-chars-section {
+  display: grid;
+  gap: 10px;
+}
+
+.ollow-special-chars-section-label {
+  color: var(--nw-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ollow-special-chars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.ollow-special-chars-grid--compact {
+  grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
+}
+
+.ollow-special-char-option {
+  appearance: none;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-height: 68px;
+  border: 1px solid var(--nw-border);
+  border-radius: 10px;
+  background: var(--ollow-surface);
+  color: var(--ollow-text-strong);
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ollow-special-char-option:hover,
+.ollow-special-char-option.is-active {
+  border-color: var(--ollow-primary-border);
+  background: var(--ollow-primary-soft);
+}
+
+.ollow-special-char-option--compact {
+  min-height: 46px;
+  place-items: center;
+  padding: 0;
+}
+
+.ollow-special-char-glyph {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.ollow-special-char-name {
+  color: var(--nw-text-soft);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.ollow-special-char-option--compact .ollow-special-char-glyph,
+.ollow-special-char-option--compact {
+  font-size: 20px;
+}
+
+.ollow-special-chars-preview {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid var(--nw-border);
+  border-radius: 12px;
+  background: var(--ollow-surface-soft);
+  padding: 14px;
+}
+
+.ollow-special-chars-preview-char {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  border: 1px solid var(--nw-border);
+  border-radius: 12px;
+  background: var(--ollow-surface);
+  color: var(--ollow-text-strong);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.ollow-special-chars-preview-meta {
+  display: grid;
+  gap: 4px;
+}
+
+.ollow-special-chars-preview-meta strong {
+  color: var(--ollow-text-strong);
+  font-size: 15px;
+}
+
+.ollow-special-chars-preview-meta span {
+  color: var(--nw-text-muted);
+  font-size: 13px;
+}
+
+.ollow-special-chars-empty {
+  grid-column: 1 / -1;
+  border: 1px dashed var(--nw-border);
+  border-radius: 10px;
+  color: var(--nw-text-muted);
+  padding: 18px 16px;
+  text-align: center;
+  font-size: 13px;
+}
+
 .nw-modal-checkbox {
   width: 18px;
   height: 18px;
@@ -2216,6 +2378,10 @@
 
   .nw-editor-content .ollow-gallery-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .ollow-special-chars-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   }
 }
 
@@ -2411,6 +2577,10 @@
   .nw-modal-button {
     flex: 1 1 160px;
   }
+
+  .ollow-special-chars-preview {
+    grid-template-columns: 72px 1fr;
+  }
 }
 
 @media (max-width: 640px) {
@@ -2467,6 +2637,18 @@
 
   .ollow-theme-menu {
     bottom: 72px;
+  }
+
+  .ollow-special-chars-grid {
+    grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  }
+
+  .ollow-special-chars-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .ollow-special-chars-preview-char {
+    min-height: 64px;
   }
 
   .nw-editor-surface {

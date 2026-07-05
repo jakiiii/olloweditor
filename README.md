@@ -23,6 +23,7 @@ Ollow Editor is designed for newsroom-style writing, blog publishing, CMS forms,
 - Bold, italic, underline
 - Link and unlink support
 - Bookmark / anchor support
+- Special character picker
 - Bullet and numbered lists
 - Pull quote block
 - Image upload from local machine
@@ -178,6 +179,7 @@ Ollow Editor currently supports:
 | Link          | Insert a hyperlink              |
 | Unlink        | Remove hyperlink                |
 | Bookmark      | Insert an internal anchor       |
+| Ω Symbols     | Insert special characters       |
 | Bullet List   | Insert unordered list           |
 | Numbered List | Insert ordered list             |
 | Pull Quote    | Insert styled quote block       |
@@ -271,6 +273,36 @@ Sanitizer notes:
 - keeps `data-bookmark="true"`
 - keeps `href="#bookmark-id"` links
 - strips unsafe IDs, event handlers, and `javascript:` links
+
+## Special Characters
+
+Use the `Ω Symbols` toolbar button to open the special character picker.
+
+The picker includes:
+
+- search
+- category tabs
+- recent characters
+- preview
+
+Included categories:
+
+- punctuation
+- currency
+- math
+- arrows
+- legal / editorial
+- fractions
+- newsroom symbols
+
+Recent characters are kept in memory and also stored in `localStorage` under `ollow-recent-special-chars`.
+
+Insertion behavior:
+
+- restores the saved editor selection
+- inserts the chosen character at the cursor
+- replaces the current text selection if one exists
+- keeps the textarea storing normal HTML content, with the character inserted as plain text
 
 ## Font Family and Size
 

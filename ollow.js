@@ -1615,6 +1615,19 @@
     `;
   }
 
+  function getInlineToolbarIcon(name) {
+    const icons = {
+      edit: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 14.5V16h1.5L14 7.5 12.5 6 4 14.5Z" fill="currentColor"></path><path d="M11.8 6.7 13.3 5.2 14.8 6.7 13.3 8.2Z" fill="currentColor"></path></svg>',
+      replace: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 6h8l-2.5-2.5L11 2l5 5-5 5-1.5-1.5L12 8H4V6Zm12 8H8l2.5 2.5L9 18l-5-5 5-5 1.5 1.5L8 12h8v2Z" fill="currentColor"></path></svg>',
+      link: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M8 11.5 6.5 13a2.5 2.5 0 0 1-3.5-3.5L6 6.5A2.5 2.5 0 0 1 9.5 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 8.5 13.5 7a2.5 2.5 0 0 1 3.5 3.5L14 13.5A2.5 2.5 0 0 1 10.5 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M7.5 12.5 12.5 7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+      external: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M11 3h6v6h-2V6.4l-6.3 6.3-1.4-1.4L13.6 5H11V3Z" fill="currentColor"></path><path d="M5 5h4v2H7v6h6v-2h2v4H5V5Z" fill="currentColor"></path></svg>',
+      unlink: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M8.5 11.5 7 13a2.5 2.5 0 1 1-3.5-3.5L6.5 6.5A2.5 2.5 0 0 1 10 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 8l1-1a2.5 2.5 0 1 1 3.5 3.5L13.5 13.5A2.5 2.5 0 0 1 10 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4 16 16 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+      delete: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M6 6h8l-.7 10H6.7L6 6Zm2-3h4l1 1.5H16V6H4V4.5h3L8 3Z" fill="currentColor"></path></svg>',
+      reset: '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 4a6 6 0 1 1-5.3 3.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5 2.8v4h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    };
+    return icons[name] || "";
+  }
+
   function getSelectionAncestor(root) {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return null;
@@ -2658,6 +2671,7 @@
       this.modalBody = modal.querySelector(".nw-editor-modal-body");
       this.modalConfirm = modal.querySelector('[data-role="confirm"]');
       this.modalActions = modal.querySelector(".nw-editor-modal-footer");
+      this.modalPanel = modal.querySelector(".nw-editor-modal-panel");
       modal.querySelector('[data-role="cancel"]').addEventListener("click", this.boundModalClose);
       modal.addEventListener("click", (event) => {
         if (event.target === modal) {
@@ -2673,28 +2687,43 @@
       toolbar.hidden = true;
       toolbar.innerHTML = `
         <div class="ollow-media-toolbar-group" data-role="align-controls">
-          <span class="ollow-media-toolbar-label">Align</span>
-          <button type="button" class="ollow-media-toolbar-icon" data-media-align="left" title="Align left" aria-label="Align left">${getAlignmentIcon("left")}</button>
-          <button type="button" class="ollow-media-toolbar-icon" data-media-align="center" title="Align center" aria-label="Align center">${getAlignmentIcon("center")}</button>
-          <button type="button" class="ollow-media-toolbar-icon" data-media-align="right" title="Align right" aria-label="Align right">${getAlignmentIcon("right")}</button>
-          <button type="button" data-media-align="wide">Wide</button>
-          <button type="button" data-media-align="full">Full</button>
-          <button type="button" data-media-align="reset">Reset</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="align-left" title="Align left" aria-label="Align left">${getAlignmentIcon("left")}</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="align-center" title="Align center" aria-label="Align center">${getAlignmentIcon("center")}</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="align-right" title="Align right" aria-label="Align right">${getAlignmentIcon("right")}</button>
+        </div>
+        <span class="ollow-media-toolbar-divider"></span>
+        <div class="ollow-media-toolbar-group" data-role="width-controls">
+          <button type="button" class="ollow-media-toolbar-pill" data-image-action="width-wide" title="Wide" aria-label="Wide">W</button>
+          <button type="button" class="ollow-media-toolbar-pill" data-image-action="width-full" title="Full width" aria-label="Full width">F</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="reset-align" title="Reset alignment" aria-label="Reset alignment">${getInlineToolbarIcon("reset")}</button>
         </div>
         <span class="ollow-media-toolbar-divider" data-role="size-divider"></span>
         <div class="ollow-media-toolbar-group" data-role="size-controls">
-          <span class="ollow-media-toolbar-label">Size</span>
-          <button type="button" data-image-size="small">Small</button>
-          <button type="button" data-image-size="medium">Medium</button>
-          <button type="button" data-image-size="large">Large</button>
-          <button type="button" data-image-size="full">Full</button>
-          <button type="button" data-image-size="reset">Reset</button>
+          <button type="button" class="ollow-media-toolbar-pill" data-image-action="size-small" title="Small" aria-label="Small">S</button>
+          <button type="button" class="ollow-media-toolbar-pill" data-image-action="size-medium" title="Medium" aria-label="Medium">M</button>
+          <button type="button" class="ollow-media-toolbar-pill" data-image-action="size-large" title="Large" aria-label="Large">L</button>
+          <button type="button" class="ollow-media-toolbar-pill" data-image-action="size-full" title="Full size" aria-label="Full size">F</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="reset-size" title="Reset size" aria-label="Reset size">${getInlineToolbarIcon("reset")}</button>
+        </div>
+        <span class="ollow-media-toolbar-divider" data-role="image-divider" hidden></span>
+        <div class="ollow-media-toolbar-group" data-role="image-controls" hidden>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="edit-image" title="Edit image" aria-label="Edit image">${getInlineToolbarIcon("edit")}</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="replace-image" title="Replace image" aria-label="Replace image">${getInlineToolbarIcon("replace")}</button>
+          <button type="button" class="ollow-media-toolbar-pill" data-image-action="alt-text" title="Alt text" aria-label="Alt text">ALT</button>
+          <button type="button" class="ollow-media-toolbar-pill" data-image-action="caption" title="Caption" aria-label="Caption">CC</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="link-image" title="Link image" aria-label="Link image">${getInlineToolbarIcon("link")}</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="new-tab" title="Open in new tab" aria-label="Open in new tab">${getInlineToolbarIcon("external")}</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="remove-link" title="Remove link" aria-label="Remove link">${getInlineToolbarIcon("unlink")}</button>
+        </div>
+        <span class="ollow-media-toolbar-divider" data-role="delete-divider" hidden></span>
+        <div class="ollow-media-toolbar-group" data-role="delete-controls" hidden>
+          <button type="button" class="ollow-media-toolbar-icon is-danger" data-image-action="delete-image" title="Delete image" aria-label="Delete image">${getInlineToolbarIcon("delete")}</button>
         </div>
         <span class="ollow-media-toolbar-divider" data-role="code-divider" hidden></span>
         <div class="ollow-media-toolbar-group" data-role="code-controls" hidden>
-          <button type="button" data-code-action="edit">Edit Code</button>
-          <button type="button" data-code-action="copy">Copy</button>
-          <button type="button" data-code-action="delete">Delete</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="edit-code" title="Edit code" aria-label="Edit code">${getInlineToolbarIcon("edit")}</button>
+          <button type="button" class="ollow-media-toolbar-icon" data-image-action="copy" title="Copy HTML" aria-label="Copy HTML">${getInlineToolbarIcon("replace")}</button>
+          <button type="button" class="ollow-media-toolbar-icon is-danger" data-image-action="delete-code" title="Delete code block" aria-label="Delete code block">${getInlineToolbarIcon("delete")}</button>
         </div>
       `;
 
@@ -2703,19 +2732,11 @@
       });
 
       toolbar.addEventListener("click", (event) => {
-        const alignmentButton = event.target.closest("[data-media-align]");
-        if (alignmentButton) {
-          this.applySelectedMediaAlignment(alignmentButton.dataset.mediaAlign);
-          return;
-        }
-        const button = event.target.closest("[data-image-size]");
-        if (button) {
-          this.applySelectedImageSize(button.dataset.imageSize);
-          return;
-        }
-        const codeButton = event.target.closest("[data-code-action]");
-        if (!codeButton) return;
-        this.handleCodeAction(codeButton.dataset.codeAction);
+        const imageButton = event.target.closest("[data-image-action]");
+        if (!imageButton) return;
+        event.preventDefault();
+        event.stopPropagation();
+        this.handleImageToolbarAction(imageButton.dataset.imageAction, imageButton);
       });
 
       return toolbar;
@@ -4779,8 +4800,19 @@
     updateMediaAlignmentToolbarState() {
       if (!this.imageResizeToolbar) return;
       const activeAlignment = this.getSelectedMediaAlignment();
-      Array.from(this.imageResizeToolbar.querySelectorAll("[data-media-align]")).forEach((button) => {
-        const value = button.dataset.mediaAlign;
+      Array.from(this.imageResizeToolbar.querySelectorAll('[data-image-action^="align-"], [data-image-action^="width-"], [data-image-action="reset-align"]')).forEach((button) => {
+        const action = button.dataset.imageAction;
+        const value = action === "align-left"
+          ? "left"
+          : action === "align-center"
+            ? "center"
+            : action === "align-right"
+              ? "right"
+              : action === "width-wide"
+                ? "wide"
+                : action === "width-full"
+                  ? "full"
+                  : "reset";
         const isActive = value === activeAlignment || (value === "reset" && !activeAlignment);
         button.classList.toggle("is-active", isActive);
       });
@@ -4812,6 +4844,138 @@
       }
     }
 
+    updateImageEditToolbarState() {
+      if (!this.imageResizeToolbar) return;
+      const imageControls = this.imageResizeToolbar.querySelector('[data-role="image-controls"]');
+      const imageDivider = this.imageResizeToolbar.querySelector('[data-role="image-divider"]');
+      const deleteControls = this.imageResizeToolbar.querySelector('[data-role="delete-controls"]');
+      const deleteDivider = this.imageResizeToolbar.querySelector('[data-role="delete-divider"]');
+      const hasImage = Boolean(this.selectedImageFigure);
+      if (imageControls) {
+        imageControls.hidden = !hasImage;
+      }
+      if (imageDivider) {
+        imageDivider.hidden = !hasImage;
+      }
+      if (deleteControls) {
+        deleteControls.hidden = !hasImage;
+      }
+      if (deleteDivider) {
+        deleteDivider.hidden = !hasImage;
+      }
+      const toggleNewTab = this.imageResizeToolbar.querySelector('[data-image-action="new-tab"]');
+      const unlinkButton = this.imageResizeToolbar.querySelector('[data-image-action="remove-link"]');
+      const hasLink = Boolean(this.getImageLinkData(this.selectedImageFigure).href);
+      const opensNewTab = Boolean(this.getImageLinkData(this.selectedImageFigure).newTab);
+      if (toggleNewTab) {
+        toggleNewTab.disabled = !hasImage || !hasLink;
+        toggleNewTab.classList.toggle("is-active", opensNewTab);
+      }
+      if (unlinkButton) {
+        unlinkButton.disabled = !hasImage || !hasLink;
+      }
+    }
+
+    getSelectedImageFigure() {
+      if (this.selectedImageFigure && document.body.contains(this.selectedImageFigure)) {
+        return this.selectedImageFigure;
+      }
+      return this.content.querySelector(
+        'figure.ollow-editor-image.is-selected, figure.ollow-image.is-selected, figure[data-type="image"].is-selected, figure.ollow-editor-image.is-media-selected, figure.ollow-image.is-media-selected, figure[data-type="image"].is-media-selected'
+      );
+    }
+
+    handleImageToolbarAction(action, button) {
+      const imageFigure = this.getSelectedImageFigure();
+      const codeFigure = this.selectedCodeFigure && document.body.contains(this.selectedCodeFigure) ? this.selectedCodeFigure : null;
+
+      if (action === "edit-code" || action === "copy" || action === "delete-code") {
+        if (!codeFigure) {
+          this.clearMediaSelection();
+          return;
+        }
+        if (action === "edit-code") {
+          this.handleCodeAction("edit");
+          return;
+        }
+        if (action === "copy") {
+          this.handleCodeAction("copy");
+          return;
+        }
+        if (action === "delete-code") {
+          this.handleCodeAction("delete");
+          return;
+        }
+      }
+
+      if (!imageFigure) {
+        this.clearMediaSelection();
+        return;
+      }
+
+      switch (action) {
+        case "align-left":
+          this.applySelectedMediaAlignment("left");
+          break;
+        case "align-center":
+          this.applySelectedMediaAlignment("center");
+          break;
+        case "align-right":
+          this.applySelectedMediaAlignment("right");
+          break;
+        case "width-wide":
+          this.applySelectedMediaAlignment("wide");
+          break;
+        case "width-full":
+          this.applySelectedMediaAlignment("full");
+          break;
+        case "reset-align":
+          this.applySelectedMediaAlignment("reset");
+          break;
+        case "size-small":
+          this.applySelectedImageSize("small");
+          break;
+        case "size-medium":
+          this.applySelectedImageSize("medium");
+          break;
+        case "size-large":
+          this.applySelectedImageSize("large");
+          break;
+        case "size-full":
+          this.applySelectedImageSize("full");
+          break;
+        case "reset-size":
+          this.applySelectedImageSize("reset");
+          break;
+        case "edit-image":
+          this.handleImageAction("edit");
+          break;
+        case "replace-image":
+          this.handleImageAction("replace");
+          break;
+        case "alt-text":
+          this.handleImageAction("alt");
+          break;
+        case "caption":
+          this.handleImageAction("caption");
+          break;
+        case "link-image":
+          this.handleImageAction("link");
+          break;
+        case "new-tab":
+          this.handleImageAction("toggle-new-tab");
+          break;
+        case "remove-link":
+          this.handleImageAction("unlink");
+          break;
+        case "delete-image":
+          this.handleImageAction("delete");
+          break;
+        default:
+          break;
+      }
+    }
+
     getSelectedImageSize() {
       if (!this.selectedImageFigure) return "";
       if (this.selectedImageFigure.classList.contains("ollow-image-small")) return "small";
@@ -4824,17 +4988,36 @@
     updateImageResizeToolbarState() {
       if (!this.imageResizeToolbar) return;
       const activeSize = this.getSelectedImageSize();
-      Array.from(this.imageResizeToolbar.querySelectorAll("[data-image-size]")).forEach((button) => {
-        const value = button.dataset.imageSize;
+      Array.from(this.imageResizeToolbar.querySelectorAll('[data-image-action^="size-"], [data-image-action="reset-size"]')).forEach((button) => {
+        const action = button.dataset.imageAction;
+        const value = action === "size-small"
+          ? "small"
+          : action === "size-medium"
+            ? "medium"
+            : action === "size-large"
+              ? "large"
+              : action === "size-full"
+                ? "full"
+                : "reset";
         const isActive = value === activeSize || (value === "reset" && !activeSize);
         button.classList.toggle("is-active", isActive);
       });
+      this.updateImageEditToolbarState();
     }
 
     positionImageResizeToolbar() {
       const targetBlock = this.selectedMediaBlock;
       if (!targetBlock || !this.surface || !this.content.contains(targetBlock)) {
         this.clearMediaSelection();
+        return;
+      }
+      if (this.isModalOpen()) {
+        if (this.imageResizeToolbar) {
+          this.imageResizeToolbar.hidden = true;
+        }
+        if (this.imageResizeHandle) {
+          this.imageResizeHandle.hidden = true;
+        }
         return;
       }
 
@@ -4904,6 +5087,78 @@
         .replace(/^-|-$/g, "");
     }
 
+    getImageLinkData(figure) {
+      if (!figure) return { href: "", newTab: false };
+      const anchor = figure.querySelector("a[href]");
+      if (!anchor) return { href: "", newTab: false };
+      return {
+        href: anchor.getAttribute("href") || "",
+        newTab: anchor.getAttribute("target") === "_blank",
+      };
+    }
+
+    getImageFigureData(figure) {
+      if (!figure) {
+        return {
+          src: "",
+          alt: "",
+          caption: "",
+          linkUrl: "",
+          openInNewTab: false,
+          alignment: "",
+          size: "",
+        };
+      }
+      const img = figure.querySelector("img");
+      const caption = figure.querySelector("figcaption");
+      const link = this.getImageLinkData(figure);
+      return {
+        src: img ? (img.getAttribute("src") || "") : "",
+        alt: img ? (img.getAttribute("alt") || "") : "",
+        caption: caption ? (caption.textContent || "") : "",
+        linkUrl: link.href,
+        openInNewTab: link.newTab,
+        alignment: this.selectedImageFigure === figure ? this.getSelectedMediaAlignment() : MEDIA_ALIGNMENT_CLASSES.find((className) => figure.classList.contains(className))?.replace("ollow-align-", "") || "",
+        size: this.selectedImageFigure === figure ? this.getSelectedImageSize() : IMAGE_SIZE_CLASSES.find((className) => figure.classList.contains(className))?.replace("ollow-image-", "") || "",
+      };
+    }
+
+    buildImageFigureHtml(data) {
+      const config = Object.assign({
+        src: "",
+        alt: "",
+        caption: "",
+        linkUrl: "",
+        openInNewTab: false,
+        alignment: "",
+        size: "",
+      }, data || {});
+      const classes = ["ollow-editor-image"];
+      if (config.size && config.size !== "reset") {
+        classes.push(`ollow-image-${config.size}`);
+      }
+      if (config.alignment && config.alignment !== "reset") {
+        classes.push(`ollow-align-${config.alignment}`);
+      }
+      const imgHtml = `<img src="${escapeHtml(config.src)}" alt="${escapeHtml(config.alt)}">`;
+      const linkUrl = String(config.linkUrl || "").trim();
+      const safeLink = linkUrl && isSafeUrl(linkUrl, "A") ? linkUrl : "";
+      const mediaHtml = safeLink
+        ? `<a href="${escapeHtml(safeLink)}"${config.openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : ""}>${imgHtml}</a>`
+        : imgHtml;
+      return `<figure class="${escapeHtml(classes.join(" "))}" data-type="image">${mediaHtml}<figcaption>${escapeHtml(config.caption || "")}</figcaption></figure>`;
+    }
+
+    updateImageFigure(figure, values) {
+      if (!figure || !this.content.contains(figure)) return null;
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = this.buildImageFigureHtml(values);
+      const replacement = wrapper.firstElementChild;
+      if (!replacement) return null;
+      figure.replaceWith(replacement);
+      return replacement;
+    }
+
     getCodeBlockData(figure) {
       if (!figure) {
         return { language: "", filename: "", code: "" };
@@ -4929,6 +5184,131 @@
       const languageClass = normalizedLanguage ? ` class="language-${escapeHtml(normalizedLanguage)}"` : "";
       const captionHtml = filename ? `<figcaption>${escapeHtml(filename)}</figcaption>` : "";
       return `<figure class="ollow-editor-code" data-type="code"${languageAttr}>${captionHtml}<pre><code${languageClass}>${escapeHtml(code)}</code></pre></figure>`;
+    }
+
+    handleImageAction(action) {
+      if (!this.selectedImageFigure || !this.content.contains(this.selectedImageFigure)) {
+        this.clearMediaSelection();
+        return;
+      }
+
+      if (action === "edit") {
+        this.openImageModalForFigure(this.selectedImageFigure);
+        return;
+      }
+
+      if (action === "replace") {
+        this.openImageModalForFigure(this.selectedImageFigure, { focusField: "file" });
+        return;
+      }
+
+      if (action === "alt") {
+        const current = this.getImageFigureData(this.selectedImageFigure);
+        this.openModal({
+          title: "Edit Alt Text",
+          copy: "Describe the image for accessibility and screen readers.",
+          confirmLabel: "Update Alt Text",
+          fields: [
+            { name: "alt", label: "Alt text", type: "text", placeholder: "Describe the image", value: current.alt },
+          ],
+          onConfirm: (values) => {
+            const replacement = this.updateImageFigure(this.selectedImageFigure, Object.assign({}, current, { alt: values.alt.trim() }));
+            if (replacement) {
+              this.selectMediaBlock(replacement);
+              this.handleContentChange();
+            }
+            return null;
+          },
+        });
+        return;
+      }
+
+      if (action === "caption") {
+        const current = this.getImageFigureData(this.selectedImageFigure);
+        this.openModal({
+          title: "Edit Caption",
+          copy: "Update the image caption.",
+          confirmLabel: "Update Caption",
+          fields: [
+            { name: "caption", label: "Caption", type: "textarea", placeholder: "Photo caption", value: current.caption },
+          ],
+          onConfirm: (values) => {
+            const replacement = this.updateImageFigure(this.selectedImageFigure, Object.assign({}, current, { caption: values.caption.trim() }));
+            if (replacement) {
+              this.selectMediaBlock(replacement);
+              this.handleContentChange();
+            }
+            return null;
+          },
+        });
+        return;
+      }
+
+      if (action === "link") {
+        const current = this.getImageFigureData(this.selectedImageFigure);
+        this.openModal({
+          title: "Link Image",
+          copy: "Wrap the image in a safe link.",
+          confirmLabel: "Update Link",
+          fields: [
+            { name: "linkUrl", label: "Link URL", type: "url", placeholder: "https://example.com", value: current.linkUrl },
+            { name: "openInNewTab", label: "Open in new tab", type: "checkbox", checked: current.openInNewTab },
+          ],
+          onConfirm: (values) => {
+            const linkUrl = String(values.linkUrl || "").trim();
+            if (linkUrl && !isSafeUrl(linkUrl, "A")) {
+              return "Enter a valid link URL.";
+            }
+            const replacement = this.updateImageFigure(this.selectedImageFigure, Object.assign({}, current, {
+              linkUrl,
+              openInNewTab: Boolean(values.openInNewTab),
+            }));
+            if (replacement) {
+              this.selectMediaBlock(replacement);
+              this.handleContentChange();
+            }
+            return null;
+          },
+        });
+        return;
+      }
+
+      if (action === "toggle-new-tab") {
+        const current = this.getImageFigureData(this.selectedImageFigure);
+        if (!current.linkUrl) {
+          this.showFeedback("Add an image link before toggling new-tab behavior.");
+          return;
+        }
+        const replacement = this.updateImageFigure(this.selectedImageFigure, Object.assign({}, current, {
+          openInNewTab: !current.openInNewTab,
+        }));
+        if (replacement) {
+          this.selectMediaBlock(replacement);
+          this.handleContentChange();
+        }
+        return;
+      }
+
+      if (action === "unlink") {
+        const current = this.getImageFigureData(this.selectedImageFigure);
+        if (!current.linkUrl) return;
+        const replacement = this.updateImageFigure(this.selectedImageFigure, Object.assign({}, current, {
+          linkUrl: "",
+          openInNewTab: false,
+        }));
+        if (replacement) {
+          this.selectMediaBlock(replacement);
+          this.handleContentChange();
+        }
+        return;
+      }
+
+      if (action === "delete") {
+        const figure = this.selectedImageFigure;
+        this.clearMediaSelection();
+        figure.remove();
+        this.handleContentChange();
+      }
     }
 
     openCodeModal(existingFigure) {
@@ -4970,6 +5350,10 @@
           return null;
         },
       });
+    }
+
+    isModalOpen() {
+      return Boolean(this.modal && !this.modal.hidden);
     }
 
     handleCodeAction(action) {
@@ -5436,7 +5820,7 @@
     }
 
     buildDroppedImageHtml(src) {
-      return `<figure class="ollow-editor-image"><img src="${escapeHtml(src)}" alt=""><figcaption></figcaption></figure>`;
+      return this.buildImageFigureHtml({ src, alt: "", caption: "", linkUrl: "", openInNewTab: false, alignment: "", size: "" });
     }
 
     async insertDroppedImages(files) {
@@ -5532,20 +5916,90 @@
     }
 
     openImageModal() {
+      this.openImageModalForFigure(null);
+    }
+
+    openImageModalForFigure(existingFigure, options) {
+      const current = this.getImageFigureData(existingFigure);
+      const config = options || {};
       this.openModal({
-        title: "Insert Image",
-        copy: "Upload an image or use an external image URL.",
-        confirmLabel: "Insert Image",
+        title: existingFigure ? "Edit Image" : "Insert Image",
+        copy: existingFigure ? "Update the selected image, replace the source, and manage caption or link settings." : "Upload an image or use an external image URL.",
+        confirmLabel: existingFigure ? "Update Image" : "Insert Image",
+        initialFocus: config.focusField || "file",
+        panelClass: "ollow-image-edit-modal-panel",
         fields: [
+          { name: "preview", label: "Preview", type: "html", html: `<div class="ollow-image-modal-preview">${current.src ? `<img src="${escapeHtml(current.src)}" alt="${escapeHtml(current.alt)}">` : '<div class="ollow-image-modal-preview-placeholder">No image selected</div>'}</div>` },
           { name: "file", label: "Upload image", type: "file", accept: "image/*" },
-          { name: "url", label: "Image URL", type: "url", placeholder: "https://example.com/image.jpg" },
-          { name: "alt", label: "Alt text", type: "text", placeholder: "Describe the image" },
-          { name: "caption", label: "Caption", type: "textarea", placeholder: "Photo caption" },
+          { name: "url", label: "Image URL", type: "url", placeholder: "https://example.com/image.jpg", value: current.src },
+          { name: "alt", label: "Alt text", type: "text", placeholder: "Describe the image", value: current.alt },
+          { name: "caption", label: "Caption", type: "textarea", placeholder: "Photo caption", value: current.caption },
+          { name: "linkUrl", label: "Link URL", type: "url", placeholder: "https://example.com", value: current.linkUrl },
+          { name: "openInNewTab", label: "Open link in new tab", type: "checkbox", checked: current.openInNewTab },
+          {
+            name: "alignment",
+            label: "Alignment",
+            type: "select",
+            value: current.alignment || "reset",
+            options: [
+              { value: "reset", label: "Default" },
+              { value: "left", label: "Left" },
+              { value: "center", label: "Center" },
+              { value: "right", label: "Right" },
+              { value: "wide", label: "Wide" },
+              { value: "full", label: "Full width" },
+            ],
+          },
+          {
+            name: "size",
+            label: "Size",
+            type: "select",
+            value: current.size || "reset",
+            options: [
+              { value: "reset", label: "Default" },
+              { value: "small", label: "Small" },
+              { value: "medium", label: "Medium" },
+              { value: "large", label: "Large" },
+              { value: "full", label: "Full width" },
+            ],
+          },
         ],
+        onOpen: (fieldRefs) => {
+          const preview = this.modalBody.querySelector(".ollow-image-modal-preview");
+          const urlInput = fieldRefs.url;
+          const fileInput = fieldRefs.file;
+          const setPreview = (src, alt) => {
+            if (!preview) return;
+            preview.innerHTML = src
+              ? `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt || "")}">`
+              : '<div class="ollow-image-modal-preview-placeholder">No image selected</div>';
+          };
+          if (urlInput) {
+            urlInput.addEventListener("input", () => {
+              const value = String(urlInput.value || "").trim();
+              if (isSafeUrl(value, "IMG")) {
+                setPreview(value, fieldRefs.alt ? fieldRefs.alt.value : "");
+              }
+            });
+          }
+          if (fileInput) {
+            fileInput.addEventListener("change", async () => {
+              const file = fileInput.files && fileInput.files[0];
+              if (!file || !this.isImageFile(file)) return;
+              try {
+                const src = await this.fileToDataURL(file);
+                setPreview(src, fieldRefs.alt ? fieldRefs.alt.value : "");
+              } catch (error) {
+                // Ignore preview failures.
+              }
+            });
+          }
+        },
         onConfirm: async (values) => {
           const alt = values.alt.trim();
           const caption = values.caption.trim();
-          let src = "";
+          const linkUrl = String(values.linkUrl || "").trim();
+          let src = current.src;
 
           if (values.file) {
             src = await this.resolveImageSource(values.file);
@@ -5554,13 +6008,34 @@
               return "Enter a valid image URL.";
             }
             src = values.url.trim();
-          } else {
+          } else if (!src) {
             return "Choose an image file or enter an image URL.";
           }
 
-          this.insertHTML(
-            `<figure class="ollow-editor-image" data-type="image"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}">${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ""}</figure>`
-          );
+          if (linkUrl && !isSafeUrl(linkUrl, "A")) {
+            return "Enter a valid link URL.";
+          }
+
+          const payload = {
+            src,
+            alt,
+            caption,
+            linkUrl,
+            openInNewTab: Boolean(values.openInNewTab),
+            alignment: values.alignment,
+            size: values.size,
+          };
+
+          if (existingFigure && this.content.contains(existingFigure)) {
+            const replacement = this.updateImageFigure(existingFigure, payload);
+            if (replacement) {
+              this.selectMediaBlock(replacement);
+              this.handleContentChange();
+            }
+            return null;
+          }
+
+          this.insertHTML(this.buildImageFigureHtml(payload));
           return null;
         },
       });
@@ -5741,6 +6216,15 @@
 
     openModal(config) {
       this.saveSelection();
+      if (this.wrapper) {
+        this.wrapper.classList.add("ollow-modal-open");
+      }
+      if (this.modalPanel) {
+        this.modalPanel.className = "nw-editor-modal-panel";
+        if (config.panelClass) {
+          this.modalPanel.classList.add(config.panelClass);
+        }
+      }
       this.modalTitle.textContent = config.title;
       this.modalCopy.textContent = config.copy || "";
       this.modalConfirm.textContent = config.confirmLabel || "Insert";
@@ -5751,6 +6235,20 @@
       (config.fields || []).forEach((field) => {
         const wrapper = document.createElement("div");
         wrapper.className = "nw-modal-field";
+        if (field.type === "html") {
+          if (field.label) {
+            const htmlLabel = document.createElement("div");
+            htmlLabel.className = "nw-modal-field-label";
+            htmlLabel.textContent = field.label;
+            wrapper.appendChild(htmlLabel);
+          }
+          const panel = document.createElement("div");
+          panel.className = "nw-modal-html";
+          panel.innerHTML = field.html || "";
+          wrapper.appendChild(panel);
+          this.modalBody.appendChild(wrapper);
+          return;
+        }
         const label = document.createElement("label");
         label.textContent = field.label;
         label.setAttribute("for", `${this.id}-${field.name}`);
@@ -5861,7 +6359,14 @@
       };
 
       this.modal.hidden = false;
-      const firstField = Object.values(fieldRefs)[0];
+      const firstField = config.initialFocus && fieldRefs[config.initialFocus] ? fieldRefs[config.initialFocus] : Object.values(fieldRefs)[0];
+      if (typeof config.onOpen === "function") {
+        try {
+          config.onOpen(fieldRefs);
+        } catch (error) {
+          console.warn("OllowEditor modal onOpen failed.", error);
+        }
+      }
       if (firstField) {
         window.setTimeout(() => firstField.focus(), 0);
       }
@@ -5874,6 +6379,9 @@
         resetModalForm(this.modalFieldRefs);
       }
       this.modal.hidden = true;
+      if (this.wrapper) {
+        this.wrapper.classList.remove("ollow-modal-open");
+      }
       this.modalBody.innerHTML = "";
       this.modalConfirm.onclick = null;
       this.modalFieldRefs = {};
@@ -5882,6 +6390,11 @@
       }
       if (config.restoreSelection) {
         this.restoreSelection();
+      }
+      if (this.selectedImageFigure && this.content.contains(this.selectedImageFigure)) {
+        this.updateImageResizeToolbarState();
+        this.updateMediaAlignmentToolbarState();
+        this.positionImageResizeToolbar();
       }
     }
 

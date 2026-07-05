@@ -571,6 +571,60 @@ It does not copy:
 - links
 - images, galleries, embeds, tables, or code block content
 
+## Advanced Image Editing
+
+Inserted editor images can be edited after insertion from the floating image toolbar.
+
+The floating image toolbar is now compact, icon-based, and automatically hides while any editor modal is open so it never sits over the modal backdrop.
+All compact image actions are exposed through stable toolbar actions with tooltips and `aria-label`s rather than relying on visible button text.
+
+Available image actions:
+
+- `Edit Image`
+- `Replace`
+- `Alt Text`
+- `Caption`
+- `Link Image`
+- `New Tab`
+- `Remove Link`
+- `Delete`
+
+The image edit modal supports:
+
+- current image preview
+- image URL
+- local file replacement
+- alt text
+- caption
+- link URL
+- open-in-new-tab toggle
+- alignment selector
+- size selector
+
+Saved HTML examples:
+
+```html
+<figure class="ollow-editor-image ollow-image-medium ollow-align-center" data-type="image">
+  <a href="https://example.com" target="_blank" rel="noopener noreferrer">
+    <img src="/media/example.jpg" alt="Alt text">
+  </a>
+  <figcaption>Caption text</figcaption>
+</figure>
+```
+
+```html
+<figure class="ollow-editor-image" data-type="image">
+  <img src="/media/example.jpg" alt="Alt text">
+  <figcaption></figcaption>
+</figure>
+```
+
+Sanitizer notes:
+
+- safe image URLs and `data:image/...` are preserved
+- image links are kept only for safe URLs
+- `javascript:` links and unsafe attributes are stripped
+
 ## Responsive Support
 
 Ollow Editor is tuned for:

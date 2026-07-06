@@ -26,6 +26,7 @@ Ollow Editor is designed for newsroom-style writing, blog publishing, CMS forms,
 - Special character picker
 - Emoji picker
 - Find and replace
+- Source / HTML mode
 - Bullet and numbered lists
 - Pull quote block
 - Image upload from local machine
@@ -184,6 +185,7 @@ Ollow Editor currently supports:
 | Ω Symbols     | Insert special characters       |
 | Emoji         | Insert emoji                    |
 | Find / Replace| Search and replace text         |
+| HTML          | Toggle source / HTML mode       |
 | Bullet List   | Insert unordered list           |
 | Numbered List | Insert ordered list             |
 | Pull Quote    | Insert styled quote block       |
@@ -364,6 +366,30 @@ Temporary highlight behavior:
 
 - highlight spans use temporary classes only
 - they are stripped before textarea sync and are not saved into output HTML
+
+## Source / HTML Mode
+
+Use the `HTML` toolbar button to switch between the visual editor and raw HTML editing.
+
+Behavior:
+
+- visual to source syncs the current editor HTML into a monospace source textarea
+- source to visual sanitizes the edited HTML before rendering it back into the visual editor
+- scripts, event handlers, unsafe URLs, and unsafe embeds are removed by the existing sanitizer
+- if the form is submitted while source mode is active, the source HTML is sanitized and synced first
+
+Public API:
+
+- `editor.toggleSourceMode()`
+- `editor.enterSourceMode()`
+- `editor.exitSourceMode()`
+- `editor.isSourceMode()`
+
+Notes:
+
+- source mode does not execute scripts
+- temporary UI markup is not preserved
+- the saved textarea value remains sanitized editor HTML
 
 ## Font Family and Size
 

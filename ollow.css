@@ -2077,6 +2077,51 @@
   display: none !important;
 }
 
+.nw-source-panel[hidden] {
+  display: none !important;
+}
+
+.nw-source-panel {
+  display: grid;
+  gap: 12px;
+  min-height: 560px;
+}
+
+.nw-source-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nw-source-label {
+  color: var(--nw-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.nw-source-textarea {
+  width: 100%;
+  min-height: 520px;
+  resize: vertical;
+  border: 1px solid var(--nw-border);
+  border-radius: 12px;
+  background: var(--ollow-surface-soft);
+  color: var(--nw-text);
+  padding: 16px;
+  font: 13px/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.nw-editor.is-source-mode .nw-editor-content,
+.nw-editor.is-source-mode .nw-editor-feedback,
+.nw-editor.is-source-mode .ollow-media-toolbar,
+.nw-editor.is-source-mode .ollow-table-toolbar,
+.nw-editor.is-source-mode .ollow-bookmark-toolbar,
+.nw-editor.is-source-mode .ollow-find-replace-panel {
+  display: none !important;
+}
+
 .nw-editor-modal[hidden] {
   display: none;
 }
@@ -2827,6 +2872,16 @@
     min-height: 320px;
     font-size: 15px;
     line-height: 1.75;
+  }
+
+  .nw-source-panel {
+    min-height: 360px;
+  }
+
+  .nw-source-textarea {
+    min-height: 320px;
+    padding: 14px;
+    font-size: 12px;
   }
 
   .nw-editor-content > * + * {

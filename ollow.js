@@ -306,6 +306,7 @@
     h3: "Mod+Alt+3",
     h4: "Mod+Alt+4",
     code: "Mod+Shift+C",
+    "source-html": "Mod+Shift+U",
     "find-replace": "Mod+F / Mod+H",
   };
   const ALLOWED_TAGS = new Set([
@@ -456,6 +457,14 @@
 
   function escapeRegExp(value) {
     return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function formatHtmlForSource(html) {
+    const source = String(html || "").trim();
+    if (!source) return "";
+    return source
+      .replace(/></g, ">\n<")
+      .replace(/\n{3,}/g, "\n\n");
   }
 
   function getFontSizeClassName(size) {
@@ -2148,6 +2157,9 @@
       this.wrapper = null;
       this.surface = null;
       this.content = null;
+      this.sourcePanel = null;
+      this.sourceToolbar = null;
+      this.sourceTextarea = null;
       this.feedback = null;
       this.imageResizeToolbar = null;
       this.imageResizeHandle = null;
@@ -2197,6 +2209,7 @@
       this.highlightCustomInput = null;
       this.themeToggleButton = null;
       this.themeMenu = null;
+      this.sourceMode = false;
       this.modal = null;
       this.modalTitle = null;
       this.modalCopy = null;
@@ -2278,6 +2291,9 @@
       this.content.setAttribute("aria-multiline", "true");
 
       surface.appendChild(this.content);
+
+      this.sourcePanel = this.buildSourcePanel();
+      surface.appendChild(this.sourcePanel);
 
       this.feedback = document.createElement("div");
       this.feedback.className = "nw-editor-feedback";
@@ -2952,6 +2968,7 @@
         ["code", "Code", "code_blocks"],
         ["table", "Table", "table"],
         ["bookmark", "Bookmark", "bookmark"],
+        ["source-html", "HTML", ""],
         ["find-replace", "Find / Replace", "search"],
         ["special-characters", "Ω Symbols", ""],
         ["emoji", "Emoji", ""],
@@ -2977,12 +2994,58 @@
           ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">Ω</span>${label}`
           : action === "emoji"
             ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">☺</span>${label}`
+          : action === "source-html"
+            ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">&lt;&gt;</span>${label}`
           : `<span class="material-symbols-outlined">${icon}</span>${label}`;
         this.toolbarButtons[action] = button;
         row.appendChild(button);
       });
 
       return row;
+    }
+
+    buildSourcePanel() {
+      const panel = document.createElement("div");
+      panel.className = "nw-source-panel";
+      panel.hidden = true;
+
+      const toolbar = document.createElement("div");
+      toolbar.className = "nw-source-toolbar";
+      toolbar.innerHTML = `
+        <span class="nw-source-label">Source / HTML mode</span>
+        <button type="button" class="nw-modal-button nw-modal-button--secondary" data-source-action="format-source">Format HTML</button>
+      `;
+      this.sourceToolbar = toolbar;
+      panel.appendChild(toolbar);
+
+      const textarea = document.createElement("textarea");
+      textarea.className = "nw-source-textarea";
+      textarea.setAttribute("spellcheck", "false");
+      textarea.setAttribute("aria-label", "Source HTML");
+      this.sourceTextarea = textarea;
+      panel.appendChild(textarea);
+
+      toolbar.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-source-action]");
+        if (!button) return;
+        event.preventDefault();
+        if (button.dataset.sourceAction === "format-source") {
+          this.formatSourceHTML();
+        }
+      });
+
+      textarea.addEventListener("input", () => {
+        this.handleSourceInput();
+      });
+      textarea.addEventListener("keydown", (event) => {
+        const isMod = event.ctrlKey || event.metaKey;
+        if (isMod && event.shiftKey && event.key.toLowerCase() === "u") {
+          event.preventDefault();
+          this.exitSourceMode();
+        }
+      });
+
+      return panel;
     }
 
     buildModal() {
@@ -3290,6 +3353,86 @@
       button.innerHTML = content;
       this.toolbarButtons[action] = button;
       return button;
+    }
+
+    isSourceMode() {
+      return Boolean(this.sourceMode);
+    }
+
+    toggleSourceMode() {
+      if (this.isSourceMode()) {
+        this.exitSourceMode();
+      } else {
+        this.enterSourceMode();
+      }
+    }
+
+    enterSourceMode() {
+      if (this.isSourceMode() || !this.sourcePanel || !this.sourceTextarea) return;
+      this.closeModal({ restoreSelection: false, focusEditor: false });
+      this.closeFindReplacePanel();
+      this.closeThemeMenu();
+      this.closeFontFamilyMenu();
+      this.closeFontSizeMenu();
+      this.closeStylesMenu();
+      this.closeTextColorPopover();
+      this.closeHighlightPopover();
+      this.clearMediaSelection();
+      this.clearTableSelection();
+      this.clearBookmarkSelection();
+      this.sourceTextarea.value = formatHtmlForSource(this.getHTML());
+      this.sourceMode = true;
+      this.wrapper.classList.add("is-source-mode");
+      this.content.hidden = true;
+      this.sourcePanel.hidden = false;
+      this.isFocused = false;
+      this.updateToolbarState();
+      this.updateStatus();
+      window.setTimeout(() => {
+        this.sourceTextarea.focus();
+        this.sourceTextarea.setSelectionRange(0, 0);
+      }, 0);
+    }
+
+    exitSourceMode() {
+      if (!this.isSourceMode()) return;
+      const clean = this.getSourceHTML();
+      this.sourceMode = false;
+      this.wrapper.classList.remove("is-source-mode");
+      this.sourcePanel.hidden = true;
+      this.content.hidden = false;
+      this.content.innerHTML = clean;
+      this.clearMediaSelection();
+      this.clearTableSelection();
+      this.clearBookmarkSelection();
+      this.focus();
+      this.handleContentChange();
+    }
+
+    getSourceHTML() {
+      return this.sanitizeHTML(String(this.sourceTextarea?.value || ""));
+    }
+
+    formatSourceHTML() {
+      if (!this.sourceTextarea) return;
+      const start = this.sourceTextarea.selectionStart || 0;
+      const end = this.sourceTextarea.selectionEnd || 0;
+      this.sourceTextarea.value = formatHtmlForSource(this.getSourceHTML());
+      this.handleSourceInput();
+      this.sourceTextarea.focus();
+      this.sourceTextarea.setSelectionRange(Math.min(start, this.sourceTextarea.value.length), Math.min(end, this.sourceTextarea.value.length));
+    }
+
+    handleSourceInput() {
+      if (!this.isSourceMode()) return;
+      this.isDirty = true;
+      this.sync({ autosave: false, preserveDirty: true });
+      this.updateMetricsFromHTML(this.getSourceHTML());
+      this.updateStatus();
+      this.updateToolbarState();
+      this.scheduleAutosave();
+      this.dispatch("nationwire-editor:change");
+      this.emit("change", { editor: this, html: this.textarea.value });
     }
 
     getTheme() {
@@ -4528,6 +4671,9 @@
       this.addShortcut("mod+shift+c", () => {
         this.openCodeModal();
       });
+      this.addShortcut("mod+shift+u", () => {
+        this.toggleSourceMode();
+      });
       this.addShortcut("mod+f", () => {
         this.openFindReplacePanel("find");
       });
@@ -5077,6 +5223,9 @@
           return;
         case "bookmark":
           this.openBookmarkModal();
+          return;
+        case "source-html":
+          this.toggleSourceMode();
           return;
         case "find-replace":
           this.openFindReplacePanel("find");
@@ -8218,6 +8367,26 @@
     }
 
     updateToolbarState() {
+      if (this.isSourceMode()) {
+        if (this.wrapper) {
+          this.wrapper.classList.add("is-source-mode");
+        }
+        Array.from(this.wrapper.querySelectorAll(".nw-editor-toolbar button, .nw-editor-toolbar select, .nw-editor-toolbar input")).forEach((control) => {
+          const action = control.dataset && control.dataset.action ? control.dataset.action : "";
+          control.disabled = action !== "source-html" && !control.closest(".nw-toolbar-group--theme");
+        });
+        if (this.toolbarButtons["source-html"]) {
+          this.toolbarButtons["source-html"].disabled = false;
+          this.toolbarButtons["source-html"].classList.add("is-active");
+        }
+        return;
+      }
+      if (this.wrapper) {
+        this.wrapper.classList.remove("is-source-mode");
+        Array.from(this.wrapper.querySelectorAll(".nw-editor-toolbar button, .nw-editor-toolbar select, .nw-editor-toolbar input")).forEach((control) => {
+          control.disabled = false;
+        });
+      }
       const inside = selectionInside(this.content);
       const hasEditorContext = inside || this.isFocused || Boolean(this.selectedMediaBlock);
       const states = {
@@ -8287,6 +8456,9 @@
       this.updateFontToolbarState();
       this.updateColorToolbarState();
       this.updateHighlightToolbarState();
+      if (this.toolbarButtons["source-html"]) {
+        this.toolbarButtons["source-html"].classList.remove("is-active");
+      }
     }
 
     updateMetrics() {
@@ -8297,8 +8469,22 @@
       this.statusReadTime.textContent = `${words ? minutes : 0} min`;
     }
 
+    updateMetricsFromHTML(html) {
+      const probe = document.createElement("div");
+      probe.innerHTML = this.sanitizeHTML(html);
+      const text = (probe.textContent || "").trim().replace(/\s+/g, " ");
+      const words = text ? text.split(" ").length : 0;
+      const minutes = Math.max(1, Math.ceil(words / DEFAULT_READ_SPEED));
+      this.statusWordCount.textContent = String(words);
+      this.statusReadTime.textContent = `${words ? minutes : 0} min`;
+    }
+
     updateStatus() {
-      this.statusActive.textContent = this.isFocused ? "Story body active" : "Story body inactive";
+      this.statusActive.textContent = this.isSourceMode()
+        ? "Source mode active"
+        : this.isFocused
+          ? "Story body active"
+          : "Story body inactive";
       this.statusDot.classList.toggle("is-dirty", this.isDirty);
       if (this.isDirty) {
         this.statusSave.textContent = "Unsaved changes";
@@ -8317,6 +8503,9 @@
     }
 
     getHTML() {
+      if (this.isSourceMode()) {
+        return this.getSourceHTML();
+      }
       const clone = this.content.cloneNode(true);
       Array.from(clone.querySelectorAll(`span.${FIND_REPLACE_HIGHLIGHT_CLASS}`)).forEach((span) => {
         const text = clone.ownerDocument.createTextNode(span.textContent || "");
@@ -8335,6 +8524,9 @@
       const source = String(html || "").trim();
       const clean = source ? this.sanitizeHTML(source) : "";
       this.content.innerHTML = clean;
+      if (this.sourceTextarea) {
+        this.sourceTextarea.value = formatHtmlForSource(clean);
+      }
       this.closeFindReplacePanel();
       this.clearMediaSelection();
       this.clearTableSelection();
@@ -8363,6 +8555,9 @@
         return clean;
       }
       this.content.innerHTML = clean;
+      if (this.sourceTextarea) {
+        this.sourceTextarea.value = formatHtmlForSource(clean);
+      }
       this.closeFindReplacePanel();
       this.clearMediaSelection();
       this.clearTableSelection();
@@ -8377,6 +8572,10 @@
     }
 
     focus() {
+      if (this.isSourceMode() && this.sourceTextarea) {
+        this.sourceTextarea.focus();
+        return;
+      }
       this.content.focus();
       if (!selectionInside(this.content)) {
         const range = document.createRange();
@@ -8392,7 +8591,7 @@
 
     sync(options) {
       const config = options || {};
-      this.textarea.value = this.getHTML();
+      this.textarea.value = this.isSourceMode() ? this.getSourceHTML() : this.getHTML();
       if (!config.preserveDirty) {
         this.isDirty = false;
       }

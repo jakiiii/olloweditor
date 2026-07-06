@@ -2981,11 +2981,12 @@
         ["attachment", "Attachment", "attach_file"],
       ];
 
-      insertItems.forEach(([action, label, icon], index) => {
+      insertItems.forEach(([action, label, icon]) => {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `nw-insert-pill${index === 0 ? " is-active" : ""}${action === "bookmark" ? " ollow-bookmark-btn" : ""}`;
+        button.className = `nw-insert-pill${action === "bookmark" ? " ollow-bookmark-btn" : ""}`;
         button.dataset.action = action;
+        button.setAttribute("aria-pressed", "false");
         const shortcutLabel = TOOLBAR_SHORTCUT_LABELS[action];
         const fullTitle = shortcutLabel ? `${label} (${shortcutLabel.replace(/mod/gi, "Ctrl/Cmd")})` : label;
         button.title = fullTitle;
@@ -8422,6 +8423,15 @@
         current = current.parentNode;
       }
 
+      const isInsidePullQuote = Boolean(
+        block && block.matches && block.matches("blockquote.nw-pull-quote, blockquote[data-type='pull-quote']")
+      );
+      const bookmarkAncestor = ancestor && ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentNode : ancestor;
+      const isInsideBookmark = Boolean(
+        this.selectedBookmark
+          || (bookmarkAncestor && bookmarkAncestor.closest && bookmarkAncestor.closest(`.${BOOKMARK_CLASS}[data-bookmark="true"]`))
+      );
+
       ["bold", "italic", "underline", "strikethrough", "subscript", "superscript", "link", "quote", "bulleted-list", "numbered-list", "h2", "h3", "h4"].forEach((key) => {
         const button = this.toolbarButtons[key];
         if (button) {
@@ -8456,6 +8466,15 @@
       this.updateFontToolbarState();
       this.updateColorToolbarState();
       this.updateHighlightToolbarState();
+      [
+        ["pull-quote", isInsidePullQuote],
+        ["bookmark", isInsideBookmark],
+      ].forEach(([action, isActive]) => {
+        const button = this.toolbarButtons[action];
+        if (!button) return;
+        button.classList.toggle("is-active", Boolean(isActive));
+        button.setAttribute("aria-pressed", isActive ? "true" : "false");
+      });
       if (this.toolbarButtons["source-html"]) {
         this.toolbarButtons["source-html"].classList.remove("is-active");
       }

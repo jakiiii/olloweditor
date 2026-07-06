@@ -902,16 +902,16 @@
 }
 
 .nw-insert-pill.ollow-bookmark-btn {
-  border-color: color-mix(in srgb, var(--ollow-primary) 24%, var(--nw-border) 76%);
-  background: color-mix(in srgb, var(--ollow-primary-soft) 72%, var(--ollow-surface) 28%);
-  color: var(--ollow-primary);
+  border-color: var(--nw-border);
+  background: var(--ollow-surface);
+  color: var(--ollow-soft);
 }
 
 .nw-insert-pill.ollow-bookmark-btn:hover,
 .nw-insert-pill.ollow-bookmark-btn.is-active {
-  border-color: var(--ollow-primary-border);
+  border-color: var(--nw-accent);
   background: var(--ollow-primary-soft);
-  color: var(--ollow-primary);
+  color: var(--nw-accent);
 }
 
 .nw-insert-pill .material-symbols-outlined {

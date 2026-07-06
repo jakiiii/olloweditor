@@ -437,6 +437,7 @@ Settings:
 - orientation: `Portrait` or `Landscape`
 - margin: `Normal`, `Narrow`, `Wide`
 - optional title, date, and source URL in the exported document
+- default export is clean: title, date, and source URL are all off by default
 
 Behavior:
 
@@ -445,6 +446,7 @@ Behavior:
 - this avoids popup blockers in most browsers
 - from there the browser's `Save as PDF` flow is used
 - unsafe UI elements and temporary editor state are not included
+- by default the PDF body contains only editor content
 - source URL is only rendered in the PDF body when `Include source URL` is enabled
 - to remove browser-added date, title, URL, and page number, disable `Headers and footers` in the print dialog
 - if iframe printing is blocked or fails, OllowEditor downloads a printable HTML file as a fallback

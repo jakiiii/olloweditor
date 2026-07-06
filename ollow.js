@@ -8319,7 +8319,7 @@
               { value: "wide", label: "Wide" },
             ],
           },
-          { name: "includeTitle", label: "Include title", type: "checkbox", checked: true },
+          { name: "includeTitle", label: "Include title", type: "checkbox", checked: false },
           { name: "includeDate", label: "Include date", type: "checkbox", checked: false },
           { name: "includeSourceUrl", label: "Include source URL", type: "checkbox", checked: false },
           {
@@ -9061,12 +9061,15 @@ body {
       this.sync({ autosave: false, preserveDirty: true, silent: true });
       const cleanHtml = this.getHTML();
       const article = this.buildPdfExportArticle(cleanHtml, options);
+      const printDocumentTitle = options.includeTitle && String(options.title || "").trim()
+        ? String(options.title || "").trim()
+        : "";
       return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(options.title || "OllowEditor Export")}</title>
+  <title>${escapeHtml(printDocumentTitle)}</title>
   <style>
 ${this.getExportPDFStyles(options)}
   </style>

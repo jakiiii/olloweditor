@@ -209,6 +209,35 @@ Ollow Editor currently supports:
 
 ---
 
+## Desktop Menu Bar
+
+On desktop widths (`1024px` and above), Ollow Editor shows an optional application-style menu bar above the main toolbar:
+
+- `File`
+- `Edit`
+- `View`
+- `Insert`
+- `Format`
+- `Tools`
+- `Help`
+
+The menu bar reuses the same editor commands as the toolbar. It does not maintain a separate feature path. Actions such as `Export HTML`, `Export PDF`, `Import DOCX`, `Find / Replace`, `Source / HTML mode`, `Bookmark`, and the formatting commands all route into the existing editor methods and modals.
+
+The toolbar itself is also grouped visually into:
+
+- history
+- typography
+- inline formatting
+- paragraph / list controls
+- alignment
+- insert blocks
+- import / export
+- view / utility actions
+
+On tablet and mobile widths, the desktop menu bar is hidden and the grouped toolbar continues to use the responsive scrolling/wrapping layout.
+
+---
+
 ## Keyboard Shortcuts
 
 Shortcuts run only while the editor body is focused. They do not fire inside modal inputs, textareas, selects, file pickers, or other page form fields.

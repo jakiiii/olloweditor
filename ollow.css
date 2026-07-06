@@ -114,6 +114,90 @@
   padding: 12px 16px;
 }
 
+.ollow-menubar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--nw-border) 82%, transparent);
+  margin-bottom: 12px;
+}
+
+.ollow-menu-item {
+  position: relative;
+}
+
+.ollow-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ollow-text-strong);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ollow-menu-trigger:hover,
+.ollow-menu-trigger.is-active {
+  background: var(--ollow-surface-muted);
+  color: var(--ollow-text-strong);
+}
+
+.ollow-menu-trigger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ollow-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 10030;
+  min-width: 230px;
+  padding: 8px;
+  border: 1px solid var(--nw-border);
+  border-radius: 10px;
+  background: var(--ollow-surface);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+}
+
+.ollow-menu-command {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 8px 10px;
+  color: var(--ollow-text-strong);
+  font-size: 13px;
+  text-align: left;
+}
+
+.ollow-menu-command:hover,
+.ollow-menu-command:focus-visible {
+  background: var(--ollow-surface-muted);
+  outline: none;
+}
+
+.ollow-menu-command-shortcut {
+  color: var(--ollow-soft);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ollow-menu-separator {
+  height: 1px;
+  margin: 6px 2px;
+  background: var(--nw-border);
+}
+
 .nw-toolbar-row,
 .nw-insert-row {
   display: flex;
@@ -138,6 +222,11 @@
   gap: 4px;
 }
 
+.nw-insert-group {
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .nw-toolbar-group--theme {
   margin-left: auto;
 }
@@ -154,6 +243,8 @@
 
 .nw-toolbar-button,
 .nw-insert-pill,
+.ollow-menu-trigger,
+.ollow-menu-command,
 .nw-modal-button,
 .nw-prompt-link {
   appearance: none;
@@ -925,6 +1016,72 @@
   width: 14px;
   font-size: 15px;
   line-height: 1;
+}
+
+.ollow-help-panel {
+  display: grid;
+  gap: 12px;
+  color: var(--ollow-text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ollow-help-panel p {
+  margin: 0;
+}
+
+.ollow-help-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ollow-help-stat {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--nw-border);
+  border-radius: 10px;
+  background: var(--ollow-surface-soft);
+}
+
+.ollow-help-stat strong {
+  font-size: 22px;
+  color: var(--ollow-text-strong);
+}
+
+.ollow-help-stat span {
+  color: var(--ollow-soft);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.ollow-shortcuts-list {
+  gap: 6px;
+}
+
+.ollow-shortcuts-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--nw-border);
+  border-radius: 8px;
+  background: var(--ollow-surface-soft);
+}
+
+.ollow-shortcuts-item kbd {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--nw-border);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--ollow-surface);
+  color: var(--ollow-text-strong);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .nw-editor-surface {
@@ -2559,6 +2716,10 @@
     max-width: 100%;
   }
 
+  .ollow-menubar {
+    display: none;
+  }
+
   .nw-editor-toolbar {
     padding: 12px 14px;
   }
@@ -2874,6 +3035,14 @@
   }
 
   .ollow-special-chars-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .ollow-help-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .ollow-shortcuts-item {
     grid-template-columns: 1fr;
   }
 

@@ -2218,6 +2218,10 @@
       this.toolbarButtons = {};
       this.toolbarRows = {};
       this.toolbarGroups = {};
+      this.menuBar = null;
+      this.menuButtons = {};
+      this.menuDropdowns = {};
+      this.activeMenuKey = "";
       this.headingSelect = null;
       this.formatPainterButton = null;
       this.formatPainterState = null;
@@ -2306,6 +2310,7 @@
 
       const toolbar = document.createElement("div");
       toolbar.className = "nw-editor-toolbar";
+      toolbar.appendChild(this.buildMenuBar());
       toolbar.appendChild(this.buildToolbarPrimary());
       toolbar.appendChild(this.buildToolbarInsert());
 
@@ -2372,13 +2377,386 @@
       this.textarea.insertAdjacentElement("afterend", this.wrapper);
     }
 
+    buildMenuBar() {
+      const bar = document.createElement("div");
+      bar.className = "ollow-menubar";
+      bar.setAttribute("role", "menubar");
+      bar.setAttribute("aria-label", "Editor menu");
+
+      this.getMenuBarConfig().forEach((menu) => {
+        const item = document.createElement("div");
+        item.className = "ollow-menu-item";
+
+        const trigger = document.createElement("button");
+        trigger.type = "button";
+        trigger.className = "ollow-menu-trigger";
+        trigger.dataset.menuKey = menu.key;
+        trigger.setAttribute("aria-haspopup", "menu");
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.textContent = menu.label;
+        trigger.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+          this.saveSelection();
+        });
+        trigger.addEventListener("click", (event) => {
+          event.preventDefault();
+          this.toggleMenuDropdown(menu.key);
+        });
+
+        const dropdown = document.createElement("div");
+        dropdown.className = "ollow-menu-dropdown";
+        dropdown.hidden = true;
+        dropdown.setAttribute("role", "menu");
+        dropdown.setAttribute("aria-label", menu.label);
+        dropdown.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+          this.saveSelection();
+        });
+        dropdown.addEventListener("click", (event) => {
+          const command = event.target.closest("[data-menu-action]");
+          if (!command) return;
+          event.preventDefault();
+          this.executeMenuAction(command.dataset.menuAction);
+        });
+
+        (menu.items || []).forEach((entry) => {
+          if (entry.type === "separator") {
+            const separator = document.createElement("div");
+            separator.className = "ollow-menu-separator";
+            separator.setAttribute("role", "separator");
+            dropdown.appendChild(separator);
+            return;
+          }
+          const command = document.createElement("button");
+          command.type = "button";
+          command.className = "ollow-menu-command";
+          command.dataset.menuAction = entry.action;
+          command.setAttribute("role", "menuitem");
+          command.innerHTML = `
+            <span class="ollow-menu-command-label">${entry.label}</span>
+            ${entry.shortcut ? `<span class="ollow-menu-command-shortcut">${entry.shortcut.replace(/mod/gi, "Ctrl/Cmd")}</span>` : ""}
+          `;
+          dropdown.appendChild(command);
+        });
+
+        item.appendChild(trigger);
+        item.appendChild(dropdown);
+        bar.appendChild(item);
+        this.menuButtons[menu.key] = trigger;
+        this.menuDropdowns[menu.key] = dropdown;
+      });
+
+      this.menuBar = bar;
+      return bar;
+    }
+
+    getMenuBarConfig() {
+      return [
+        {
+          key: "file",
+          label: "File",
+          items: [
+            { action: "clear-content", label: "New / Clear content" },
+            { type: "separator" },
+            { action: "import-markdown", label: "Import Markdown" },
+            { action: "export-markdown", label: "Export Markdown" },
+            { action: "export-html", label: "Export HTML" },
+            { action: "export-pdf", label: "Export PDF" },
+            { action: "import-docx", label: "Import DOCX" },
+            { action: "export-docx", label: "Export DOCX" },
+          ],
+        },
+        {
+          key: "edit",
+          label: "Edit",
+          items: [
+            { action: "undo", label: "Undo", shortcut: TOOLBAR_SHORTCUT_LABELS.undo },
+            { action: "redo", label: "Redo", shortcut: TOOLBAR_SHORTCUT_LABELS.redo },
+            { type: "separator" },
+            { action: "find-replace", label: "Find / Replace", shortcut: TOOLBAR_SHORTCUT_LABELS["find-replace"] },
+            { action: "remove-formatting", label: "Remove formatting", shortcut: TOOLBAR_SHORTCUT_LABELS["remove-formatting"] },
+          ],
+        },
+        {
+          key: "view",
+          label: "View",
+          items: [
+            { action: "source-html", label: "Source / HTML mode", shortcut: TOOLBAR_SHORTCUT_LABELS["source-html"] },
+            { type: "separator" },
+            { action: "theme-light", label: "Light mode" },
+            { action: "theme-dark", label: "Dark mode" },
+            { action: "theme-auto", label: "Auto theme" },
+          ],
+        },
+        {
+          key: "insert",
+          label: "Insert",
+          items: [
+            { action: "image", label: "Image" },
+            { action: "gallery", label: "Gallery" },
+            { action: "embed", label: "Embed" },
+            { action: "table", label: "Table" },
+            { action: "code", label: "Code block" },
+            { action: "bookmark", label: "Bookmark" },
+            { action: "special-characters", label: "Special character" },
+            { action: "emoji", label: "Emoji" },
+            { action: "related", label: "Related" },
+            { action: "fact-box", label: "Fact Box" },
+            { action: "attachment", label: "Attachment" },
+          ],
+        },
+        {
+          key: "format",
+          label: "Format",
+          items: [
+            { action: "menu-font-family", label: "Font family" },
+            { action: "menu-font-size", label: "Font size" },
+            { action: "menu-text-color", label: "Text color" },
+            { action: "menu-highlight-color", label: "Highlight color" },
+            { type: "separator" },
+            { action: "bold", label: "Bold", shortcut: TOOLBAR_SHORTCUT_LABELS.bold },
+            { action: "italic", label: "Italic", shortcut: TOOLBAR_SHORTCUT_LABELS.italic },
+            { action: "underline", label: "Underline", shortcut: TOOLBAR_SHORTCUT_LABELS.underline },
+            { action: "strikethrough", label: "Strikethrough", shortcut: TOOLBAR_SHORTCUT_LABELS.strikethrough },
+            { action: "subscript", label: "Subscript", shortcut: TOOLBAR_SHORTCUT_LABELS.subscript },
+            { action: "superscript", label: "Superscript", shortcut: TOOLBAR_SHORTCUT_LABELS.superscript },
+            { type: "separator" },
+            { action: "align-left", label: "Align left" },
+            { action: "align-center", label: "Align center" },
+            { action: "align-right", label: "Align right" },
+            { action: "align-justify", label: "Align justify" },
+          ],
+        },
+        {
+          key: "tools",
+          label: "Tools",
+          items: [
+            { action: "format-painter", label: "Format Painter" },
+            { action: "word-count", label: "Word count" },
+            { action: "source-html", label: "Source mode" },
+          ],
+        },
+        {
+          key: "help",
+          label: "Help",
+          items: [
+            { action: "keyboard-shortcuts", label: "Keyboard shortcuts" },
+            { action: "about-editor", label: "About OllowEditor" },
+          ],
+        },
+      ];
+    }
+
+    openMenuDropdown(key) {
+      const button = this.menuButtons[key];
+      const dropdown = this.menuDropdowns[key];
+      if (!button || !dropdown) return;
+      Object.entries(this.menuDropdowns).forEach(([menuKey, menuDropdown]) => {
+        const isActive = menuKey === key;
+        menuDropdown.hidden = !isActive;
+        if (this.menuButtons[menuKey]) {
+          this.menuButtons[menuKey].setAttribute("aria-expanded", isActive ? "true" : "false");
+          this.menuButtons[menuKey].classList.toggle("is-active", isActive);
+        }
+      });
+      this.activeMenuKey = key;
+    }
+
+    closeMenuDropdowns() {
+      Object.entries(this.menuDropdowns).forEach(([key, dropdown]) => {
+        dropdown.hidden = true;
+        if (this.menuButtons[key]) {
+          this.menuButtons[key].setAttribute("aria-expanded", "false");
+          this.menuButtons[key].classList.remove("is-active");
+        }
+      });
+      this.activeMenuKey = "";
+    }
+
+    toggleMenuDropdown(key) {
+      if (this.activeMenuKey === key) {
+        this.closeMenuDropdowns();
+        return;
+      }
+      this.openMenuDropdown(key);
+    }
+
+    executeMenuAction(action) {
+      if (!action) return;
+      this.closeMenuDropdowns();
+      switch (action) {
+        case "clear-content":
+          this.openClearContentModal();
+          return;
+        case "theme-light":
+          this.setTheme("light");
+          return;
+        case "theme-dark":
+          this.setTheme("dark");
+          return;
+        case "theme-auto":
+          this.setTheme("auto");
+          return;
+        case "menu-font-family":
+          this.openFontFamilyMenu();
+          if (this.fontFamilyButton) this.fontFamilyButton.focus();
+          return;
+        case "menu-font-size":
+          this.openFontSizeMenu();
+          if (this.fontSizeInput) this.fontSizeInput.focus();
+          return;
+        case "menu-text-color":
+          this.openTextColorPopover();
+          if (this.textColorButton) this.textColorButton.focus();
+          return;
+        case "menu-highlight-color":
+          this.openHighlightPopover();
+          if (this.highlightButton) this.highlightButton.focus();
+          return;
+        case "format-painter":
+          this.handleFormatPainterAction();
+          return;
+        case "word-count":
+          this.openWordCountModal();
+          return;
+        case "keyboard-shortcuts":
+          this.openKeyboardShortcutsModal();
+          return;
+        case "about-editor":
+          this.openAboutModal();
+          return;
+        default:
+          this.handleAction(action);
+      }
+    }
+
+    updateMenuBarState() {
+      const sourceDisabledMenus = new Set(["format", "insert"]);
+      Object.entries(this.menuButtons).forEach(([key, button]) => {
+        const disabled = this.isSourceMode() && sourceDisabledMenus.has(key);
+        button.disabled = disabled;
+        if (disabled && this.activeMenuKey === key) {
+          this.closeMenuDropdowns();
+        }
+      });
+    }
+
+    openClearContentModal() {
+      this.openModal({
+        title: "Clear content",
+        copy: "Remove the current article content and start with a blank editor surface.",
+        confirmLabel: "Clear",
+        fields: [
+          {
+            type: "html",
+            html: `
+              <div class="ollow-help-panel">
+                <p>This keeps the editor settings, toolbar, and autosave behavior intact. It only clears the story body HTML.</p>
+              </div>
+            `,
+          },
+        ],
+        onConfirm: () => {
+          this.clear();
+          return null;
+        },
+      });
+    }
+
+    openWordCountModal() {
+      this.updateMetrics();
+      const words = this.statusWordCount ? this.statusWordCount.textContent : "0";
+      const readTime = this.statusReadTime ? this.statusReadTime.textContent : "0 min";
+      this.openModal({
+        title: "Document stats",
+        copy: "Current content metrics from the active editor body.",
+        confirmLabel: "Close",
+        fields: [
+          {
+            type: "html",
+            html: `
+              <div class="ollow-help-panel ollow-help-stats">
+                <div class="ollow-help-stat">
+                  <strong>${escapeHtml(words)}</strong>
+                  <span>Words</span>
+                </div>
+                <div class="ollow-help-stat">
+                  <strong>${escapeHtml(readTime)}</strong>
+                  <span>Read time</span>
+                </div>
+              </div>
+            `,
+          },
+        ],
+        onConfirm: () => null,
+      });
+    }
+
+    openKeyboardShortcutsModal() {
+      const shortcutItems = [
+        ["Undo", TOOLBAR_SHORTCUT_LABELS.undo],
+        ["Redo", TOOLBAR_SHORTCUT_LABELS.redo],
+        ["Bold", TOOLBAR_SHORTCUT_LABELS.bold],
+        ["Italic", TOOLBAR_SHORTCUT_LABELS.italic],
+        ["Underline", TOOLBAR_SHORTCUT_LABELS.underline],
+        ["Strikethrough", TOOLBAR_SHORTCUT_LABELS.strikethrough],
+        ["Subscript", TOOLBAR_SHORTCUT_LABELS.subscript],
+        ["Superscript", TOOLBAR_SHORTCUT_LABELS.superscript],
+        ["Link", TOOLBAR_SHORTCUT_LABELS.link],
+        ["Code block", TOOLBAR_SHORTCUT_LABELS.code],
+        ["Find / Replace", TOOLBAR_SHORTCUT_LABELS["find-replace"]],
+        ["Source / HTML mode", TOOLBAR_SHORTCUT_LABELS["source-html"]],
+      ];
+      this.openModal({
+        title: "Keyboard shortcuts",
+        copy: "The editor uses the standard desktop shortcuts where available.",
+        confirmLabel: "Close",
+        fields: [
+          {
+            type: "html",
+            html: `
+              <div class="ollow-help-panel ollow-shortcuts-list">
+                ${shortcutItems.map(([label, shortcut]) => `
+                  <div class="ollow-shortcuts-item">
+                    <span>${escapeHtml(label)}</span>
+                    <kbd>${escapeHtml(String(shortcut || "").replace(/mod/gi, "Ctrl/Cmd"))}</kbd>
+                  </div>
+                `).join("")}
+              </div>
+            `,
+          },
+        ],
+        onConfirm: () => null,
+      });
+    }
+
+    openAboutModal() {
+      this.openModal({
+        title: "About OllowEditor",
+        copy: "Standalone publishing editor for long-form article workflows.",
+        confirmLabel: "Close",
+        fields: [
+          {
+            type: "html",
+            html: `
+              <div class="ollow-help-panel">
+                <p>OllowEditor combines WYSIWYG editing, source mode, import/export workflows, media blocks, tables, code blocks, bookmarks, and editorial formatting in one browser-based surface.</p>
+                <p>The desktop menu bar and grouped toolbar reuse the same editor commands, so menu actions and toolbar actions stay in sync.</p>
+              </div>
+            `,
+          },
+        ],
+        onConfirm: () => null,
+      });
+    }
+
     buildToolbarPrimary() {
       const row = document.createElement("div");
       row.className = "nw-toolbar-row";
       this.toolbarRows.primary = row;
 
       const groupUndo = document.createElement("div");
-      groupUndo.className = "nw-toolbar-group";
+      groupUndo.className = "nw-toolbar-group nw-toolbar-group--history";
       this.toolbarGroups.undo = groupUndo;
       groupUndo.appendChild(this.makeToolbarButton("undo", "Undo", '<span class="material-symbols-outlined">undo</span>'));
       groupUndo.appendChild(this.makeToolbarButton("redo", "Redo", '<span class="material-symbols-outlined">redo</span>'));
@@ -2400,14 +2778,14 @@
       this.headingSelect.setAttribute("aria-label", "Paragraph style");
 
       const groupText = document.createElement("div");
-      groupText.className = "nw-toolbar-group";
+      groupText.className = "nw-toolbar-group nw-toolbar-group--headings";
       this.toolbarGroups.text = groupText;
       groupText.appendChild(this.makeToolbarButton("h2", "Heading 2", "H2", "nw-toolbar-button nw-text-button"));
       groupText.appendChild(this.makeToolbarButton("h3", "Heading 3", "H3", "nw-toolbar-button nw-text-button"));
       groupText.appendChild(this.makeToolbarButton("h4", "Heading 4", "H4", "nw-toolbar-button nw-text-button"));
 
       const groupInline = document.createElement("div");
-      groupInline.className = "nw-toolbar-group";
+      groupInline.className = "nw-toolbar-group nw-toolbar-group--inline";
       this.toolbarGroups.inline = groupInline;
       groupInline.appendChild(this.makeToolbarButton("bold", "Bold", "B", "nw-toolbar-button nw-text-button"));
       groupInline.appendChild(this.makeToolbarButton("italic", "Italic", "I", "nw-toolbar-button nw-text-button"));
@@ -2422,7 +2800,7 @@
       groupInline.appendChild(this.makeToolbarButton("bookmark", "Insert bookmark / anchor", '<span class="material-symbols-outlined">bookmark</span>'));
 
       const groupBlocks = document.createElement("div");
-      groupBlocks.className = "nw-toolbar-group";
+      groupBlocks.className = "nw-toolbar-group nw-toolbar-group--paragraph";
       this.toolbarGroups.blocks = groupBlocks;
       groupBlocks.appendChild(this.makeToolbarButton("bulleted-list", "Bullet list", '<span class="material-symbols-outlined">format_list_bulleted</span>'));
       groupBlocks.appendChild(this.makeToolbarButton("numbered-list", "Numbered list", '<span class="material-symbols-outlined">format_list_numbered</span>'));
@@ -2430,7 +2808,7 @@
       groupBlocks.appendChild(this.makeToolbarButton("horizontal-rule", "Horizontal rule", '<span class="material-symbols-outlined">horizontal_rule</span>'));
 
       const groupMediaAlign = document.createElement("div");
-      groupMediaAlign.className = "nw-toolbar-group nw-toolbar-group--media-align";
+      groupMediaAlign.className = "nw-toolbar-group nw-toolbar-group--alignment nw-toolbar-group--media-align";
       this.toolbarGroups.alignment = groupMediaAlign;
       groupMediaAlign.appendChild(this.makeToolbarButton("align-left", "Align left", getAlignmentIcon("left")));
       groupMediaAlign.appendChild(this.makeToolbarButton("align-center", "Align center", getAlignmentIcon("center")));
@@ -2804,6 +3182,11 @@
       return button;
     }
 
+    handleFormatPainterAction() {
+      window.clearTimeout(this.formatPainterClickTimer);
+      this.armFormatPainter(false);
+    }
+
     buildStylesMenuMarkup() {
       return STYLE_PRESETS.map((preset) => this.buildStyleOptionMarkup(preset)).join("");
     }
@@ -2993,48 +3376,71 @@
       this.toolbarRows.insert = row;
       this.toolbarGroups.insert = row;
 
-      const insertItems = [
-        ["pull-quote", "Pull Quote", "format_quote"],
-        ["image", "Image", "image"],
-        ["code", "Code", "code_blocks"],
-        ["table", "Table", "table"],
-        ["bookmark", "Bookmark", "bookmark"],
-        ["source-html", "HTML", ""],
-        ["find-replace", "Find / Replace", "search"],
-        ["special-characters", "Ω Symbols", ""],
-        ["emoji", "Emoji", ""],
-        ["import-docx", "Import DOCX", "upload_file"],
-        ["import-markdown", "Import MD", "upload_file"],
-        ["export-markdown", "Export MD", "download"],
-        ["export-html", "Export HTML", "download"],
-        ["export-pdf", "Export PDF", "print"],
-        ["export-docx", "Export DOCX", "download"],
-        ["gallery", "Gallery", "photo_library"],
-        ["embed", "Embed", "smart_display"],
-        ["related", "Related", "article"],
-        ["fact-box", "Fact Box", "fact_check"],
-        ["attachment", "Attachment", "attach_file"],
+      const insertGroups = [
+        {
+          className: "nw-toolbar-group nw-insert-group nw-insert-group--blocks",
+          items: [
+            ["pull-quote", "Pull Quote", "format_quote"],
+            ["image", "Image", "image"],
+            ["gallery", "Gallery", "photo_library"],
+            ["embed", "Embed", "smart_display"],
+            ["table", "Table", "table"],
+            ["code", "Code", "code_blocks"],
+            ["related", "Related", "article"],
+            ["fact-box", "Fact Box", "fact_check"],
+            ["attachment", "Attachment", "attach_file"],
+          ],
+        },
+        {
+          className: "nw-toolbar-group nw-insert-group nw-insert-group--utilities",
+          items: [
+            ["bookmark", "Bookmark", "bookmark"],
+            ["source-html", "HTML", ""],
+            ["find-replace", "Find / Replace", "search"],
+            ["special-characters", "Ω Symbols", ""],
+            ["emoji", "Emoji", ""],
+          ],
+        },
+        {
+          className: "nw-toolbar-group nw-insert-group nw-insert-group--import-export",
+          items: [
+            ["import-docx", "Import DOCX", "upload_file"],
+            ["import-markdown", "Import MD", "upload_file"],
+            ["export-markdown", "Export MD", "download"],
+            ["export-html", "Export HTML", "download"],
+            ["export-pdf", "Export PDF", "print"],
+            ["export-docx", "Export DOCX", "download"],
+          ],
+        },
       ];
 
-      insertItems.forEach(([action, label, icon]) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = `nw-insert-pill${action === "bookmark" ? " ollow-bookmark-btn" : ""}`;
-        button.dataset.action = action;
-        button.setAttribute("aria-pressed", "false");
-        const shortcutLabel = TOOLBAR_SHORTCUT_LABELS[action];
-        const fullTitle = shortcutLabel ? `${label} (${shortcutLabel.replace(/mod/gi, "Ctrl/Cmd")})` : label;
-        button.title = fullTitle;
-        button.setAttribute("aria-label", fullTitle);
-        button.innerHTML = action === "special-characters"
-          ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">Ω</span>${label}`
-          : action === "emoji"
-            ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">☺</span>${label}`
-          : action === "source-html"
-            ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">&lt;&gt;</span>${label}`
-          : `<span class="material-symbols-outlined">${icon}</span>${label}`;
-        this.toolbarButtons[action] = button;
-        row.appendChild(button);
+      insertGroups.forEach((groupConfig, groupIndex) => {
+        const group = document.createElement("div");
+        group.className = groupConfig.className;
+        groupConfig.items.forEach(([action, label, icon]) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `nw-insert-pill${action === "bookmark" ? " ollow-bookmark-btn" : ""}`;
+          button.dataset.action = action;
+          button.setAttribute("aria-pressed", "false");
+          const shortcutLabel = TOOLBAR_SHORTCUT_LABELS[action];
+          const fullTitle = shortcutLabel ? `${label} (${shortcutLabel.replace(/mod/gi, "Ctrl/Cmd")})` : label;
+          button.title = fullTitle;
+          button.setAttribute("aria-label", fullTitle);
+          button.innerHTML = action === "special-characters"
+            ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">Ω</span>${label}`
+            : action === "emoji"
+              ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">☺</span>${label}`
+            : action === "source-html"
+              ? `<span class="ollow-special-char-pill-icon" aria-hidden="true">&lt;&gt;</span>${label}`
+            : `<span class="material-symbols-outlined">${icon}</span>${label}`;
+          this.toolbarButtons[action] = button;
+          group.appendChild(button);
+        });
+        row.appendChild(group);
+        if (groupIndex < insertGroups.length - 1) {
+          row.appendChild(this.makeDivider());
+        }
       });
 
       return row;
@@ -5012,6 +5418,7 @@
 
     handleDocumentPointerDown(event) {
       if (!this.wrapper || !this.wrapper.contains(event.target)) {
+        this.closeMenuDropdowns();
         this.closeStylesMenu();
         this.closeFontFamilyMenu();
         this.closeFontSizeMenu();
@@ -5025,6 +5432,7 @@
       }
 
       if (
+        (this.menuBar && this.menuBar.contains(event.target)) ||
         (this.fontFamilyMenu && this.fontFamilyMenu.contains(event.target)) ||
         (this.fontFamilyButton && this.fontFamilyButton.contains(event.target)) ||
         (this.stylesMenu && this.stylesMenu.contains(event.target)) ||
@@ -5040,6 +5448,7 @@
         return;
       }
 
+      this.closeMenuDropdowns();
       this.closeStylesMenu();
       this.closeFontFamilyMenu();
       this.closeFontSizeMenu();
@@ -5097,6 +5506,10 @@
         this.clearFormatPainter();
         return;
       }
+      if (this.activeMenuKey) {
+        this.closeMenuDropdowns();
+        return;
+      }
       if (this.stylesMenu && !this.stylesMenu.hidden) {
         this.closeStylesMenu();
         return;
@@ -5145,6 +5558,7 @@
     }
 
     handleViewportChange() {
+      this.closeMenuDropdowns();
       this.closeThemeMenu();
       this.closeStylesMenu();
       this.closeFontFamilyMenu();
@@ -5250,6 +5664,9 @@
           return;
         case "remove-formatting":
           this.removeFormattingFromSelection();
+          return;
+        case "format-painter":
+          this.handleFormatPainterAction();
           return;
         case "link":
           this.openLinkModal();
@@ -8698,6 +9115,7 @@
           this.toolbarButtons["source-html"].disabled = false;
           this.toolbarButtons["source-html"].classList.add("is-active");
         }
+        this.updateMenuBarState();
         return;
       }
       if (this.wrapper) {
@@ -8796,6 +9214,7 @@
       if (this.toolbarButtons["source-html"]) {
         this.toolbarButtons["source-html"].classList.remove("is-active");
       }
+      this.updateMenuBarState();
     }
 
     updateMetrics() {

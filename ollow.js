@@ -9066,6 +9066,90 @@ ${this.getExportPDFStyles(options)}
 </html>`;
     }
 
+    downloadPrintableHTML(html, filename) {
+      const safeFilename = normalizeHtmlFilename(filename || "olloweditor-export.html");
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = safeFilename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    }
+
+    printHtmlWithIframe(html) {
+      return new Promise((resolve, reject) => {
+        const iframe = document.createElement("iframe");
+        iframe.className = "ollow-print-frame";
+        iframe.setAttribute("title", "OllowEditor PDF export");
+
+        let cleanedUp = false;
+        let printTriggered = false;
+        let finished = false;
+
+        const cleanup = () => {
+          if (cleanedUp) return;
+          cleanedUp = true;
+          window.setTimeout(() => {
+            if (iframe.parentNode) {
+              iframe.parentNode.removeChild(iframe);
+            }
+          }, 1000);
+        };
+
+        const complete = () => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          resolve();
+        };
+
+        const fail = (error) => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          reject(error);
+        };
+
+        const triggerPrint = () => {
+          if (printTriggered) return;
+          printTriggered = true;
+          try {
+            const iframeWindow = iframe.contentWindow;
+            const iframeDocument = iframe.contentDocument || (iframeWindow && iframeWindow.document);
+            if (!iframeWindow || !iframeDocument) {
+              throw new Error("Print iframe is unavailable.");
+            }
+            iframeWindow.onafterprint = () => complete();
+            iframeWindow.focus();
+            iframeWindow.print();
+            window.setTimeout(() => complete(), 1200);
+          } catch (error) {
+            fail(error);
+          }
+        };
+
+        iframe.onload = triggerPrint;
+        document.body.appendChild(iframe);
+
+        try {
+          const iframeWindow = iframe.contentWindow;
+          const iframeDocument = iframe.contentDocument || (iframeWindow && iframeWindow.document);
+          if (!iframeWindow || !iframeDocument) {
+            throw new Error("Print iframe is unavailable.");
+          }
+          iframeDocument.open();
+          iframeDocument.write(html);
+          iframeDocument.close();
+          window.setTimeout(triggerPrint, 180);
+        } catch (error) {
+          fail(error);
+        }
+      });
+    }
+
     exportPDF(options) {
       const config = Object.assign({
         title: "OllowEditor Export",
@@ -9077,13 +9161,6 @@ ${this.getExportPDFStyles(options)}
         includeSourceUrl: false,
       }, options || {});
       const html = this.buildPdfExportDocument(config);
-      const popup = window.open("", "_blank", "noopener,noreferrer");
-      if (!popup) {
-        throw new Error("The browser blocked the print window.");
-      }
-      popup.document.open();
-      popup.document.write(html);
-      popup.document.close();
       const detail = {
         editor: this,
         pageSize: config.pageSize,
@@ -9095,18 +9172,11 @@ ${this.getExportPDFStyles(options)}
         detail,
       }));
       this.emit("exportpdf", Object.assign({ html }, detail));
-      const runPrint = () => {
-        popup.focus();
-        popup.print();
-      };
-      if (popup.document.readyState === "complete") {
-        window.setTimeout(runPrint, 150);
-      } else {
-        popup.addEventListener("load", () => {
-          window.setTimeout(runPrint, 150);
-        }, { once: true });
-      }
-      return popup;
+      return this.printHtmlWithIframe(html).catch((error) => {
+        this.downloadPrintableHTML(html, "olloweditor-export.html");
+        this.showFeedback("Print dialog unavailable. Downloaded printable HTML instead.");
+        throw new Error(error && error.message ? error.message : "Unable to open the print dialog.");
+      });
     }
 
     focus() {

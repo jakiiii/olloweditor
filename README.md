@@ -441,9 +441,11 @@ Settings:
 Behavior:
 
 - PDF export uses the browser print dialog
-- the editor generates a clean print-ready HTML document in a popup window
+- the editor generates a clean print-ready HTML document in a hidden iframe first
+- this avoids popup blockers in most browsers
 - from there the browser's `Save as PDF` flow is used
 - unsafe UI elements and temporary editor state are not included
+- if iframe printing is blocked or fails, OllowEditor downloads a printable HTML file as a fallback
 
 Public API:
 

@@ -7290,26 +7290,42 @@
     }
 
     clearFindReplaceHighlights() {
-      if (!this.content) return;
-      Array.from(this.content.querySelectorAll(`span.${FIND_REPLACE_HIGHLIGHT_CLASS}`)).forEach((span) => {
+      const root = this.getFindReplaceRoot();
+      if (!root) return;
+      Array.from(root.querySelectorAll(`span.${FIND_REPLACE_HIGHLIGHT_CLASS}`)).forEach((span) => {
         this.unwrapFindHighlightSpan(span);
       });
-      this.content.classList.remove("ollow-find-hide-others");
+      root.normalize();
+      root.classList.remove("ollow-find-hide-others");
       if (this.findReplaceState) {
         this.findReplaceState.matches = [];
         this.findReplaceState.currentIndex = -1;
       }
     }
 
+    getFindReplaceRoot() {
+      return this.content || null;
+    }
+
     getFindReplaceTextNodes(includeCode) {
+      const root = this.getFindReplaceRoot();
+      if (!root) return [];
       const nodes = [];
-      const walker = document.createTreeWalker(this.content, NodeFilter.SHOW_TEXT, {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
         acceptNode: (node) => {
           if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
-          const parent = node.parentNode;
+          const parent = node.parentElement || node.parentNode;
           if (!(parent instanceof Element)) return NodeFilter.FILTER_REJECT;
+          if (parent.closest("[contenteditable='false']")) return NodeFilter.FILTER_REJECT;
           if (parent.closest(`.${BOOKMARK_CLASS}`)) return NodeFilter.FILTER_REJECT;
           if (parent.closest(`span.${FIND_REPLACE_HIGHLIGHT_CLASS}`)) return NodeFilter.FILTER_REJECT;
+          if (
+            parent.closest(
+              ".ollow-find-replace-panel, .nw-editor-toolbar, .nw-toolbar-cluster, .ollow-media-toolbar, .ollow-image-resize-toolbar, .ollow-table-toolbar, .ollow-bookmark-toolbar, .nw-modal, .nw-modal-backdrop"
+            )
+          ) {
+            return NodeFilter.FILTER_REJECT;
+          }
           if (!includeCode && parent.closest("figure.ollow-editor-code, pre")) return NodeFilter.FILTER_REJECT;
           return NodeFilter.FILTER_ACCEPT;
         },
@@ -7330,9 +7346,10 @@
     }
 
     updateFindHighlightVisibility() {
-      if (!this.content) return;
+      const root = this.getFindReplaceRoot();
+      if (!root) return;
       const shouldHighlightAll = Boolean(this.findReplaceElements.highlightAll?.checked);
-      this.content.classList.toggle("ollow-find-hide-others", !shouldHighlightAll);
+      root.classList.toggle("ollow-find-hide-others", !shouldHighlightAll);
     }
 
     focusCurrentFindMatch(options) {
@@ -7362,6 +7379,8 @@
 
     refreshFindReplaceResults(options) {
       if (!this.findReplacePanel) return;
+      const root = this.getFindReplaceRoot();
+      if (!root) return;
       const config = Object.assign({
         preserveCurrent: false,
         moveEditorSelection: false,
@@ -7387,21 +7406,32 @@
 
       this.getFindReplaceTextNodes(searchOptions.includeCode).forEach((textNode) => {
         const text = textNode.nodeValue || "";
+        const matches = [];
         regex.lastIndex = 0;
-        const matches = Array.from(text.matchAll(regex));
+        let match = regex.exec(text);
+        while (match) {
+          matches.push({
+            index: match.index || 0,
+            value: match[0],
+          });
+          if (!match[0]) {
+            regex.lastIndex += 1;
+          }
+          match = regex.exec(text);
+        }
         if (!matches.length) return;
 
         const fragment = document.createDocumentFragment();
         let lastIndex = 0;
         matches.forEach((match) => {
           const start = match.index || 0;
-          const end = start + match[0].length;
+          const end = start + match.value.length;
           if (start > lastIndex) {
             fragment.appendChild(document.createTextNode(text.slice(lastIndex, start)));
           }
           const span = document.createElement("span");
           span.className = FIND_REPLACE_HIGHLIGHT_CLASS;
-          span.textContent = match[0];
+          span.textContent = match.value;
           fragment.appendChild(span);
           this.findReplaceState.matches.push(span);
           lastIndex = end;

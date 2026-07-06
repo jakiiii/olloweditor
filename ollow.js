@@ -3199,6 +3199,9 @@
       };
 
       panel.addEventListener("mousedown", (event) => {
+        if (event.target.closest("[data-action]")) {
+          event.preventDefault();
+        }
         event.stopPropagation();
       });
 
@@ -3220,7 +3223,26 @@
         }
       });
 
-      const refresh = () => this.refreshFindReplaceResults({ preserveCurrent: true });
+      const refresh = () => {
+        const cursorStart = this.findReplaceElements.find?.selectionStart ?? null;
+        const cursorEnd = this.findReplaceElements.find?.selectionEnd ?? null;
+        this.refreshFindReplaceResults({
+          preserveCurrent: true,
+          moveEditorSelection: false,
+          preservePanelFocus: true,
+        });
+        if (this.findReplaceElements.find && document.activeElement !== this.findReplaceElements.find) {
+          this.findReplaceElements.find.focus();
+        }
+        if (
+          this.findReplaceElements.find &&
+          cursorStart !== null &&
+          cursorEnd !== null &&
+          typeof this.findReplaceElements.find.setSelectionRange === "function"
+        ) {
+          this.findReplaceElements.find.setSelectionRange(cursorStart, cursorEnd);
+        }
+      };
       this.findReplaceElements.find?.addEventListener("input", refresh);
       this.findReplaceElements.matchCase?.addEventListener("change", refresh);
       this.findReplaceElements.wholeWord?.addEventListener("change", refresh);
@@ -7313,22 +7335,26 @@
       this.content.classList.toggle("ollow-find-hide-others", !shouldHighlightAll);
     }
 
-    focusCurrentFindMatch() {
+    focusCurrentFindMatch(options) {
+      const config = Object.assign({ moveEditorSelection: false }, options || {});
       const matches = this.findReplaceState?.matches || [];
       const current = matches[this.findReplaceState.currentIndex] || null;
       matches.forEach((match) => match.classList.remove(FIND_REPLACE_CURRENT_CLASS));
       if (!current) {
         this.updateFindReplaceCount();
+        this.updateFindHighlightVisibility();
         return;
       }
       current.classList.add(FIND_REPLACE_CURRENT_CLASS);
       current.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
-      const selection = window.getSelection();
-      if (selection) {
-        const range = document.createRange();
-        range.selectNodeContents(current);
-        selection.removeAllRanges();
-        selection.addRange(range);
+      if (config.moveEditorSelection) {
+        const selection = window.getSelection();
+        if (selection) {
+          const range = document.createRange();
+          range.selectNodeContents(current);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
       }
       this.updateFindReplaceCount();
       this.updateFindHighlightVisibility();
@@ -7336,7 +7362,12 @@
 
     refreshFindReplaceResults(options) {
       if (!this.findReplacePanel) return;
-      const config = Object.assign({ preserveCurrent: false }, options || {});
+      const config = Object.assign({
+        preserveCurrent: false,
+        moveEditorSelection: false,
+        preservePanelFocus: false,
+      }, options || {});
+      const panelFocus = config.preservePanelFocus ? this.captureFindReplaceFocus() : null;
       const previousText = config.preserveCurrent && this.findReplaceState?.matches?.[this.findReplaceState.currentIndex]
         ? this.findReplaceState.matches[this.findReplaceState.currentIndex].textContent
         : "";
@@ -7387,32 +7418,39 @@
           : -1;
         this.findReplaceState.currentIndex = preservedIndex >= 0 ? preservedIndex : 0;
       }
-      this.focusCurrentFindMatch();
+      this.focusCurrentFindMatch({ moveEditorSelection: config.moveEditorSelection });
+      if (panelFocus) {
+        this.restoreFindReplaceFocus(panelFocus);
+      }
     }
 
     moveFindMatch(direction) {
       if (!this.findReplaceState?.matches?.length) {
-        this.refreshFindReplaceResults();
+        this.refreshFindReplaceResults({ preservePanelFocus: true, moveEditorSelection: false });
         return;
       }
       const total = this.findReplaceState.matches.length;
       this.findReplaceState.currentIndex = (this.findReplaceState.currentIndex + (direction > 0 ? 1 : -1) + total) % total;
-      this.focusCurrentFindMatch();
+      this.focusCurrentFindMatch({ moveEditorSelection: false });
+      this.findReplaceElements.find?.focus();
     }
 
     replaceCurrentFindMatch() {
       const match = this.findReplaceState?.matches?.[this.findReplaceState.currentIndex];
       if (!match) return;
+      const panelFocus = this.captureFindReplaceFocus();
       const replacement = document.createTextNode(this.getFindReplaceOptions().replace);
       match.replaceWith(replacement);
       this.handleContentChange();
-      this.refreshFindReplaceResults();
+      this.refreshFindReplaceResults({ preservePanelFocus: true, moveEditorSelection: false });
+      this.restoreFindReplaceFocus(panelFocus);
     }
 
     replaceAllFindMatches() {
       const options = this.getFindReplaceOptions();
       const regex = this.buildFindReplaceRegex(options);
       if (!regex) return;
+      const panelFocus = this.captureFindReplaceFocus();
       this.clearFindReplaceHighlights();
       let replacements = 0;
       this.getFindReplaceTextNodes(options.includeCode).forEach((textNode) => {
@@ -7428,7 +7466,8 @@
       if (replacements) {
         this.handleContentChange();
       }
-      this.refreshFindReplaceResults();
+      this.refreshFindReplaceResults({ preservePanelFocus: true, moveEditorSelection: false });
+      this.restoreFindReplaceFocus(panelFocus);
     }
 
     openFindReplacePanel(mode) {
@@ -7443,7 +7482,7 @@
         this.findReplaceElements.find.value = selectedText;
       }
       this.findReplacePanel.hidden = false;
-      this.refreshFindReplaceResults();
+      this.refreshFindReplaceResults({ moveEditorSelection: false, preservePanelFocus: true });
       const target = mode === "replace" ? this.findReplaceElements.replace : this.findReplaceElements.find;
       if (target) {
         window.setTimeout(() => {
@@ -7472,6 +7511,36 @@
         }
       }
       this.findReplaceSelectionBeforeOpen = null;
+    }
+
+    captureFindReplaceFocus() {
+      if (!this.findReplacePanel || !this.findReplacePanel.contains(document.activeElement)) return null;
+      const element = document.activeElement;
+      return {
+        role: element?.dataset?.role || "",
+        action: element?.dataset?.action || "",
+        start: typeof element?.selectionStart === "number" ? element.selectionStart : null,
+        end: typeof element?.selectionEnd === "number" ? element.selectionEnd : null,
+      };
+    }
+
+    restoreFindReplaceFocus(focusState) {
+      if (!focusState || !this.findReplacePanel) return;
+      let target = null;
+      if (focusState.role) {
+        target = this.findReplacePanel.querySelector(`[data-role="${focusState.role}"]`);
+      } else if (focusState.action) {
+        target = this.findReplacePanel.querySelector(`[data-action="${focusState.action}"]`);
+      }
+      if (!target) return;
+      target.focus();
+      if (
+        focusState.start !== null &&
+        focusState.end !== null &&
+        typeof target.setSelectionRange === "function"
+      ) {
+        target.setSelectionRange(focusState.start, focusState.end);
+      }
     }
 
     openLinkModal() {

@@ -355,6 +355,8 @@ Behavior:
 
 - matches are highlighted temporarily in the editor UI
 - the current match gets a stronger highlight
+- typing in the find or replace inputs keeps focus in the panel
+- next and previous update the active match without moving the editor caret
 - code blocks are excluded by default
 - replace and replace all operate on editable text nodes only
 

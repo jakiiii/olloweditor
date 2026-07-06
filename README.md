@@ -29,6 +29,7 @@ Ollow Editor is designed for newsroom-style writing, blog publishing, CMS forms,
 - Source / HTML mode
 - Export HTML
 - Export PDF
+- Import DOCX
 - Bullet and numbered lists
 - Pull quote block
 - Image upload from local machine
@@ -190,6 +191,7 @@ Ollow Editor currently supports:
 | HTML          | Toggle source / HTML mode       |
 | Export HTML   | Export clean editor HTML        |
 | Export PDF    | Open browser print/PDF export   |
+| Import DOCX   | Import a Word .docx file        |
 | Bullet List   | Insert unordered list           |
 | Numbered List | Insert ordered list             |
 | Pull Quote    | Insert styled quote block       |
@@ -465,6 +467,59 @@ editor.exportPDF({
 Limitation:
 
 - OllowEditor does not generate PDF bytes directly; it relies on the browser print / save-as-PDF flow
+
+## Import DOCX
+
+Use the `Import DOCX` toolbar button to import a `.docx` file into the editor.
+
+UI:
+
+- file picker accepting `.docx`
+- mode: `Replace current content` or `Insert at cursor`
+- `Preserve basic formatting`
+- `Import images if supported`
+
+Parser behavior:
+
+- DOCX import uses an optional browser parser such as Mammoth.js
+- if no parser is loaded, the editor shows a clear error instead of failing silently
+- the demo page loads Mammoth.js so the feature works in the standalone demo
+
+Example setup:
+
+```js
+OllowEditor.init("#editor", {
+  docx: {
+    enabled: true
+  }
+});
+```
+
+Supported formatting:
+
+- headings
+- paragraphs
+- bold / italic / underline
+- lists
+- links
+- tables
+- images when supported by the parser
+
+Limitations:
+
+- Word-specific styling is cleaned out
+- unsupported `.doc` files are rejected
+- DOCX import is client-side and depends on the optional parser being available
+
+API:
+
+```js
+editor.importDOCX(file, {
+  mode: "replace",
+  preserveFormatting: true,
+  importImages: true
+});
+```
 
 ## Font Family and Size
 

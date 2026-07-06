@@ -738,6 +738,19 @@
     });
   }
 
+  function readFileAsArrayBuffer(file) {
+    return new Promise((resolve, reject) => {
+      if (!(file instanceof File)) {
+        reject(new Error("A file is required."));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Unable to read file."));
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
   function readImageFileAsDataURL(file) {
     if (!(file instanceof File) || !file.type || !file.type.startsWith("image/")) {
       return Promise.reject(new Error("Please choose an image file."));
@@ -852,6 +865,12 @@
       parent.insertBefore(element.firstChild, element);
     }
     parent.removeChild(element);
+  }
+
+  function rootToHtml(root) {
+    const container = document.createElement("div");
+    container.appendChild(root.cloneNode(true));
+    return container.innerHTML;
   }
 
   function cleanupPastedTextNode(node) {
@@ -2977,6 +2996,7 @@
         ["find-replace", "Find / Replace", "search"],
         ["special-characters", "Ω Symbols", ""],
         ["emoji", "Emoji", ""],
+        ["import-docx", "Import DOCX", "upload_file"],
         ["import-markdown", "Import MD", "upload_file"],
         ["export-markdown", "Export MD", "download"],
         ["export-html", "Export HTML", "download"],
@@ -5276,6 +5296,9 @@
           return;
         case "table":
           this.openTableModal();
+          return;
+        case "import-docx":
+          this.openDocxImportModal();
           return;
         case "import-markdown":
           this.openMarkdownImportModal();
@@ -8146,6 +8169,45 @@
       });
     }
 
+    openDocxImportModal() {
+      this.openModal({
+        title: "Import DOCX",
+        copy: "Choose a .docx file and either replace the editor content or insert the converted content at the current cursor.",
+        confirmLabel: "Import DOCX",
+        fields: [
+          { name: "file", label: "DOCX file", type: "file", accept: ".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+          {
+            name: "mode",
+            label: "Import mode",
+            type: "select",
+            options: [
+              { value: "replace", label: "Replace current content" },
+              { value: "insert", label: "Insert at cursor" },
+            ],
+          },
+          { name: "preserveFormatting", label: "Preserve basic formatting", type: "checkbox", checked: true },
+          { name: "importImages", label: "Import images if supported", type: "checkbox", checked: true },
+          {
+            name: "parserNote",
+            label: "DOCX parser",
+            type: "html",
+            html: '<p class="nw-modal-help">DOCX import uses an optional browser parser such as Mammoth.js. If no parser is loaded, import will show a clear error.</p>',
+          },
+        ],
+        onConfirm: async (values) => {
+          const result = await this.importDOCX(values.file, {
+            mode: values.mode || "replace",
+            preserveFormatting: Boolean(values.preserveFormatting),
+            importImages: Boolean(values.importImages),
+          });
+          if (result && Array.isArray(result.warnings) && result.warnings.length) {
+            this.showFeedback(result.warnings.join(" "));
+          }
+          return null;
+        },
+      });
+    }
+
     openMarkdownExportModal() {
       const markdown = this.exportMarkdown();
       this.openModal({
@@ -8774,6 +8836,175 @@
       return clean;
     }
 
+    isDocxFile(file) {
+      if (!(file instanceof File)) return false;
+      const name = String(file.name || "").toLowerCase();
+      const type = String(file.type || "");
+      return name.endsWith(".docx") || type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    }
+
+    getDocxParser() {
+      if (this.options.docx && this.options.docx.enabled === false) {
+        return null;
+      }
+      return (this.options.docx && this.options.docx.parser) || window.mammoth || null;
+    }
+
+    normalizeImportedDocxHtml(html, options) {
+      const config = Object.assign({
+        preserveFormatting: true,
+        importImages: true,
+      }, options || {});
+      const prepared = cleanPastedHtmlMarkup(html || "");
+      const template = document.createElement("template");
+      template.innerHTML = prepared;
+      const root = template.content;
+
+      Array.from(root.querySelectorAll("h1")).forEach((element) => {
+        const replacement = document.createElement("h2");
+        replacement.innerHTML = element.innerHTML;
+        element.replaceWith(replacement);
+      });
+      Array.from(root.querySelectorAll("h5, h6")).forEach((element) => {
+        const replacement = document.createElement("h4");
+        replacement.innerHTML = element.innerHTML;
+        element.replaceWith(replacement);
+      });
+
+      Array.from(root.querySelectorAll("img")).forEach((image) => {
+        if (!config.importImages) {
+          image.remove();
+          return;
+        }
+        const figure = image.closest("figure.ollow-editor-image");
+        if (figure) return;
+        const wrapper = document.createElement("figure");
+        wrapper.className = "ollow-editor-image";
+        wrapper.setAttribute("data-type", "image");
+        const clone = image.cloneNode(true);
+        clone.removeAttribute("width");
+        clone.removeAttribute("height");
+        clone.setAttribute("alt", clone.getAttribute("alt") || "");
+        const caption = document.createElement("figcaption");
+        wrapper.appendChild(clone);
+        wrapper.appendChild(caption);
+        const parentParagraph = image.parentElement && image.parentElement.tagName === "P" && image.parentElement.childNodes.length === 1
+          ? image.parentElement
+          : null;
+        if (parentParagraph) {
+          parentParagraph.replaceWith(wrapper);
+        } else {
+          image.replaceWith(wrapper);
+        }
+      });
+
+      Array.from(root.querySelectorAll("table")).forEach((table) => {
+        const existingFigure = table.closest("figure.ollow-editor-table");
+        if (existingFigure) return;
+        const figure = document.createElement("figure");
+        figure.className = "ollow-editor-table";
+        figure.setAttribute("data-type", "table");
+        const scroll = document.createElement("div");
+        scroll.className = "ollow-editor-table-scroll";
+        const caption = document.createElement("figcaption");
+        scroll.appendChild(table.cloneNode(true));
+        figure.appendChild(scroll);
+        figure.appendChild(caption);
+        table.replaceWith(figure);
+      });
+
+      if (!config.preserveFormatting) {
+        Array.from(root.querySelectorAll("strong, b, em, i, u, s, strike, sub, sup, code, span")).forEach((element) => {
+          unwrapElement(element);
+        });
+      }
+
+      return rootToHtml(root);
+    }
+
+    async importDOCX(file, options) {
+      const config = Object.assign({
+        mode: "replace",
+        preserveFormatting: true,
+        importImages: true,
+      }, options || {});
+      if (!this.isDocxFile(file)) {
+        throw new Error("Please choose a valid .docx file.");
+      }
+      const parser = this.getDocxParser();
+      if (!parser || typeof parser.convertToHtml !== "function") {
+        throw new Error("DOCX import requires an optional browser DOCX parser such as Mammoth.js.");
+      }
+
+      this.showFeedback("Importing DOCX...");
+      try {
+        const arrayBuffer = await readFileAsArrayBuffer(file);
+        let imagesSkipped = false;
+        const parserOptions = {};
+        if (config.importImages && parser.images && typeof parser.images.inline === "function") {
+          parserOptions.convertImage = parser.images.inline(async (image) => {
+            const base64 = await image.read("base64");
+            return {
+              src: `data:${image.contentType};base64,${base64}`,
+            };
+          });
+        }
+
+        const result = await parser.convertToHtml({ arrayBuffer }, parserOptions);
+        let normalized = this.normalizeImportedDocxHtml(result && result.value ? result.value : "", config);
+        if (!config.importImages && /<img\b/i.test(normalized)) {
+          imagesSkipped = true;
+          normalized = normalized.replace(/<img\b[^>]*>/gi, "");
+        }
+        const clean = normalized ? this.sanitizeHTML(normalized) : "";
+        if (!clean.trim()) {
+          throw new Error("The DOCX file did not produce any supported editor content.");
+        }
+
+        if (config.mode === "insert") {
+          this.insertHTML(clean);
+        } else {
+          this.content.innerHTML = clean;
+          if (this.sourceTextarea) {
+            this.sourceTextarea.value = formatHtmlForSource(clean);
+          }
+          this.closeFindReplacePanel();
+          this.clearMediaSelection();
+          this.clearTableSelection();
+          this.clearBookmarkSelection();
+          this.focus();
+          this.handleContentChange();
+        }
+
+        const warnings = [];
+        if (imagesSkipped) {
+          warnings.push("Images were not imported.");
+        }
+        Array.from((result && result.messages) || []).forEach((message) => {
+          if (!message) return;
+          const text = typeof message === "string" ? message : (message.message || message.value || "");
+          if (text) warnings.push(String(text));
+        });
+
+        const detail = {
+          filename: file.name || "document.docx",
+          mode: config.mode,
+          warnings,
+        };
+        this.textarea.dispatchEvent(new CustomEvent("ollow-editor:import-docx", {
+          bubbles: true,
+          detail: Object.assign({ editor: this }, detail),
+        }));
+        this.emit("importdocx", Object.assign({ editor: this }, detail));
+        return {
+          success: true,
+          warnings,
+        };
+      } finally {
+        this.clearFeedback();
+      }
+    }
+
     exportMarkdown() {
       return exportHtmlToMarkdown(this.getHTML());
     }
@@ -9356,6 +9587,7 @@ ${this.getExportPDFStyles(options)}
       uploadConfig.csrfHeaderValue = config.uploadHeaders["X-CSRFToken"];
     }
     config.upload = uploadConfig;
+    config.docx = Object.assign({ enabled: true }, config.docx || {});
     return config;
   }
 

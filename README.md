@@ -238,6 +238,20 @@ On tablet and mobile widths, the desktop menu bar is hidden and the grouped tool
 
 ---
 
+## Tablet Toolbar
+
+Between roughly `640px` and `1024px`, the toolbar switches to a compact grouped tablet mode:
+
+- the desktop menu bar is hidden
+- primary controls stay visible for text editing, links, lists, alignment, and common insert actions
+- less-used insert and export actions move into a compact `More` menu
+- toolbar groups become framed touch targets instead of one long strip
+- rows wrap cleanly instead of forcing page-level horizontal overflow
+
+At narrower mobile widths, the editor falls back to the existing horizontal-scroll toolbar behavior.
+
+---
+
 ## Keyboard Shortcuts
 
 Shortcuts run only while the editor body is focused. They do not fire inside modal inputs, textareas, selects, file pickers, or other page form fields.

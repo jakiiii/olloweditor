@@ -227,6 +227,66 @@
   flex-wrap: wrap;
 }
 
+.ollow-tablet-overflow {
+  position: relative;
+  display: none;
+}
+
+.ollow-tablet-overflow-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 10030;
+  min-width: 240px;
+  max-width: min(320px, calc(100vw - 40px));
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid var(--nw-border);
+  border-radius: 12px;
+  background: var(--ollow-surface);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+}
+
+.ollow-tablet-overflow-heading {
+  padding: 2px 6px 6px;
+  color: var(--ollow-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.ollow-tablet-overflow-separator {
+  height: 1px;
+  margin: 8px 2px;
+  background: var(--nw-border);
+}
+
+.ollow-tablet-overflow-item {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 9px 10px;
+  color: var(--ollow-text-strong);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.ollow-tablet-overflow-item:hover,
+.ollow-tablet-overflow-item:focus-visible,
+.ollow-tablet-overflow-item.is-active {
+  background: var(--ollow-surface-muted);
+  color: var(--ollow-text-strong);
+  outline: none;
+}
+
 .nw-toolbar-group--theme {
   margin-left: auto;
 }
@@ -2724,6 +2784,89 @@
     padding: 12px 14px;
   }
 
+  .nw-toolbar-row,
+  .nw-insert-row {
+    align-items: flex-start;
+    gap: 6px;
+    overflow-x: clip;
+  }
+
+  .nw-toolbar-divider {
+    display: none;
+  }
+
+  .nw-toolbar-group,
+  .ollow-typography-controls,
+  .nw-insert-group,
+  .ollow-tablet-overflow {
+    min-height: 46px;
+    padding: 5px 6px;
+    border: 1px solid var(--nw-border);
+    border-radius: 12px;
+    background: var(--ollow-surface);
+  }
+
+  .nw-toolbar-group--theme {
+    margin-left: 0;
+  }
+
+  .nw-toolbar-button,
+  .ollow-theme-toggle,
+  .ollow-size-step,
+  .ollow-styles-button,
+  .ollow-text-color-btn,
+  .ollow-highlight-btn,
+  .ollow-tablet-overflow-button {
+    min-width: 38px;
+    min-height: 38px;
+  }
+
+  .nw-toolbar-select {
+    min-width: 118px;
+    min-height: 38px;
+  }
+
+  .ollow-font-button {
+    min-width: 146px;
+    max-width: 176px;
+    height: 38px;
+  }
+
+  .ollow-styles-button {
+    min-width: 132px;
+    max-width: 172px;
+    height: 38px;
+  }
+
+  .ollow-size-input {
+    width: 56px;
+    height: 38px;
+  }
+
+  .nw-insert-pill {
+    min-height: 38px;
+    padding: 7px 11px;
+  }
+
+  .nw-insert-pill[data-tablet-hidden="true"] {
+    display: none;
+  }
+
+  .ollow-tablet-overflow {
+    display: inline-flex;
+  }
+
+  .ollow-font-menu,
+  .ollow-size-menu,
+  .ollow-styles-menu,
+  .ollow-text-color-popover,
+  .ollow-highlight-popover,
+  .ollow-theme-menu,
+  .ollow-tablet-overflow-menu {
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+  }
+
   .nw-editor-surface {
     min-height: 480px;
     padding: 30px 28px;
@@ -2771,12 +2914,9 @@
 
   .nw-toolbar-row,
   .nw-insert-row {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
+    flex-wrap: wrap;
+    overflow: visible;
     padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
   }
 
   .nw-toolbar-row::-webkit-scrollbar,
@@ -2794,17 +2934,14 @@
   }
 
   .nw-toolbar-group,
-  .ollow-typography-controls {
-    flex: 0 0 auto;
+  .ollow-typography-controls,
+  .nw-insert-group,
+  .ollow-tablet-overflow {
+    flex: 0 1 auto;
   }
 
   .nw-toolbar-group--theme {
     margin-left: 0;
-  }
-
-  .nw-toolbar-divider {
-    flex: 0 0 auto;
-    height: 22px;
   }
 
   .nw-toolbar-button,
@@ -2977,7 +3114,31 @@
 
   .nw-toolbar-row,
   .nw-insert-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
     gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .nw-toolbar-group,
+  .ollow-typography-controls,
+  .nw-insert-group {
+    min-height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    flex: 0 0 auto;
+  }
+
+  .nw-insert-pill[data-tablet-hidden="true"] {
+    display: inline-flex;
+  }
+
+  .ollow-tablet-overflow {
+    display: none;
   }
 
   .nw-toolbar-button .material-symbols-outlined {

@@ -2222,6 +2222,10 @@
       this.menuButtons = {};
       this.menuDropdowns = {};
       this.activeMenuKey = "";
+      this.tabletOverflowControl = null;
+      this.tabletOverflowButton = null;
+      this.tabletOverflowMenu = null;
+      this.tabletOverflowItems = {};
       this.headingSelect = null;
       this.formatPainterButton = null;
       this.formatPainterState = null;
@@ -2638,6 +2642,156 @@
         if (disabled && this.activeMenuKey === key) {
           this.closeMenuDropdowns();
         }
+      });
+    }
+
+    buildTabletOverflowControl() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "nw-toolbar-group nw-insert-group ollow-tablet-overflow";
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "nw-insert-pill ollow-tablet-overflow-button";
+      button.setAttribute("aria-haspopup", "menu");
+      button.setAttribute("aria-expanded", "false");
+      button.title = "More tools";
+      button.setAttribute("aria-label", "More tools");
+      button.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">more_horiz</span>More';
+      button.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        this.saveSelection();
+      });
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        this.toggleTabletOverflowMenu();
+      });
+
+      const menu = document.createElement("div");
+      menu.className = "ollow-tablet-overflow-menu";
+      menu.hidden = true;
+      menu.setAttribute("role", "menu");
+      menu.setAttribute("aria-label", "More editor tools");
+      menu.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      menu.addEventListener("click", (event) => {
+        const actionButton = event.target.closest("[data-overflow-action]");
+        if (!actionButton) return;
+        event.preventDefault();
+        this.closeTabletOverflowMenu();
+        this.handleAction(actionButton.dataset.overflowAction);
+      });
+
+      const overflowSections = [
+        {
+          label: "Insert",
+          items: [
+            ["pull-quote", "Pull Quote", "format_quote"],
+            ["bookmark", "Bookmark", "bookmark"],
+            ["related", "Related", "article"],
+            ["fact-box", "Fact Box", "fact_check"],
+            ["attachment", "Attachment", "attach_file"],
+          ],
+        },
+        {
+          label: "Tools",
+          items: [
+            ["source-html", "HTML mode", ""],
+            ["find-replace", "Find / Replace", "search"],
+            ["special-characters", "Symbols", ""],
+            ["emoji", "Emoji", ""],
+          ],
+        },
+        {
+          label: "Import / Export",
+          items: [
+            ["import-docx", "Import DOCX", "upload_file"],
+            ["import-markdown", "Import Markdown", "upload_file"],
+            ["export-markdown", "Export Markdown", "download"],
+            ["export-html", "Export HTML", "download"],
+            ["export-pdf", "Export PDF", "print"],
+            ["export-docx", "Export DOCX", "download"],
+          ],
+        },
+      ];
+
+      overflowSections.forEach((section, sectionIndex) => {
+        if (sectionIndex > 0) {
+          const separator = document.createElement("div");
+          separator.className = "ollow-tablet-overflow-separator";
+          separator.setAttribute("role", "separator");
+          menu.appendChild(separator);
+        }
+
+        const heading = document.createElement("div");
+        heading.className = "ollow-tablet-overflow-heading";
+        heading.textContent = section.label;
+        menu.appendChild(heading);
+
+        section.items.forEach(([action, label, icon]) => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "ollow-tablet-overflow-item";
+          item.dataset.overflowAction = action;
+          item.setAttribute("role", "menuitem");
+          item.innerHTML = icon
+            ? `<span class="material-symbols-outlined" aria-hidden="true">${icon}</span><span>${label}</span>`
+            : `<span class="ollow-special-char-pill-icon" aria-hidden="true">${action === "emoji" ? "☺" : action === "special-characters" ? "Ω" : "&lt;&gt;"}</span><span>${label}</span>`;
+          menu.appendChild(item);
+          this.tabletOverflowItems[action] = item;
+        });
+      });
+
+      wrapper.appendChild(button);
+      wrapper.appendChild(menu);
+      this.tabletOverflowControl = wrapper;
+      this.tabletOverflowButton = button;
+      this.tabletOverflowMenu = menu;
+      return wrapper;
+    }
+
+    openTabletOverflowMenu() {
+      if (!this.tabletOverflowMenu || !this.tabletOverflowButton) return;
+      this.closeMenuDropdowns();
+      this.closeStylesMenu();
+      this.closeFontFamilyMenu();
+      this.closeFontSizeMenu();
+      this.closeTextColorPopover();
+      this.closeHighlightPopover();
+      this.closeThemeMenu();
+      this.tabletOverflowMenu.hidden = false;
+      this.tabletOverflowButton.setAttribute("aria-expanded", "true");
+      this.tabletOverflowButton.classList.add("is-active");
+    }
+
+    closeTabletOverflowMenu() {
+      if (!this.tabletOverflowMenu || !this.tabletOverflowButton) return;
+      this.tabletOverflowMenu.hidden = true;
+      this.tabletOverflowButton.setAttribute("aria-expanded", "false");
+      this.tabletOverflowButton.classList.remove("is-active");
+    }
+
+    toggleTabletOverflowMenu() {
+      if (!this.tabletOverflowMenu) return;
+      if (this.tabletOverflowMenu.hidden) {
+        this.openTabletOverflowMenu();
+      } else {
+        this.closeTabletOverflowMenu();
+      }
+    }
+
+    updateTabletOverflowState(options) {
+      const config = options || {};
+      if (!this.tabletOverflowItems) return;
+      Object.entries(this.tabletOverflowItems).forEach(([action, button]) => {
+        const isActive = action === "source-html"
+          ? Boolean(config.sourceMode)
+          : action === "pull-quote"
+            ? Boolean(config.pullQuote)
+            : action === "bookmark"
+              ? Boolean(config.bookmark)
+              : false;
+        button.classList.toggle("is-active", isActive);
       });
     }
 
@@ -3295,6 +3449,7 @@
 
     openStylesMenu() {
       if (!this.stylesMenu || !this.stylesButton) return;
+      this.closeTabletOverflowMenu();
       this.closeThemeMenu();
       this.closeFontFamilyMenu();
       this.closeFontSizeMenu();
@@ -3375,6 +3530,23 @@
       row.className = "nw-insert-row";
       this.toolbarRows.insert = row;
       this.toolbarGroups.insert = row;
+      const tabletOverflowActions = new Set([
+        "pull-quote",
+        "bookmark",
+        "source-html",
+        "find-replace",
+        "special-characters",
+        "emoji",
+        "import-docx",
+        "import-markdown",
+        "export-markdown",
+        "export-html",
+        "export-pdf",
+        "export-docx",
+        "related",
+        "fact-box",
+        "attachment",
+      ]);
 
       const insertGroups = [
         {
@@ -3422,6 +3594,9 @@
           button.type = "button";
           button.className = `nw-insert-pill${action === "bookmark" ? " ollow-bookmark-btn" : ""}`;
           button.dataset.action = action;
+          if (tabletOverflowActions.has(action)) {
+            button.dataset.tabletHidden = "true";
+          }
           button.setAttribute("aria-pressed", "false");
           const shortcutLabel = TOOLBAR_SHORTCUT_LABELS[action];
           const fullTitle = shortcutLabel ? `${label} (${shortcutLabel.replace(/mod/gi, "Ctrl/Cmd")})` : label;
@@ -3442,6 +3617,9 @@
           row.appendChild(this.makeDivider());
         }
       });
+
+      row.appendChild(this.makeDivider());
+      row.appendChild(this.buildTabletOverflowControl());
 
       return row;
     }
@@ -3934,6 +4112,7 @@
 
     openThemeMenu() {
       if (!this.themeMenu || !this.themeToggleButton) return;
+      this.closeTabletOverflowMenu();
       this.updateThemeControlState();
       this.themeMenu.hidden = false;
       this.themeToggleButton.setAttribute("aria-expanded", "true");
@@ -3977,6 +4156,7 @@
 
     openFontFamilyMenu() {
       if (!this.fontFamilyMenu || !this.fontFamilyButton) return;
+      this.closeTabletOverflowMenu();
       this.closeThemeMenu();
       this.closeStylesMenu();
       this.closeFontSizeMenu();
@@ -4005,6 +4185,7 @@
 
     openFontSizeMenu() {
       if (!this.fontSizeMenu) return;
+      this.closeTabletOverflowMenu();
       this.closeThemeMenu();
       this.closeStylesMenu();
       this.closeFontFamilyMenu();
@@ -4190,6 +4371,7 @@
 
     openTextColorPopover() {
       if (!this.textColorPopover || !this.textColorButton) return;
+      this.closeTabletOverflowMenu();
       this.closeThemeMenu();
       this.closeStylesMenu();
       this.closeFontFamilyMenu();
@@ -4288,6 +4470,7 @@
 
     openHighlightPopover() {
       if (!this.highlightPopover || !this.highlightButton) return;
+      this.closeTabletOverflowMenu();
       this.closeThemeMenu();
       this.closeStylesMenu();
       this.closeFontFamilyMenu();
@@ -5419,6 +5602,7 @@
     handleDocumentPointerDown(event) {
       if (!this.wrapper || !this.wrapper.contains(event.target)) {
         this.closeMenuDropdowns();
+        this.closeTabletOverflowMenu();
         this.closeStylesMenu();
         this.closeFontFamilyMenu();
         this.closeFontSizeMenu();
@@ -5433,6 +5617,7 @@
 
       if (
         (this.menuBar && this.menuBar.contains(event.target)) ||
+        (this.tabletOverflowControl && this.tabletOverflowControl.contains(event.target)) ||
         (this.fontFamilyMenu && this.fontFamilyMenu.contains(event.target)) ||
         (this.fontFamilyButton && this.fontFamilyButton.contains(event.target)) ||
         (this.stylesMenu && this.stylesMenu.contains(event.target)) ||
@@ -5449,6 +5634,7 @@
       }
 
       this.closeMenuDropdowns();
+      this.closeTabletOverflowMenu();
       this.closeStylesMenu();
       this.closeFontFamilyMenu();
       this.closeFontSizeMenu();
@@ -5510,6 +5696,10 @@
         this.closeMenuDropdowns();
         return;
       }
+      if (this.tabletOverflowMenu && !this.tabletOverflowMenu.hidden) {
+        this.closeTabletOverflowMenu();
+        return;
+      }
       if (this.stylesMenu && !this.stylesMenu.hidden) {
         this.closeStylesMenu();
         return;
@@ -5559,6 +5749,7 @@
 
     handleViewportChange() {
       this.closeMenuDropdowns();
+      this.closeTabletOverflowMenu();
       this.closeThemeMenu();
       this.closeStylesMenu();
       this.closeFontFamilyMenu();
@@ -9116,6 +9307,7 @@
           this.toolbarButtons["source-html"].classList.add("is-active");
         }
         this.updateMenuBarState();
+        this.updateTabletOverflowState({ sourceMode: true });
         return;
       }
       if (this.wrapper) {
@@ -9215,6 +9407,11 @@
         this.toolbarButtons["source-html"].classList.remove("is-active");
       }
       this.updateMenuBarState();
+      this.updateTabletOverflowState({
+        sourceMode: false,
+        pullQuote: isInsidePullQuote,
+        bookmark: isInsideBookmark,
+      });
     }
 
     updateMetrics() {

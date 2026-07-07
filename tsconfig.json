@@ -7,15 +7,20 @@
     "allowJs": true,
     "checkJs": false,
     "strict": false,
-    "declaration": false,
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "outDir": "./dist/types",
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": false
   },
   "include": [
     "src/**/*.js",
     "src/**/*.jsx",
-    "src/types/**/*.d.ts",
-    "examples/**/*.ts",
-    "examples/**/*.tsx"
+    "src/types/**/*.d.ts"
+  ],
+  "exclude": [
+    "examples",
+    "dist",
+    "node_modules"
   ]
 }

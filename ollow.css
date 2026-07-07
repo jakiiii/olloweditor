@@ -857,7 +857,7 @@
   left: 0;
   z-index: 10000;
   min-width: 240px;
-  max-height: 320px;
+  max-height: min(420px, calc(100vh - 140px));
   overflow: auto;
   padding: 8px;
   border: 1px solid var(--nw-border);
@@ -1838,74 +1838,6 @@
 .nw-editor-content a {
   color: var(--ollow-link);
   text-decoration: underline;
-}
-
-.nw-editor-content .ollow-font-arial {
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-}
-
-.nw-editor-content .ollow-font-times-new-roman {
-  font-family: "Times New Roman", Times, serif;
-}
-
-.nw-editor-content .ollow-font-georgia {
-  font-family: Georgia, "Times New Roman", serif;
-}
-
-.nw-editor-content .ollow-font-verdana {
-  font-family: Verdana, Geneva, sans-serif;
-}
-
-.nw-editor-content .ollow-font-tahoma {
-  font-family: Tahoma, Geneva, sans-serif;
-}
-
-.nw-editor-content .ollow-font-trebuchet-ms {
-  font-family: "Trebuchet MS", Helvetica, sans-serif;
-}
-
-.nw-editor-content .ollow-font-roboto {
-  font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-.nw-editor-content .ollow-font-merriweather {
-  font-family: Merriweather, Georgia, serif;
-}
-
-.nw-editor-content .ollow-font-playfair-display {
-  font-family: "Playfair Display", Georgia, serif;
-}
-
-.nw-editor-content .ollow-font-lora {
-  font-family: Lora, Georgia, serif;
-}
-
-.nw-editor-content .ollow-font-montserrat {
-  font-family: Montserrat, Arial, sans-serif;
-}
-
-.nw-editor-content .ollow-font-nunito {
-  font-family: Nunito, Arial, sans-serif;
-}
-
-.nw-editor-content .ollow-font-oswald {
-  font-family: Oswald, Arial, sans-serif;
-}
-
-.nw-editor-content .ollow-font-courier-new {
-  font-family: "Courier New", Courier, monospace;
-}
-
-.nw-editor-content .ollow-font-roboto-mono {
-  font-family: "Roboto Mono", "Courier New", monospace;
-}
-
-.nw-editor-content .ollow-font-eb-garamond {
-  font-family: "EB Garamond", Georgia, serif;
-}
-
-.nw-editor-content .ollow-font-spectral {
-  font-family: Spectral, Georgia, serif;
 }
 
 .nw-editor-content .ollow-font-size-8 { font-size: 8px; }

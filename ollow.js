@@ -11,17 +11,81 @@
   const FIND_REPLACE_HIGHLIGHT_CLASS = "ollow-find-highlight";
   const FIND_REPLACE_CURRENT_CLASS = "ollow-find-highlight-current";
   const DEFAULT_FONT_FAMILY_KEY = "arial";
+  const FONT_CLASS_STYLE_ELEMENT_ID = "ollow-font-family-classes";
   const DEFAULT_FONT_SIZE = 16;
   const DEFAULT_TEXT_COLOR = "#111827";
   const DEFAULT_HIGHLIGHT_COLOR = "#fde68a";
   const FONT_FAMILIES = [
+    { key: "aptos", label: "Aptos", stack: 'Aptos, Calibri, "Segoe UI", Arial, sans-serif' },
+    { key: "aptos-display", label: "Aptos Display", stack: '"Aptos Display", Aptos, Calibri, "Segoe UI", Arial, sans-serif' },
+    { key: "aptos-mono", label: "Aptos Mono", stack: '"Aptos Mono", Consolas, "Courier New", monospace' },
+    { key: "aptos-serif", label: "Aptos Serif", stack: '"Aptos Serif", Cambria, Georgia, serif' },
     { key: "arial", label: "Arial", stack: 'Arial, "Helvetica Neue", Helvetica, sans-serif' },
+    { key: "arial-black", label: "Arial Black", stack: '"Arial Black", Arial, Helvetica, sans-serif' },
+    { key: "arial-narrow", label: "Arial Narrow", stack: '"Arial Narrow", Arial, Helvetica, sans-serif' },
+    { key: "arial-nova", label: "Arial Nova", stack: '"Arial Nova", Arial, "Helvetica Neue", Helvetica, sans-serif' },
+    { key: "bahnschrift", label: "Bahnschrift", stack: 'Bahnschrift, "Segoe UI", Arial, sans-serif' },
+    { key: "calibri", label: "Calibri", stack: 'Calibri, "Segoe UI", Arial, sans-serif' },
+    { key: "calibri-light", label: "Calibri Light", stack: '"Calibri Light", Calibri, "Segoe UI", Arial, sans-serif' },
+    { key: "cambria", label: "Cambria", stack: 'Cambria, Georgia, "Times New Roman", serif' },
+    { key: "cambria-math", label: "Cambria Math", stack: '"Cambria Math", Cambria, Georgia, serif' },
+    { key: "candara", label: "Candara", stack: 'Candara, Calibri, "Segoe UI", Arial, sans-serif' },
+    { key: "century-gothic", label: "Century Gothic", stack: '"Century Gothic", CenturyGothic, AppleGothic, sans-serif' },
+    { key: "comic-sans-ms", label: "Comic Sans MS", stack: '"Comic Sans MS", "Comic Sans", cursive' },
+    { key: "consolas", label: "Consolas", stack: 'Consolas, "Courier New", Courier, monospace' },
+    { key: "constantia", label: "Constantia", stack: 'Constantia, Georgia, "Times New Roman", serif' },
+    { key: "corbel", label: "Corbel", stack: 'Corbel, Calibri, "Segoe UI", Arial, sans-serif' },
     { key: "times-new-roman", label: "Times New Roman", stack: '"Times New Roman", Times, serif' },
     { key: "georgia", label: "Georgia", stack: 'Georgia, "Times New Roman", serif' },
     { key: "verdana", label: "Verdana", stack: 'Verdana, Geneva, sans-serif' },
     { key: "tahoma", label: "Tahoma", stack: 'Tahoma, Geneva, sans-serif' },
     { key: "trebuchet-ms", label: "Trebuchet MS", stack: '"Trebuchet MS", Helvetica, sans-serif' },
     { key: "courier-new", label: "Courier New", stack: '"Courier New", Courier, monospace' },
+    { key: "ebrima", label: "Ebrima", stack: 'Ebrima, "Segoe UI", Arial, sans-serif' },
+    { key: "franklin-gothic-medium", label: "Franklin Gothic Medium", stack: '"Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif' },
+    { key: "gabriola", label: "Gabriola", stack: 'Gabriola, Georgia, serif' },
+    { key: "gadugi", label: "Gadugi", stack: 'Gadugi, "Segoe UI", Arial, sans-serif' },
+    { key: "impact", label: "Impact", stack: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif' },
+    { key: "ink-free", label: "Ink Free", stack: '"Ink Free", "Comic Sans MS", cursive' },
+    { key: "javanese-text", label: "Javanese Text", stack: '"Javanese Text", "Segoe UI", Arial, sans-serif' },
+    { key: "leelawadee-ui", label: "Leelawadee UI", stack: '"Leelawadee UI", "Segoe UI", Arial, sans-serif' },
+    { key: "lucida-console", label: "Lucida Console", stack: '"Lucida Console", Monaco, monospace' },
+    { key: "lucida-sans-unicode", label: "Lucida Sans Unicode", stack: '"Lucida Sans Unicode", "Lucida Grande", Arial, sans-serif' },
+    { key: "malgun-gothic", label: "Malgun Gothic", stack: '"Malgun Gothic", "Segoe UI", Arial, sans-serif' },
+    { key: "microsoft-himalaya", label: "Microsoft Himalaya", stack: '"Microsoft Himalaya", "Segoe UI", Arial, sans-serif' },
+    { key: "microsoft-jhenghei", label: "Microsoft JhengHei", stack: '"Microsoft JhengHei", "Segoe UI", Arial, sans-serif' },
+    { key: "microsoft-new-tai-lue", label: "Microsoft New Tai Lue", stack: '"Microsoft New Tai Lue", "Segoe UI", Arial, sans-serif' },
+    { key: "microsoft-phagspa", label: "Microsoft PhagsPa", stack: '"Microsoft PhagsPa", "Segoe UI", Arial, sans-serif' },
+    { key: "microsoft-sans-serif", label: "Microsoft Sans Serif", stack: '"Microsoft Sans Serif", Arial, sans-serif' },
+    { key: "microsoft-tai-le", label: "Microsoft Tai Le", stack: '"Microsoft Tai Le", "Segoe UI", Arial, sans-serif' },
+    { key: "microsoft-yahei", label: "Microsoft YaHei", stack: '"Microsoft YaHei", "Segoe UI", Arial, sans-serif' },
+    { key: "microsoft-yi-baiti", label: "Microsoft Yi Baiti", stack: '"Microsoft Yi Baiti", "Segoe UI", Arial, sans-serif' },
+    { key: "mingliu", label: "MingLiU", stack: 'MingLiU, PMingLiU, serif' },
+    { key: "mongolian-baiti", label: "Mongolian Baiti", stack: '"Mongolian Baiti", "Segoe UI", Arial, sans-serif' },
+    { key: "ms-gothic", label: "MS Gothic", stack: '"MS Gothic", "Yu Gothic", sans-serif' },
+    { key: "ms-mincho", label: "MS Mincho", stack: '"MS Mincho", "Yu Mincho", serif' },
+    { key: "ms-pgothic", label: "MS PGothic", stack: '"MS PGothic", "MS Gothic", sans-serif' },
+    { key: "ms-pmincho", label: "MS PMincho", stack: '"MS PMincho", "MS Mincho", serif' },
+    { key: "mv-boli", label: "MV Boli", stack: '"MV Boli", "Segoe UI", Arial, sans-serif' },
+    { key: "myanmar-text", label: "Myanmar Text", stack: '"Myanmar Text", "Segoe UI", Arial, sans-serif' },
+    { key: "nirmala-ui", label: "Nirmala UI", stack: '"Nirmala UI", "Segoe UI", Arial, sans-serif' },
+    { key: "palatino-linotype", label: "Palatino Linotype", stack: '"Palatino Linotype", Palatino, Georgia, serif' },
+    { key: "segoe-fluent-icons", label: "Segoe Fluent Icons", stack: '"Segoe Fluent Icons", "Segoe MDL2 Assets", sans-serif' },
+    { key: "segoe-mdl2-assets", label: "Segoe MDL2 Assets", stack: '"Segoe MDL2 Assets", "Segoe Fluent Icons", sans-serif' },
+    { key: "segoe-print", label: "Segoe Print", stack: '"Segoe Print", "Comic Sans MS", cursive' },
+    { key: "segoe-script", label: "Segoe Script", stack: '"Segoe Script", "Comic Sans MS", cursive' },
+    { key: "segoe-ui", label: "Segoe UI", stack: '"Segoe UI", Arial, sans-serif' },
+    { key: "segoe-ui-emoji", label: "Segoe UI Emoji", stack: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif' },
+    { key: "segoe-ui-historic", label: "Segoe UI Historic", stack: '"Segoe UI Historic", "Segoe UI", Arial, sans-serif' },
+    { key: "segoe-ui-symbol", label: "Segoe UI Symbol", stack: '"Segoe UI Symbol", "Segoe UI", Arial, sans-serif' },
+    { key: "segoe-ui-variable", label: "Segoe UI Variable", stack: '"Segoe UI Variable", "Segoe UI", Arial, sans-serif' },
+    { key: "simsun", label: "SimSun", stack: 'SimSun, "Microsoft YaHei", serif' },
+    { key: "sitka", label: "Sitka", stack: 'Sitka, Cambria, Georgia, serif' },
+    { key: "sylfaen", label: "Sylfaen", stack: 'Sylfaen, Georgia, serif' },
+    { key: "symbol", label: "Symbol", stack: 'Symbol, serif' },
+    { key: "webdings", label: "Webdings", stack: 'Webdings, sans-serif' },
+    { key: "wingdings", label: "Wingdings", stack: 'Wingdings, sans-serif' },
+    { key: "yu-gothic", label: "Yu Gothic", stack: '"Yu Gothic", "Yu Gothic UI", "Meiryo", sans-serif' },
     { key: "roboto", label: "Roboto", stack: 'Roboto, "Helvetica Neue", Arial, sans-serif' },
     { key: "merriweather", label: "Merriweather", stack: 'Merriweather, Georgia, serif' },
     { key: "playfair-display", label: "Playfair Display", stack: '"Playfair Display", Georgia, serif' },
@@ -33,7 +97,7 @@
     { key: "eb-garamond", label: "EB Garamond", stack: '"EB Garamond", Georgia, serif' },
     { key: "spectral", label: "Spectral", stack: 'Spectral, Georgia, serif' },
   ];
-  const DEFAULT_RECENT_FONT_KEYS = ["arial", "times-new-roman", "georgia", "verdana", "roboto"];
+  const DEFAULT_RECENT_FONT_KEYS = ["aptos", "calibri", "cambria", "segoe-ui", "arial"];
   const FONT_SIZE_PRESETS = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 48, 60, 72, 96];
   const TEXT_COLOR_PRESETS = [
     { key: "black", label: "Black", hex: "#000000", section: "standard" },
@@ -935,6 +999,21 @@
           || (className.startsWith(HIGHLIGHT_CLASS_PREFIX) && HIGHLIGHT_COLOR_LOOKUP.has(className.slice(HIGHLIGHT_CLASS_PREFIX.length)))
         );
       });
+  }
+
+  function buildEditorFontFamilyCss(scopeSelector) {
+    const scope = scopeSelector || ".nw-editor-content";
+    return FONT_FAMILIES.map((font) => `${scope} .${getFontFamilyClassName(font.key)} { font-family: ${font.stack}; }`).join("\n");
+  }
+
+  function ensureEditorFontFamilyStyles() {
+    if (document.getElementById(FONT_CLASS_STYLE_ELEMENT_ID)) {
+      return;
+    }
+    const style = document.createElement("style");
+    style.id = FONT_CLASS_STYLE_ELEMENT_ID;
+    style.textContent = buildEditorFontFamilyCss(".nw-editor-content");
+    document.head.appendChild(style);
   }
 
   function getSafeUploadCredentials(uploadUrl, configuredCredentials) {
@@ -2570,6 +2649,7 @@
     }
 
     init() {
+      ensureEditorFontFamilyStyles();
       this.build();
       this.updateResponsiveToolbarMode();
       this.hideSource();
@@ -11247,7 +11327,7 @@ pre { white-space: pre-wrap; word-break: break-word; }
     }
 
     getExportHTMLStyles() {
-      const fontStyles = FONT_FAMILIES.map((font) => `.ollow-exported-content .ollow-font-${font.key} { font-family: ${font.stack}; }`).join("\n");
+      const fontStyles = buildEditorFontFamilyCss(".ollow-exported-content");
       const fontSizeStyles = FONT_SIZE_PRESETS.map((size) => `.ollow-exported-content .ollow-font-size-${size} { font-size: ${size}px; }`).join("\n");
       const newsroomTextColorStyles = TEXT_COLOR_PRESETS
         .filter((color) => !["black", "gray", "red", "orange", "yellow", "green", "blue", "purple", "white"].includes(color.key))

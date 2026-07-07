@@ -682,15 +682,23 @@ Font size behavior:
 - values are clamped between `8` and `96`
 - non-preset values are normalized to the nearest preset size
 
-Supported font families:
+Supported font families use a Microsoft / Office-style registry. The list includes:
 
-- Arial
-- Times New Roman
-- Georgia
-- Verdana
-- Tahoma
-- Trebuchet MS
-- Courier New
+- Aptos, Aptos Display, Aptos Mono, Aptos Serif
+- Arial, Arial Black, Arial Narrow, Arial Nova
+- Bahnschrift, Calibri, Calibri Light, Cambria, Cambria Math, Candara, Century Gothic
+- Comic Sans MS, Consolas, Constantia, Corbel, Courier New
+- Ebrima, Franklin Gothic Medium, Gabriola, Gadugi, Georgia, Impact, Ink Free
+- Javanese Text, Leelawadee UI, Lucida Console, Lucida Sans Unicode
+- Malgun Gothic, MingLiU, Mongolian Baiti, MS Gothic, MS Mincho, MS PGothic, MS PMincho
+- Microsoft Himalaya, Microsoft JhengHei, Microsoft New Tai Lue, Microsoft PhagsPa, Microsoft Sans Serif, Microsoft Tai Le, Microsoft YaHei, Microsoft Yi Baiti
+- MV Boli, Myanmar Text, Nirmala UI, Palatino Linotype
+- Segoe Fluent Icons, Segoe MDL2 Assets, Segoe Print, Segoe Script, Segoe UI, Segoe UI Emoji, Segoe UI Historic, Segoe UI Symbol, Segoe UI Variable
+- SimSun, Sitka, Sylfaen, Symbol
+- Tahoma, Times New Roman, Trebuchet MS, Verdana, Webdings, Wingdings, Yu Gothic
+
+The previous editorial / web-safe fonts remain available as well:
+
 - Roboto
 - Roboto Mono
 - Montserrat
@@ -751,6 +759,14 @@ Typography sanitizer notes:
 - unsafe inline typography styles are removed
 - unknown font-family classes are stripped during sanitization
 - unknown font-size classes are stripped during sanitization
+
+Example saved HTML:
+
+```html
+<span class="ollow-font-calibri">Selected text</span>
+```
+
+Font classes come from the editor font registry. Arbitrary inline `font-family` styles are not preserved. Fonts render only when they are installed on the user’s system or otherwise available in the browser environment.
 
 Font dropdown notes:
 

@@ -2273,7 +2273,7 @@
       this.tabletOverflowEmptyState = null;
       this.tabletOverflowItems = {};
       this.overflowMenuAnchor = null;
-      this.boundOverflowScrollClose = this.closeOverflowMenu.bind(this);
+      this.boundOverflowScrollClose = this.handleOverflowScroll.bind(this);
       this.mobileToolbar = null;
       this.mobileToolbarButtons = {};
       this.actionDrawer = null;
@@ -3038,8 +3038,14 @@
         <div class="ollow-overflow-content" data-overflow-content></div>
         <div class="ollow-overflow-empty" data-overflow-empty hidden>No tools found</div>
       `;
+      menu.addEventListener("pointerdown", (event) => {
+        event.stopPropagation();
+      });
       menu.addEventListener("mousedown", (event) => {
-        event.preventDefault();
+        event.stopPropagation();
+      });
+      menu.addEventListener("click", (event) => {
+        event.stopPropagation();
       });
       menu.addEventListener("click", (event) => {
         const closeButton = event.target.closest(".ollow-overflow-close");
@@ -3054,12 +3060,12 @@
         if (!actionButton) return;
         event.preventDefault();
         event.stopPropagation();
-        this.closeOverflowMenu();
         this.runResponsiveOverflowAction(
           actionButton.dataset.ollowOverflowCommand ||
           actionButton.dataset.overflowCommand ||
           actionButton.dataset.overflowAction
         );
+        this.closeOverflowMenu();
       });
       menu.addEventListener("keydown", (event) => {
         const items = this.getVisibleOverflowItems();
@@ -3520,6 +3526,15 @@
         trigger.classList.remove("is-active");
       }
       this.overflowMenuAnchor = null;
+    }
+
+    handleOverflowScroll(event) {
+      if (!this.tabletOverflowMenu || this.tabletOverflowMenu.hidden) return;
+      const target = event && event.target;
+      if (target && this.tabletOverflowMenu.contains(target)) {
+        return;
+      }
+      this.closeOverflowMenu();
     }
 
     toggleOverflowMenu(button) {
@@ -6464,7 +6479,15 @@
     }
 
     handleDocumentPointerDown(event) {
-      if (!this.wrapper || !this.wrapper.contains(event.target)) {
+      const target = event.target;
+      const insideOverflowMenu = Boolean(this.tabletOverflowMenu && this.tabletOverflowMenu.contains(target));
+      const insideOverflowButton = Boolean(this.overflowMenuAnchor && this.overflowMenuAnchor.contains && this.overflowMenuAnchor.contains(target));
+
+      if (insideOverflowMenu || insideOverflowButton) {
+        return;
+      }
+
+      if (!this.wrapper || !this.wrapper.contains(target)) {
         this.closeMenuDropdowns();
         this.closeTabletOverflowMenu();
         this.closeActionDrawer({ restoreFocus: false });
@@ -6481,22 +6504,21 @@
       }
 
       if (
-        (this.menuBar && this.menuBar.contains(event.target)) ||
-        (this.tabletOverflowControl && this.tabletOverflowControl.contains(event.target)) ||
-        (this.tabletOverflowMenu && this.tabletOverflowMenu.contains(event.target)) ||
-        (this.mobileToolbar && this.mobileToolbar.contains(event.target)) ||
-        (this.actionDrawer && this.actionDrawer.contains(event.target)) ||
-        (this.fontFamilyMenu && this.fontFamilyMenu.contains(event.target)) ||
-        (this.fontFamilyButton && this.fontFamilyButton.contains(event.target)) ||
-        (this.stylesMenu && this.stylesMenu.contains(event.target)) ||
-        (this.stylesButton && this.stylesButton.contains(event.target)) ||
-        (this.fontSizeMenu && this.fontSizeMenu.contains(event.target)) ||
-        (this.fontSizeInput && this.fontSizeInput.contains && this.fontSizeInput.contains(event.target)) ||
-        (event.target.closest && event.target.closest(".ollow-size-step")) ||
-        (this.textColorPopover && this.textColorPopover.contains(event.target)) ||
-        (this.textColorButton && this.textColorButton.contains(event.target)) ||
-        (this.highlightPopover && this.highlightPopover.contains(event.target)) ||
-        (this.highlightButton && this.highlightButton.contains(event.target))
+        (this.menuBar && this.menuBar.contains(target)) ||
+        (this.tabletOverflowControl && this.tabletOverflowControl.contains(target)) ||
+        (this.mobileToolbar && this.mobileToolbar.contains(target)) ||
+        (this.actionDrawer && this.actionDrawer.contains(target)) ||
+        (this.fontFamilyMenu && this.fontFamilyMenu.contains(target)) ||
+        (this.fontFamilyButton && this.fontFamilyButton.contains(target)) ||
+        (this.stylesMenu && this.stylesMenu.contains(target)) ||
+        (this.stylesButton && this.stylesButton.contains(target)) ||
+        (this.fontSizeMenu && this.fontSizeMenu.contains(target)) ||
+        (this.fontSizeInput && this.fontSizeInput.contains && this.fontSizeInput.contains(target)) ||
+        (target.closest && target.closest(".ollow-size-step")) ||
+        (this.textColorPopover && this.textColorPopover.contains(target)) ||
+        (this.textColorButton && this.textColorButton.contains(target)) ||
+        (this.highlightPopover && this.highlightPopover.contains(target)) ||
+        (this.highlightButton && this.highlightButton.contains(target))
       ) {
         return;
       }
@@ -6511,43 +6533,43 @@
       this.closeHighlightPopover();
 
       if (
-        (this.themeMenu && this.themeMenu.contains(event.target)) ||
-        (this.themeToggleButton && this.themeToggleButton.contains(event.target))
+        (this.themeMenu && this.themeMenu.contains(target)) ||
+        (this.themeToggleButton && this.themeToggleButton.contains(target))
       ) {
         return;
       }
 
       this.closeThemeMenu();
 
-      if (this.imageResizeToolbar && this.imageResizeToolbar.contains(event.target)) {
+      if (this.imageResizeToolbar && this.imageResizeToolbar.contains(target)) {
         return;
       }
 
-      if (this.imageResizeHandle && this.imageResizeHandle.contains(event.target)) {
+      if (this.imageResizeHandle && this.imageResizeHandle.contains(target)) {
         return;
       }
 
-      if (this.tableToolbar && this.tableToolbar.contains(event.target)) {
+      if (this.tableToolbar && this.tableToolbar.contains(target)) {
         return;
       }
 
-      if (this.bookmarkToolbar && this.bookmarkToolbar.contains(event.target)) {
+      if (this.bookmarkToolbar && this.bookmarkToolbar.contains(target)) {
         return;
       }
 
-      if (this.findReplacePanel && this.findReplacePanel.contains(event.target)) {
+      if (this.findReplacePanel && this.findReplacePanel.contains(target)) {
         return;
       }
 
-      if (getTableCell(event.target, this.content)) {
+      if (getTableCell(target, this.content)) {
         return;
       }
 
-      if (getBookmarkNode(event.target, this.content)) {
+      if (getBookmarkNode(target, this.content)) {
         return;
       }
 
-      if (!getSelectableMediaBlock(event.target, this.content)) {
+      if (!getSelectableMediaBlock(target, this.content)) {
         this.clearMediaSelection();
       }
       this.clearTableSelection();

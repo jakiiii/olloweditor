@@ -257,6 +257,7 @@
 
 .ollow-overflow-menu.is-open {
   display: block;
+  pointer-events: auto;
 }
 
 .ollow-overflow-menu[hidden] {

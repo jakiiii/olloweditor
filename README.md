@@ -286,6 +286,15 @@ The toolbar uses an internal inline SVG icon map. There is no external icon libr
 - desktop, tablet, mobile, overflow, and drawer actions all render from the same icon set
 - accessibility is kept through explicit `title` and `aria-label` attributes on every icon-first button
 
+## Toolbar States
+
+Toolbar controls use a shared `is-active` state and consistent disabled/focus behavior across the desktop toolbar, mobile toolbar, overflow menu, floating media/table toolbars, and theme/font/color menus.
+
+- active formatting and tool states use the same tinted background, border, and text treatment
+- disabled controls use the native `disabled` attribute together with `aria-disabled`
+- keyboard focus stays visible in light, dark, and auto theme modes through a shared focus ring
+- toolbar state updates run on selection changes, editor key and mouse interactions, formatting commands, content changes, source mode changes, and media/table selections
+
 ---
 
 ## Keyboard Shortcuts

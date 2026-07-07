@@ -16,6 +16,11 @@
   --ollow-primary: #bb0112;
   --ollow-primary-soft: #fff1f2;
   --ollow-primary-border: #f1c4c8;
+  --ollow-active-bg: var(--ollow-primary-soft);
+  --ollow-active-border: var(--ollow-primary-border);
+  --ollow-active-text: var(--ollow-primary);
+  --ollow-focus-ring: color-mix(in srgb, var(--ollow-primary) 18%, transparent);
+  --ollow-disabled-opacity: 0.46;
   --ollow-success: #10b981;
   --ollow-danger: #b42318;
   --ollow-danger-soft: #fff5f5;
@@ -612,19 +617,21 @@
   min-width: 34px;
   height: 34px;
   padding: 0 10px;
+  border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
   color: var(--ollow-text);
   transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
 }
 
-.nw-toolbar-button:hover {
+.nw-toolbar-button:hover:not(:disabled) {
   background: var(--ollow-surface-muted);
 }
 
 .nw-toolbar-button.is-active {
-  background: var(--nw-accent-soft);
-  color: var(--nw-accent);
+  background: var(--ollow-active-bg);
+  border-color: var(--ollow-active-border);
+  color: var(--ollow-active-text);
 }
 
 .nw-toolbar-button svg,
@@ -643,13 +650,13 @@
 }
 
 .nw-toolbar-group--media-align .nw-toolbar-button.is-active {
-  background: var(--ollow-primary-soft);
-  border-color: var(--ollow-primary-border);
-  color: var(--ollow-primary);
+  background: var(--ollow-active-bg);
+  border-color: var(--ollow-active-border);
+  color: var(--ollow-active-text);
 }
 
 .nw-toolbar-group--media-align .nw-toolbar-button:disabled {
-  opacity: 0.48;
+  opacity: var(--ollow-disabled-opacity);
   cursor: not-allowed;
 }
 
@@ -1224,6 +1231,18 @@
   background: var(--ollow-surface-muted);
 }
 
+.ollow-theme-toggle.is-active,
+.ollow-font-button.is-active,
+.ollow-size-input.is-active,
+.ollow-styles-button.is-active,
+.ollow-text-color-btn.is-active,
+.ollow-highlight-btn.is-active,
+.nw-toolbar-select.is-active {
+  background: var(--ollow-active-bg);
+  border-color: var(--ollow-active-border);
+  color: var(--ollow-active-text);
+}
+
 .ollow-theme-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -1301,12 +1320,62 @@
   background: var(--ollow-surface-muted);
 }
 
+.nw-toolbar-button:focus-visible,
+.nw-insert-pill:focus-visible,
+.ollow-theme-toggle:focus-visible,
+.ollow-font-button:focus-visible,
+.ollow-size-step:focus-visible,
+.ollow-size-input:focus-visible,
+.ollow-styles-button:focus-visible,
+.ollow-text-color-btn:focus-visible,
+.ollow-text-color-reset:focus-visible,
+.ollow-text-color-swatch:focus-visible,
+.ollow-highlight-btn:focus-visible,
+.ollow-highlight-reset:focus-visible,
+.ollow-highlight-swatch:focus-visible,
+.ollow-mobile-tool:focus-visible,
+.ollow-action-button:focus-visible,
+.ollow-menu-trigger:focus-visible,
+.ollow-theme-menu button:focus-visible,
+.ollow-font-option:focus-visible,
+.ollow-size-menu button:focus-visible,
+.ollow-style-option:focus-visible,
+.ollow-overflow-item:focus-visible,
+.ollow-table-toolbar button:focus-visible,
+.ollow-media-toolbar button:focus-visible,
+.nw-toolbar-select:focus-visible,
 .nw-toolbar-select:focus,
 .nw-modal-input:focus,
 .nw-modal-textarea:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: var(--nw-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ollow-primary) 16%, transparent);
+  box-shadow: 0 0 0 3px var(--ollow-focus-ring);
+}
+
+.nw-toolbar-button:disabled,
+.nw-insert-pill:disabled,
+.ollow-theme-toggle:disabled,
+.ollow-font-button:disabled,
+.ollow-size-step:disabled,
+.ollow-size-input:disabled,
+.ollow-styles-button:disabled,
+.ollow-text-color-btn:disabled,
+.ollow-text-color-reset:disabled,
+.ollow-text-color-swatch:disabled,
+.ollow-highlight-btn:disabled,
+.ollow-highlight-reset:disabled,
+.ollow-highlight-swatch:disabled,
+.ollow-mobile-tool:disabled,
+.ollow-action-button:disabled,
+.ollow-overflow-item:disabled,
+.ollow-table-toolbar button:disabled,
+.ollow-media-toolbar button:disabled,
+.ollow-menu-trigger:disabled,
+.nw-toolbar-select:disabled,
+[aria-disabled="true"] {
+  opacity: var(--ollow-disabled-opacity);
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .nw-insert-pill {
@@ -1327,9 +1396,9 @@
 
 .nw-insert-pill:hover,
 .nw-insert-pill.is-active {
-  border-color: var(--nw-accent);
-  background: var(--ollow-primary-soft);
-  color: var(--nw-accent);
+  border-color: var(--ollow-active-border);
+  background: var(--ollow-active-bg);
+  color: var(--ollow-active-text);
 }
 
 .nw-insert-pill.ollow-bookmark-btn {
@@ -1340,9 +1409,9 @@
 
 .nw-insert-pill.ollow-bookmark-btn:hover,
 .nw-insert-pill.ollow-bookmark-btn.is-active {
-  border-color: var(--nw-accent);
-  background: var(--ollow-primary-soft);
-  color: var(--nw-accent);
+  border-color: var(--ollow-active-border);
+  background: var(--ollow-active-bg);
+  color: var(--ollow-active-text);
 }
 
 .ollow-help-panel {
@@ -1448,14 +1517,14 @@
 .ollow-mobile-tool:hover,
 .ollow-mobile-tool:focus-visible,
 .ollow-mobile-tool.is-active {
-  background: var(--ollow-primary-soft);
-  border-color: var(--ollow-primary-border);
-  color: var(--ollow-primary);
+  background: var(--ollow-active-bg);
+  border-color: var(--ollow-active-border);
+  color: var(--ollow-active-text);
   outline: none;
 }
 
 .ollow-mobile-tool:disabled {
-  opacity: 0.5;
+  opacity: var(--ollow-disabled-opacity);
   cursor: not-allowed;
 }
 
@@ -1566,14 +1635,14 @@
 .ollow-action-button:hover,
 .ollow-action-button:focus-visible,
 .ollow-action-button.is-active {
-  background: var(--ollow-primary-soft);
-  border-color: var(--ollow-primary-border);
-  color: var(--ollow-primary);
+  background: var(--ollow-active-bg);
+  border-color: var(--ollow-active-border);
+  color: var(--ollow-active-text);
   outline: none;
 }
 
 .ollow-action-button:disabled {
-  opacity: 0.45;
+  opacity: var(--ollow-disabled-opacity);
   cursor: not-allowed;
 }
 

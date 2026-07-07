@@ -2969,7 +2969,7 @@
       const sourceDisabledMenus = new Set(["format", "insert"]);
       Object.entries(this.menuButtons).forEach(([key, button]) => {
         const disabled = this.isSourceMode() && sourceDisabledMenus.has(key);
-        button.disabled = disabled;
+        this.setElementDisabled(button, disabled);
         if (disabled && this.activeMenuKey === key) {
           this.closeMenuDropdowns();
         }
@@ -3602,9 +3602,9 @@
                   : action === "superscript"
                     ? Boolean(config.superscript)
                     : false;
-        button.classList.toggle("is-active", isActive);
+        this.setElementActive(button, isActive, { setPressed: false });
         const disabled = Boolean(config.sourceMode) && action !== "source-html";
-        button.disabled = disabled;
+        this.setElementDisabled(button, disabled);
       });
     }
 
@@ -4856,6 +4856,118 @@
       return button;
     }
 
+    setElementActive(element, active, options) {
+      if (!element) return;
+      const config = options || {};
+      const isActive = Boolean(active);
+      element.classList.toggle("is-active", isActive);
+      if (config.setPressed) {
+        element.setAttribute("aria-pressed", isActive ? "true" : "false");
+      }
+    }
+
+    setElementDisabled(element, disabled) {
+      if (!element) return;
+      const isDisabled = Boolean(disabled);
+      element.disabled = isDisabled;
+      element.setAttribute("aria-disabled", isDisabled ? "true" : "false");
+      if (isDisabled) {
+        element.classList.remove("is-active");
+      }
+    }
+
+    setButtonActive(command, active, options) {
+      const config = options || {};
+      [
+        this.toolbarButtons[command],
+        this.mobileToolbarButtons[command],
+        this.tabletOverflowItems && this.tabletOverflowItems[command],
+      ].forEach((button) => {
+        if (!button) return;
+        this.setElementActive(button, active, { setPressed: config.setPressed !== false });
+      });
+    }
+
+    setButtonDisabled(command, disabled) {
+      [
+        this.toolbarButtons[command],
+        this.mobileToolbarButtons[command],
+        this.tabletOverflowItems && this.tabletOverflowItems[command],
+      ].forEach((button) => {
+        if (!button) return;
+        this.setElementDisabled(button, disabled);
+      });
+    }
+
+    getCurrentInlineFormattingState() {
+      const inside = selectionInside(this.content);
+      return {
+        inside,
+        bold: inside && safeQueryState("bold"),
+        italic: inside && safeQueryState("italic"),
+        underline: inside && safeQueryState("underline"),
+        strikethrough: inside && (safeQueryState("strikeThrough") || safeQueryState("strikethrough")),
+        subscript: inside && safeQueryState("subscript"),
+        superscript: inside && safeQueryState("superscript"),
+        "bulleted-list": inside && safeQueryState("insertUnorderedList"),
+        "numbered-list": inside && safeQueryState("insertOrderedList"),
+      };
+    }
+
+    getCurrentBlockState() {
+      const ancestor = getSelectionAncestor(this.content);
+      const block = ancestor ? closestBlock(ancestor, this.content) : null;
+      const blockTag = block ? block.tagName.toUpperCase() : "P";
+      const bookmarkAncestor = ancestor && ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentNode : ancestor;
+      let current = ancestor && ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentNode : ancestor;
+      let link = false;
+      while (current && current !== this.content) {
+        if (current.nodeType === Node.ELEMENT_NODE && current.tagName.toUpperCase() === "A") {
+          link = true;
+          break;
+        }
+        current = current.parentNode;
+      }
+      return {
+        ancestor,
+        block,
+        blockTag,
+        quote: blockTag === "BLOCKQUOTE",
+        h2: blockTag === "H2",
+        h3: blockTag === "H3",
+        h4: blockTag === "H4",
+        link,
+        pullQuote: Boolean(block && block.matches && block.matches("blockquote.nw-pull-quote, blockquote[data-type='pull-quote']")),
+        bookmark: Boolean(
+          this.selectedBookmark
+            || (bookmarkAncestor && bookmarkAncestor.closest && bookmarkAncestor.closest(`.${BOOKMARK_CLASS}[data-bookmark="true"]`))
+        ),
+      };
+    }
+
+    getCurrentMediaState() {
+      return {
+        hasMediaBlock: Boolean(this.selectedMediaBlock),
+        hasImage: Boolean(this.selectedImageFigure),
+        hasCodeBlock: Boolean(this.selectedCodeFigure),
+        alignment: this.getSelectedMediaAlignment(),
+        imageSize: this.getSelectedImageSize(),
+        hasLink: Boolean(this.getImageLinkData(this.selectedImageFigure).href),
+        opensNewTab: Boolean(this.getImageLinkData(this.selectedImageFigure).newTab),
+      };
+    }
+
+    getCurrentTableState() {
+      const properties = this.getTableProperties(this.selectedTableFigure);
+      const selectedCells = this.getSelectedTableCells();
+      return {
+        properties,
+        selectedCells,
+        hasHorizontalMergeSelection: this.canMergeSelectedTableCells(),
+        splitAllowed: Boolean(this.selectedTableCell && ((Number(this.selectedTableCell.getAttribute("colspan")) || 1) > 1 || (Number(this.selectedTableCell.getAttribute("rowspan")) || 1) > 1)),
+      };
+    }
+
     isSourceMode() {
       return Boolean(this.sourceMode);
     }
@@ -4986,7 +5098,7 @@
       if (!this.themeMenu) return;
       Array.from(this.themeMenu.querySelectorAll("[data-theme-choice]")).forEach((button) => {
         const isActive = button.dataset.themeChoice === this.theme;
-        button.classList.toggle("is-active", isActive);
+        this.setElementActive(button, isActive, { setPressed: false });
         button.setAttribute("aria-checked", isActive ? "true" : "false");
       });
     }
@@ -5193,16 +5305,22 @@
       if (this.fontSizeInput) {
         this.fontSizeInput.value = String(currentSize || DEFAULT_FONT_SIZE);
       }
+      if (this.fontFamilyButton) {
+        this.setElementActive(this.fontFamilyButton, currentFont !== DEFAULT_FONT_FAMILY_KEY, { setPressed: false });
+      }
+      if (this.fontSizeInput) {
+        this.fontSizeInput.classList.toggle("is-active", Number(currentSize || DEFAULT_FONT_SIZE) !== DEFAULT_FONT_SIZE);
+      }
       if (this.fontFamilyMenu) {
         Array.from(this.fontFamilyMenu.querySelectorAll("[data-font-family]")).forEach((button) => {
           const isActive = button.dataset.fontFamily === currentFont;
-          button.classList.toggle("is-active", isActive);
+          this.setElementActive(button, isActive, { setPressed: false });
         });
       }
       if (this.fontSizeMenu) {
         Array.from(this.fontSizeMenu.querySelectorAll("[data-font-size-choice]")).forEach((button) => {
           const isActive = Number(button.dataset.fontSizeChoice) === currentSize;
-          button.classList.toggle("is-active", isActive);
+          this.setElementActive(button, isActive, { setPressed: false });
         });
       }
     }
@@ -5228,6 +5346,7 @@
       }
       if (this.textColorButton) {
         this.textColorButton.setAttribute("aria-expanded", this.textColorPopover && !this.textColorPopover.hidden ? "true" : "false");
+        this.setElementActive(this.textColorButton, current.type !== "default", { setPressed: false });
       }
       if (this.textColorCustomInput) {
         this.textColorCustomInput.value = activeHex;
@@ -5242,11 +5361,11 @@
         const swatchHex = normalizeHexColor(button.dataset.textColorHex || choice);
         const isPresetMatch = current.type === "preset" && choice === current.key;
         const isCustomMatch = current.type !== "preset" && swatchHex && swatchHex === activeHex;
-        button.classList.toggle("is-active", isPresetMatch || isCustomMatch);
+        this.setElementActive(button, isPresetMatch || isCustomMatch, { setPressed: false });
       });
       const resetButton = this.textColorPopover.querySelector("[data-text-color-reset]");
       if (resetButton) {
-        resetButton.classList.toggle("is-active", current.type === "default");
+        this.setElementActive(resetButton, current.type === "default", { setPressed: false });
       }
     }
 
@@ -5311,11 +5430,12 @@
       }
       if (this.stylesButton) {
         this.stylesButton.setAttribute("aria-expanded", this.stylesMenu && !this.stylesMenu.hidden ? "true" : "false");
+        this.setElementActive(this.stylesButton, Boolean(currentPreset && currentPreset.key !== "normal"), { setPressed: false });
       }
       if (!this.stylesMenu) return;
       Array.from(this.stylesMenu.querySelectorAll("[data-style-preset]")).forEach((button) => {
         const isActive = button.dataset.stylePreset === (currentPreset ? currentPreset.key : "normal");
-        button.classList.toggle("is-active", isActive);
+        this.setElementActive(button, isActive, { setPressed: false });
       });
     }
 
@@ -5327,6 +5447,7 @@
       }
       if (this.highlightButton) {
         this.highlightButton.setAttribute("aria-expanded", this.highlightPopover && !this.highlightPopover.hidden ? "true" : "false");
+        this.setElementActive(this.highlightButton, current.type !== "default", { setPressed: false });
       }
       if (this.highlightCustomInput) {
         this.highlightCustomInput.value = activeHex;
@@ -5341,11 +5462,11 @@
         const swatchHex = normalizeHexColor(button.dataset.highlightHex || choice);
         const isPresetMatch = current.type === "preset" && choice === current.key;
         const isCustomMatch = current.type !== "preset" && current.type !== "default" && swatchHex && swatchHex === activeHex;
-        button.classList.toggle("is-active", isPresetMatch || isCustomMatch);
+        this.setElementActive(button, isPresetMatch || isCustomMatch, { setPressed: false });
       });
       const resetButton = this.highlightPopover.querySelector("[data-highlight-reset]");
       if (resetButton) {
-        resetButton.classList.toggle("is-active", current.type === "default");
+        this.setElementActive(resetButton, current.type === "default", { setPressed: false });
       }
     }
 
@@ -7296,7 +7417,8 @@
 
     updateMediaAlignmentToolbarState() {
       if (!this.imageResizeToolbar) return;
-      const activeAlignment = this.getSelectedMediaAlignment();
+      const mediaState = this.getCurrentMediaState();
+      const activeAlignment = mediaState.alignment;
       Array.from(this.imageResizeToolbar.querySelectorAll('[data-image-action^="align-"], [data-image-action^="width-"], [data-image-action="reset-align"]')).forEach((button) => {
         const action = button.dataset.imageAction;
         const value = action === "align-left"
@@ -7311,12 +7433,12 @@
                   ? "full"
                   : "reset";
         const isActive = value === activeAlignment || (value === "reset" && !activeAlignment);
-        button.classList.toggle("is-active", isActive);
+        this.setElementActive(button, isActive, { setPressed: false });
       });
 
       const sizeControls = this.imageResizeToolbar.querySelector('[data-role="size-controls"]');
       const sizeDivider = this.imageResizeToolbar.querySelector('[data-role="size-divider"]');
-      const supportsImageResize = Boolean(this.selectedImageFigure);
+      const supportsImageResize = mediaState.hasImage;
       if (sizeControls) {
         sizeControls.hidden = !supportsImageResize;
       }
@@ -7343,11 +7465,12 @@
 
     updateImageEditToolbarState() {
       if (!this.imageResizeToolbar) return;
+      const mediaState = this.getCurrentMediaState();
       const imageControls = this.imageResizeToolbar.querySelector('[data-role="image-controls"]');
       const imageDivider = this.imageResizeToolbar.querySelector('[data-role="image-divider"]');
       const deleteControls = this.imageResizeToolbar.querySelector('[data-role="delete-controls"]');
       const deleteDivider = this.imageResizeToolbar.querySelector('[data-role="delete-divider"]');
-      const hasImage = Boolean(this.selectedImageFigure);
+      const hasImage = mediaState.hasImage;
       if (imageControls) {
         imageControls.hidden = !hasImage;
       }
@@ -7362,14 +7485,14 @@
       }
       const toggleNewTab = this.imageResizeToolbar.querySelector('[data-image-action="new-tab"]');
       const unlinkButton = this.imageResizeToolbar.querySelector('[data-image-action="remove-link"]');
-      const hasLink = Boolean(this.getImageLinkData(this.selectedImageFigure).href);
-      const opensNewTab = Boolean(this.getImageLinkData(this.selectedImageFigure).newTab);
+      const hasLink = mediaState.hasLink;
+      const opensNewTab = mediaState.opensNewTab;
       if (toggleNewTab) {
-        toggleNewTab.disabled = !hasImage || !hasLink;
-        toggleNewTab.classList.toggle("is-active", opensNewTab);
+        this.setElementDisabled(toggleNewTab, !hasImage || !hasLink);
+        this.setElementActive(toggleNewTab, opensNewTab, { setPressed: false });
       }
       if (unlinkButton) {
-        unlinkButton.disabled = !hasImage || !hasLink;
+        this.setElementDisabled(unlinkButton, !hasImage || !hasLink);
       }
     }
 
@@ -7484,7 +7607,8 @@
 
     updateImageResizeToolbarState() {
       if (!this.imageResizeToolbar) return;
-      const activeSize = this.getSelectedImageSize();
+      const mediaState = this.getCurrentMediaState();
+      const activeSize = mediaState.imageSize;
       Array.from(this.imageResizeToolbar.querySelectorAll('[data-image-action^="size-"], [data-image-action="reset-size"]')).forEach((button) => {
         const action = button.dataset.imageAction;
         const value = action === "size-small"
@@ -7497,7 +7621,7 @@
                 ? "full"
                 : "reset";
         const isActive = value === activeSize || (value === "reset" && !activeSize);
-        button.classList.toggle("is-active", isActive);
+        this.setElementActive(button, isActive, { setPressed: false });
       });
       this.updateImageEditToolbarState();
     }
@@ -7979,24 +8103,25 @@
 
     updateTableToolbarState() {
       if (!this.tableToolbar) return;
-      const properties = this.getTableProperties(this.selectedTableFigure);
-      const selectedCells = this.getSelectedTableCells();
-      const hasHorizontalMergeSelection = this.canMergeSelectedTableCells();
-      const splitAllowed = Boolean(this.selectedTableCell && ((Number(this.selectedTableCell.getAttribute("colspan")) || 1) > 1 || (Number(this.selectedTableCell.getAttribute("rowspan")) || 1) > 1));
+      const tableState = this.getCurrentTableState();
+      const properties = tableState.properties;
+      const selectedCells = tableState.selectedCells;
+      const hasHorizontalMergeSelection = tableState.hasHorizontalMergeSelection;
+      const splitAllowed = tableState.splitAllowed;
 
       Array.from(this.tableToolbar.querySelectorAll("[data-table-action]")).forEach((button) => {
         const action = button.dataset.tableAction;
-        button.classList.toggle("is-active", (
+        this.setElementActive(button, (
           (action === "toggle-header-row" && properties.headerRow) ||
           (action === "toggle-header-col" && properties.headerColumn)
-        ));
+        ), { setPressed: false });
 
         if (action === "merge-cells") {
-          button.disabled = !hasHorizontalMergeSelection;
+          this.setElementDisabled(button, !hasHorizontalMergeSelection);
         } else if (action === "split-cell") {
-          button.disabled = !splitAllowed;
+          this.setElementDisabled(button, !splitAllowed);
         } else {
-          button.disabled = !selectedCells.length;
+          this.setElementDisabled(button, !selectedCells.length);
         }
       });
     }
@@ -10255,11 +10380,14 @@
         Array.from(this.wrapper.querySelectorAll(".nw-editor-toolbar button, .nw-editor-toolbar select, .nw-editor-toolbar input")).forEach((control) => {
           const action = control.dataset && control.dataset.action ? control.dataset.action : "";
           const isThemeControl = action === "theme-toggle" || action.startsWith("theme-") || Boolean(control.closest(".ollow-theme-control"));
-          control.disabled = action !== "source-html" && !isThemeControl;
+          this.setElementDisabled(control, action !== "source-html" && !isThemeControl);
         });
         if (this.toolbarButtons["source-html"]) {
-          this.toolbarButtons["source-html"].disabled = false;
-          this.toolbarButtons["source-html"].classList.add("is-active");
+          this.setElementDisabled(this.toolbarButtons["source-html"], false);
+          this.setElementActive(this.toolbarButtons["source-html"], true);
+        }
+        if (this.headingSelect) {
+          this.headingSelect.classList.remove("is-active");
         }
         this.updateMenuBarState();
         this.updateTabletOverflowState({
@@ -10280,62 +10408,19 @@
       if (this.wrapper) {
         this.wrapper.classList.remove("is-source-mode");
         Array.from(this.wrapper.querySelectorAll(".nw-editor-toolbar button, .nw-editor-toolbar select, .nw-editor-toolbar input")).forEach((control) => {
-          control.disabled = false;
+          this.setElementDisabled(control, false);
         });
       }
-      const inside = selectionInside(this.content);
-      const hasEditorContext = inside || this.isFocused || Boolean(this.selectedMediaBlock);
-      const states = {
-        bold: inside && safeQueryState("bold"),
-        italic: inside && safeQueryState("italic"),
-        underline: inside && safeQueryState("underline"),
-        strikethrough: inside && (safeQueryState("strikeThrough") || safeQueryState("strikethrough")),
-        subscript: inside && safeQueryState("subscript"),
-        superscript: inside && safeQueryState("superscript"),
-        "bulleted-list": inside && safeQueryState("insertUnorderedList"),
-        "numbered-list": inside && safeQueryState("insertOrderedList"),
-        link: false,
-        quote: false,
-        h2: false,
-        h3: false,
-        h4: false,
-      };
-
-      const ancestor = getSelectionAncestor(this.content);
-      const block = ancestor ? closestBlock(ancestor, this.content) : null;
-      const blockTag = block ? block.tagName.toUpperCase() : "P";
-      states.quote = blockTag === "BLOCKQUOTE";
-      states.h2 = blockTag === "H2";
-      states.h3 = blockTag === "H3";
-      states.h4 = blockTag === "H4";
-
-      let current = ancestor && ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentNode : ancestor;
-      while (current && current !== this.content) {
-        if (current.nodeType === Node.ELEMENT_NODE && current.tagName.toUpperCase() === "A") {
-          states.link = true;
-          break;
-        }
-        current = current.parentNode;
-      }
-
-      const isInsidePullQuote = Boolean(
-        block && block.matches && block.matches("blockquote.nw-pull-quote, blockquote[data-type='pull-quote']")
-      );
-      const bookmarkAncestor = ancestor && ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentNode : ancestor;
-      const isInsideBookmark = Boolean(
-        this.selectedBookmark
-          || (bookmarkAncestor && bookmarkAncestor.closest && bookmarkAncestor.closest(`.${BOOKMARK_CLASS}[data-bookmark="true"]`))
-      );
+      const inlineState = this.getCurrentInlineFormattingState();
+      const blockState = this.getCurrentBlockState();
+      const hasEditorContext = inlineState.inside || this.isFocused || Boolean(this.selectedMediaBlock);
 
       ["bold", "italic", "underline", "strikethrough", "subscript", "superscript", "link", "quote", "bulleted-list", "numbered-list", "h2", "h3", "h4"].forEach((key) => {
-        const button = this.toolbarButtons[key];
-        if (button) {
-          button.classList.toggle("is-active", Boolean(states[key]));
-        }
+        this.setButtonActive(key, Boolean(inlineState[key] || blockState[key]));
       });
 
       if (this.formatPainterButton) {
-        this.formatPainterButton.classList.toggle("is-active", Boolean(this.formatPainterState && this.formatPainterState.active));
+        this.setElementActive(this.formatPainterButton, Boolean(this.formatPainterState && this.formatPainterState.active));
       }
       if (this.wrapper) {
         this.wrapper.classList.toggle("is-format-painter-active", Boolean(this.formatPainterState && this.formatPainterState.active));
@@ -10349,12 +10434,16 @@
         if (!button) return;
         const value = key.replace("align-", "");
         const isJustify = value === "justify";
-        button.disabled = !hasEditorContext || (Boolean(this.selectedMediaBlock) && isJustify);
-        button.classList.toggle("is-active", activeAlignment === value);
+        this.setElementDisabled(button, !hasEditorContext || (Boolean(this.selectedMediaBlock) && isJustify));
+        this.setElementActive(button, activeAlignment === value);
       });
 
       if (this.headingSelect) {
-        this.headingSelect.value = ["H2", "H3", "H4"].includes(blockTag) ? blockTag : "P";
+        const blockTag = ["H2", "H3", "H4"].includes(blockState.blockTag) ? blockState.blockTag : "P";
+        this.headingSelect.value = blockTag;
+        this.headingSelect.dataset.currentBlock = blockTag;
+        this.headingSelect.classList.toggle("is-active", hasEditorContext);
+        this.headingSelect.setAttribute("aria-label", `Paragraph style: ${blockTag}`);
       }
 
       this.updateStylesToolbarState();
@@ -10362,32 +10451,29 @@
       this.updateColorToolbarState();
       this.updateHighlightToolbarState();
       [
-        ["pull-quote", isInsidePullQuote],
-        ["bookmark", isInsideBookmark],
+        ["pull-quote", blockState.pullQuote],
+        ["bookmark", blockState.bookmark],
       ].forEach(([action, isActive]) => {
-        const button = this.toolbarButtons[action];
-        if (!button) return;
-        button.classList.toggle("is-active", Boolean(isActive));
-        button.setAttribute("aria-pressed", isActive ? "true" : "false");
+        this.setButtonActive(action, Boolean(isActive));
       });
       if (this.toolbarButtons["source-html"]) {
-        this.toolbarButtons["source-html"].classList.remove("is-active");
+        this.setElementActive(this.toolbarButtons["source-html"], false);
       }
       this.updateMenuBarState();
       this.updateTabletOverflowState({
         sourceMode: false,
-        pullQuote: isInsidePullQuote,
-        bookmark: isInsideBookmark,
+        pullQuote: blockState.pullQuote,
+        bookmark: blockState.bookmark,
         formatPainter: Boolean(this.formatPainterState && this.formatPainterState.active),
-        subscript: Boolean(states.subscript),
-        superscript: Boolean(states.superscript),
+        subscript: Boolean(inlineState.subscript),
+        superscript: Boolean(inlineState.superscript),
       });
       this.updateMobileToolbarState({
         sourceMode: false,
-        bold: Boolean(states.bold),
-        italic: Boolean(states.italic),
-        link: Boolean(states.link),
-        styleActive: Boolean(states.quote || states.h2 || states.h3 || states.h4 || (this.getCurrentStylePreset() && this.getCurrentStylePreset().key !== "normal")),
+        bold: Boolean(inlineState.bold),
+        italic: Boolean(inlineState.italic),
+        link: Boolean(blockState.link),
+        styleActive: Boolean(blockState.quote || blockState.h2 || blockState.h3 || blockState.h4 || (this.getCurrentStylePreset() && this.getCurrentStylePreset().key !== "normal")),
       });
     }
 
@@ -10402,17 +10488,19 @@
       buttonStates.forEach(([key, isActive]) => {
         const button = this.mobileToolbarButtons[key];
         if (!button) return;
-        button.classList.toggle("is-active", Boolean(isActive));
+        this.setElementActive(button, Boolean(isActive), { setPressed: false });
       });
       const moreButton = this.mobileToolbarButtons.more;
       if (moreButton && (this.actionDrawer && !this.actionDrawer.hidden)) {
-        moreButton.classList.add("is-active");
+        this.setElementActive(moreButton, true, { setPressed: false });
+      } else if (moreButton) {
+        this.setElementActive(moreButton, false, { setPressed: false });
       }
       const shouldDisable = Boolean(config.sourceMode);
       ["bold", "italic", "link", "image", "style"].forEach((key) => {
         const button = this.mobileToolbarButtons[key];
         if (!button) return;
-        button.disabled = shouldDisable;
+        this.setElementDisabled(button, shouldDisable);
       });
       this.updateActionDrawerState(config);
     }
@@ -10424,7 +10512,7 @@
       Array.from(this.actionDrawerPanel.querySelectorAll("[data-drawer-command]")).forEach((button) => {
         const command = button.dataset.drawerCommand || "";
         const disabled = Boolean(config.sourceMode) && !allowedInSource.has(command);
-        button.disabled = disabled;
+        this.setElementDisabled(button, disabled);
         const isActive = command === "source-html"
           ? Boolean(config.sourceMode)
           : command === "format-painter"
@@ -10434,9 +10522,9 @@
               : command === "subscript"
                 ? Boolean(safeQueryState("subscript"))
                 : command === "superscript"
-                  ? Boolean(safeQueryState("superscript"))
+                ? Boolean(safeQueryState("superscript"))
                   : false;
-        button.classList.toggle("is-active", isActive);
+        this.setElementActive(button, isActive, { setPressed: false });
       });
     }
 

@@ -1,13 +1,17 @@
 "use client";
 
-import "olloweditor/styles.css";
-import { OllowEditor } from "olloweditor/react";
+import { useState } from "react";
+import { OllowEditor } from "@codefortify/olloweditor/react";
+import "@codefortify/olloweditor/style.css";
 
 export default function Page() {
+  const [content, setContent] = useState<string>("");
+
   return (
     <OllowEditor
-      options={{ theme: "auto", persistTheme: true }}
-      textareaProps={{ name: "body" }}
+      value={content}
+      onChange={setContent}
+      placeholder="Write your article..."
     />
   );
 }

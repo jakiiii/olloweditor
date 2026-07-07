@@ -2199,6 +2199,7 @@
     replace: createIconSvg('<path d="M4 6h8l-2.5-2.5L11 2l5 5-5 5-1.5-1.5L12 8H4V6Zm12 8H8l2.5 2.5L9 18l-5-5 5-5 1.5 1.5L8 12h8v2Z" fill="currentColor"/>'),
     copy: createIconSvg('<path d="M7 7h8v10H7z" stroke="currentColor" stroke-width="1.6" rx="1.5"/><path d="M5 13H4a1 1 0 0 1-1-1V3.8a1 1 0 0 1 1-1h7.2a1 1 0 0 1 1 1V5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>'),
     external: createIconSvg('<path d="M11 3h6v6h-2V6.4l-6.3 6.3-1.4-1.4L13.6 5H11V3Z" fill="currentColor"/><path d="M5 5h4v2H7v6h6v-2h2v4H5V5Z" fill="currentColor"/>'),
+    "alert-box": createIconSvg('<path d="M10 2.8 2.7 15.2c-.3.5.1 1.1.7 1.1h14.2c.6 0 1-.6.7-1.1L10 2.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 7.1v4.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M10 13.6h.01" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>'),
     delete: createIconSvg('<path d="M6 6h8l-.7 10H6.7L6 6Zm2-3h4l1 1.5H16V6H4V4.5h3L8 3Z" fill="currentColor"/>'),
     reset: createIconSvg('<path d="M10 4a6 6 0 1 1-5.3 3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5 2.8v4h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'),
     plus: createIconSvg('<path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
@@ -6333,7 +6334,9 @@
       if (config.icon && /<[^>]+>/.test(config.icon)) {
         button.innerHTML = config.icon;
       } else if (config.icon) {
-        button.innerHTML = renderIcon(config.icon);
+        button.innerHTML = getIcon(config.icon)
+          ? renderIcon(config.icon)
+          : `<span class="ollow-icon ollow-icon-text" aria-hidden="true">${escapeHtml(config.icon)}</span>`;
       } else {
         button.innerHTML = `<span class="ollow-label">${config.label || config.name || ""}</span>`;
       }

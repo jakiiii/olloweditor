@@ -1160,11 +1160,13 @@ OllowEditor.init("#ollo-editor", {
 });
 ```
 
-The theme switch now lives in the editor toolbar. It opens a compact menu with `Light`, `Dark`, and `Auto`.
+The theme switch now lives in the top-right toolbar header area. It opens a compact menu with `Light`, `Dark`, and `Auto`.
 
 When `theme` is `auto`, the editor follows `prefers-color-scheme` for that specific editor instance while the toolbar still shows the system-mode icon.
 
 If `persistTheme` is enabled, the selected mode is saved in `localStorage` under `ollow-editor-theme`. Explicit `data-theme` or `theme` config still overrides the stored value.
+
+Heading changes are handled through the paragraph/block format dropdown. `Paragraph`, `H2`, `H3`, and `H4` remain available there without separate duplicate heading buttons in the main toolbar row.
 
 Public theme API:
 

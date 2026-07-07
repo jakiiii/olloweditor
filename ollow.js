@@ -2371,7 +2371,11 @@
 
       const toolbar = document.createElement("div");
       toolbar.className = "nw-editor-toolbar";
-      toolbar.appendChild(this.buildMenuBar());
+      const toolbarTop = document.createElement("div");
+      toolbarTop.className = "ollow-toolbar-top";
+      toolbarTop.appendChild(this.buildMenuBar());
+      toolbarTop.appendChild(this.buildThemeControl());
+      toolbar.appendChild(toolbarTop);
       toolbar.appendChild(this.buildToolbarPrimary());
       toolbar.appendChild(this.buildToolbarInsert());
       toolbar.appendChild(this.buildMobileToolbar());
@@ -3834,13 +3838,6 @@
       `;
       this.headingSelect.setAttribute("aria-label", "Paragraph style");
 
-      const groupText = document.createElement("div");
-      groupText.className = "nw-toolbar-group nw-toolbar-group--headings";
-      this.toolbarGroups.text = groupText;
-      groupText.appendChild(this.makeToolbarButton("h2", "Heading 2", renderIconLabel("styles", "H2", "ollow-label"), "nw-toolbar-button ollow-toolbar-btn"));
-      groupText.appendChild(this.makeToolbarButton("h3", "Heading 3", renderIconLabel("styles", "H3", "ollow-label"), "nw-toolbar-button ollow-toolbar-btn"));
-      groupText.appendChild(this.makeToolbarButton("h4", "Heading 4", renderIconLabel("styles", "H4", "ollow-label"), "nw-toolbar-button ollow-toolbar-btn"));
-
       const groupInline = document.createElement("div");
       groupInline.className = "nw-toolbar-group nw-toolbar-group--inline";
       this.toolbarGroups.inline = groupInline;
@@ -3872,25 +3869,18 @@
       groupMediaAlign.appendChild(this.makeToolbarButton("align-right", "Align right", getAlignmentIcon("right")));
       groupMediaAlign.appendChild(this.makeToolbarButton("align-justify", "Justify", getAlignmentIcon("justify")));
 
-      const groupTheme = document.createElement("div");
-      groupTheme.className = "nw-toolbar-group nw-toolbar-group--theme";
-      this.toolbarGroups.theme = groupTheme;
-      groupTheme.appendChild(this.buildThemeControl());
-
       row.appendChild(groupUndo);
       row.appendChild(this.makeDivider());
       row.appendChild(typographyControls);
       row.appendChild(this.makeDivider());
       row.appendChild(stylesControl);
       row.appendChild(this.headingSelect);
-      row.appendChild(groupText);
       row.appendChild(this.makeDivider());
       row.appendChild(groupInline);
       row.appendChild(this.makeDivider());
       row.appendChild(groupBlocks);
       row.appendChild(this.makeDivider());
       row.appendChild(groupMediaAlign);
-      row.appendChild(groupTheme);
       return row;
     }
 
@@ -10264,7 +10254,8 @@
         }
         Array.from(this.wrapper.querySelectorAll(".nw-editor-toolbar button, .nw-editor-toolbar select, .nw-editor-toolbar input")).forEach((control) => {
           const action = control.dataset && control.dataset.action ? control.dataset.action : "";
-          control.disabled = action !== "source-html" && !control.closest(".nw-toolbar-group--theme");
+          const isThemeControl = action === "theme-toggle" || action.startsWith("theme-") || Boolean(control.closest(".ollow-theme-control"));
+          control.disabled = action !== "source-html" && !isThemeControl;
         });
         if (this.toolbarButtons["source-html"]) {
           this.toolbarButtons["source-html"].disabled = false;

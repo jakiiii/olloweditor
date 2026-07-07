@@ -287,6 +287,28 @@
   ];
   const STYLE_PRESET_LOOKUP = new Map(STYLE_PRESETS.map((preset) => [preset.key, preset]));
   const STYLE_PRESET_CLASSES = STYLE_PRESETS.map((preset) => preset.className).filter(Boolean);
+  const SAFE_IMAGE_DATA_MIME_TYPES = new Set([
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+    "image/webp",
+  ]);
+  const SAFE_IMAGE_FILE_MIME_TYPES = new Set([
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+    "image/webp",
+  ]);
+  const RESERVED_BOOKMARK_IDS = new Set([
+    "__proto__",
+    "constructor",
+    "prototype",
+    "forms",
+    "length",
+    "submit",
+    "style",
+    "script",
+  ]);
   const TOOLBAR_SHORTCUT_LABELS = {
     undo: "Mod+Z",
     redo: "Mod+Shift+Z / Mod+Y",
@@ -347,8 +369,6 @@
     "CODE",
   ]);
   const CLASS_ALLOWLIST = new Set([
-    "nw-editor-dragover",
-    "nw-editor-feedback",
     "nw-attachment",
     "nw-block-label",
     "nw-block-meta",
@@ -429,16 +449,88 @@
       .replace(/'/g, "&#39;");
   }
 
-  function isSafeUrl(value, tagName) {
-    if (!value) return false;
-    const trimmed = value.trim();
-    if (!trimmed) return false;
-    if (/^javascript:/i.test(trimmed)) return false;
-    if (/^vbscript:/i.test(trimmed)) return false;
-    if (tagName === "IMG") {
-      return /^(https?:\/\/|\/|\.\/|\.\.\/|data:image\/)/i.test(trimmed);
+  function hasUnsafeUrlCharacters(value) {
+    return /[\u0000-\u001f\u007f<>"'`\\]/.test(String(value || ""));
+  }
+
+  function isSafeRelativeUrl(value) {
+    const raw = String(value || "").trim();
+    if (!raw || hasUnsafeUrlCharacters(raw)) return false;
+    return /^(?:\/(?!\/)|\.{1,2}\/)/.test(raw);
+  }
+
+  function sanitizeUrl(value, options) {
+    const config = Object.assign({
+      tagName: "A",
+      allowMailto: true,
+      allowTel: true,
+      allowAnchors: true,
+      allowRelative: true,
+      allowImageData: false,
+      allowBlob: false,
+      trustedEmbedOnly: false,
+    }, options || {});
+    const raw = String(value || "").trim();
+    if (!raw || hasUnsafeUrlCharacters(raw)) return "";
+    if (/^(?:javascript|vbscript|data:text\/html):/i.test(raw)) return "";
+    if (/^\/\//.test(raw)) return "";
+
+    if (config.allowAnchors && raw.startsWith("#")) {
+      const fragmentId = sanitizeBookmarkId(raw.slice(1));
+      return fragmentId ? `#${fragmentId}` : "";
     }
-    return /^(https?:\/\/|mailto:|tel:|\/|#|\.\.?\/)/i.test(trimmed);
+
+    if (config.allowRelative && isSafeRelativeUrl(raw)) {
+      return raw;
+    }
+    if (config.allowRelative && !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(raw) && !raw.startsWith("//")) {
+      return raw;
+    }
+
+    if (config.allowImageData && /^data:/i.test(raw)) {
+      const match = raw.match(/^data:([^;,]+);base64,[a-z0-9+/=\s]+$/i);
+      if (!match) return "";
+      const mimeType = String(match[1] || "").toLowerCase();
+      return SAFE_IMAGE_DATA_MIME_TYPES.has(mimeType) ? raw : "";
+    }
+
+    let parsed;
+    try {
+      parsed = new URL(raw, window.location.href);
+    } catch (error) {
+      return "";
+    }
+
+    const protocol = parsed.protocol.toLowerCase();
+    if (protocol === "http:" || protocol === "https:") {
+      if (config.trustedEmbedOnly) {
+        return getYouTubeEmbedUrl(parsed.toString());
+      }
+      return parsed.toString();
+    }
+    if (protocol === "mailto:" && config.allowMailto) {
+      return raw;
+    }
+    if (protocol === "tel:" && config.allowTel) {
+      return raw;
+    }
+    if (protocol === "blob:" && config.allowBlob) {
+      return parsed.toString();
+    }
+    return "";
+  }
+
+  function isSafeUrl(value, tagName) {
+    const normalized = sanitizeUrl(value, {
+      tagName,
+      allowMailto: tagName !== "IMG" && tagName !== "IFRAME",
+      allowTel: tagName !== "IMG" && tagName !== "IFRAME",
+      allowAnchors: tagName !== "IMG" && tagName !== "IFRAME",
+      allowRelative: true,
+      allowImageData: tagName === "IMG",
+      trustedEmbedOnly: tagName === "IFRAME",
+    });
+    return Boolean(normalized);
   }
 
   function getFontFamilyClassName(key) {
@@ -446,13 +538,19 @@
   }
 
   function sanitizeBookmarkId(value) {
-    return String(value || "")
+    const normalized = String(value || "")
       .trim()
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/[^a-z0-9_\s-]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
+      .replace(/^-+|-+$/g, "")
+      .replace(/^[_-]+/, "");
+    if (!normalized) return "";
+    if (RESERVED_BOOKMARK_IDS.has(normalized)) {
+      return `bookmark-${normalized}`;
+    }
+    return normalized;
   }
 
   function escapeRegExp(value) {
@@ -759,10 +857,96 @@
   }
 
   function readImageFileAsDataURL(file) {
-    if (!(file instanceof File) || !file.type || !file.type.startsWith("image/")) {
+    if (!(file instanceof File) || !SAFE_IMAGE_FILE_MIME_TYPES.has(String(file.type || "").toLowerCase())) {
       return Promise.reject(new Error("Please choose an image file."));
     }
     return readFileAsDataURL(file);
+  }
+
+  function sanitizeInlineStyle(value, options) {
+    const config = Object.assign({
+      allowTextAlign: false,
+    }, options || {});
+    const safeDeclarations = [];
+    const declarations = String(value || "")
+      .split(";")
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+    declarations.forEach((declaration) => {
+      const separatorIndex = declaration.indexOf(":");
+      if (separatorIndex === -1) return;
+      const property = declaration.slice(0, separatorIndex).trim().toLowerCase();
+      const rawValue = declaration.slice(separatorIndex + 1).trim();
+      if (!property || !rawValue) return;
+      if (/(?:url|expression|var|calc|-moz-binding|@import|javascript)/i.test(rawValue)) return;
+
+      if (property === "color" || property === "background-color") {
+        const hex = normalizeHexColor(rawValue);
+        if (hex) {
+          safeDeclarations.push(`${property}:${hex}`);
+        }
+        return;
+      }
+
+      if (config.allowTextAlign && property === "text-align") {
+        const normalized = String(rawValue).toLowerCase();
+        if (["left", "center", "right", "justify"].includes(normalized)) {
+          safeDeclarations.push(`text-align:${normalized}`);
+        }
+      }
+    });
+    return safeDeclarations.join(";");
+  }
+
+  function sanitizeDataType(tagName, value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (!normalized) return "";
+    if (tagName === "DIV" && DIV_DATA_TYPES.has(normalized)) return normalized;
+    if (tagName === "FIGURE" && FIGURE_DATA_TYPES.has(normalized)) return normalized;
+    if (tagName === "BLOCKQUOTE" && BLOCKQUOTE_DATA_TYPES.has(normalized)) return normalized;
+    if (tagName === "SECTION" && SECTION_DATA_TYPES.has(normalized)) return normalized;
+    return "";
+  }
+
+  function sanitizeCodeLanguage(value) {
+    const normalized = String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9+._-]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return /^[a-z0-9][a-z0-9+._-]{0,39}$/i.test(normalized) ? normalized : "";
+  }
+
+  function sanitizeClassList(value, extensions) {
+    return String(value || "")
+      .split(/\s+/)
+      .filter(Boolean)
+      .filter((className) => {
+        if (TEMP_SELECTION_CLASSES.includes(className)) return false;
+        if ([FIND_REPLACE_HIGHLIGHT_CLASS, FIND_REPLACE_CURRENT_CLASS, "is-selected-cell", "is-selected-cell-primary"].includes(className)) return false;
+        return (
+          CLASS_ALLOWLIST.has(className)
+          || extensions.classes.has(className)
+          || /^language-[a-z0-9+._-]+$/i.test(className)
+          || (className.startsWith(FONT_CLASS_PREFIX) && FONT_FAMILY_LOOKUP.has(className.slice(FONT_CLASS_PREFIX.length)))
+          || Boolean(parseFontSizeClass(className))
+          || (className.startsWith(TEXT_COLOR_CLASS_PREFIX) && TEXT_COLOR_LOOKUP.has(className.slice(TEXT_COLOR_CLASS_PREFIX.length)))
+          || (className.startsWith(HIGHLIGHT_CLASS_PREFIX) && HIGHLIGHT_COLOR_LOOKUP.has(className.slice(HIGHLIGHT_CLASS_PREFIX.length)))
+        );
+      });
+  }
+
+  function getSafeUploadCredentials(uploadUrl, configuredCredentials) {
+    try {
+      const resolved = new URL(uploadUrl, window.location.href);
+      if (resolved.origin !== window.location.origin) {
+        return "omit";
+      }
+    } catch (error) {
+      return "omit";
+    }
+    return configuredCredentials || "same-origin";
   }
 
   function readMultipleFilesAsDataURLs(files) {
@@ -830,7 +1014,7 @@
 
     if (host === "youtu.be") {
       videoId = url.pathname.split("/").filter(Boolean)[0] || "";
-    } else if (host === "youtube.com" || host === "m.youtube.com") {
+    } else if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
       if (url.pathname === "/watch") {
         videoId = url.searchParams.get("v") || "";
       } else if (url.pathname.startsWith("/embed/")) {
@@ -985,7 +1169,7 @@
     const root = doc.body;
     if (!root) return "";
 
-    Array.from(root.querySelectorAll("script, style, meta, link, xml, title")).forEach((node) => node.remove());
+    Array.from(root.querySelectorAll("script, style, meta, link, base, object, embed, applet, form, input, textarea, select, option, button, svg, math, xml, title")).forEach((node) => node.remove());
 
     const walker = doc.createTreeWalker(root, NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT);
     const toRemove = [];
@@ -1027,9 +1211,7 @@
           return;
         }
         if (name === "class") {
-          const classes = value
-            .split(/\s+/)
-            .filter(Boolean)
+          const classes = sanitizeClassList(value, { classes: new Set() })
             .filter((className) => !/^(mso|docs-|c\d+|kix)/i.test(className) && className !== "Apple-converted-space");
           if (classes.length) {
             element.setAttribute("class", classes.join(" "));
@@ -1075,16 +1257,10 @@
               element.classList.add(getHighlightClassName(preset.key));
             }
           }
+          const safeStyle = sanitizeInlineStyle(value, { allowTextAlign: false });
           element.removeAttribute("style");
-          const safeStyles = [];
-          if (textColor && !getTextColorPresetByHex(textColor)) {
-            safeStyles.push(`color:${textColor}`);
-          }
-          if (highlightColor && !getHighlightPresetByHex(highlightColor)) {
-            safeStyles.push(`background-color:${highlightColor}`);
-          }
-          if (safeStyles.length) {
-            element.setAttribute("style", safeStyles.join(";"));
+          if (safeStyle) {
+            element.setAttribute("style", safeStyle);
           }
           return;
         }
@@ -1118,17 +1294,54 @@
       }
 
       if (tagName === "A") {
-        const href = element.getAttribute("href") || "";
-        if (!isSafeUrl(href, "A")) {
+        const href = sanitizeUrl(element.getAttribute("href") || "", { tagName: "A" });
+        if (!href) {
           unwrapElement(element);
+          return;
+        }
+        element.setAttribute("href", href);
+        if (href.startsWith("#")) {
+          element.removeAttribute("target");
+          element.removeAttribute("rel");
+        } else if (element.getAttribute("target") === "_blank") {
+          element.setAttribute("rel", "noopener noreferrer");
         }
       }
 
-      if (tagName === "IFRAME") {
-        const src = element.getAttribute("src") || "";
-        if (!getYouTubeEmbedUrl(src)) {
+      if (tagName === "IMG") {
+        const src = sanitizeUrl(element.getAttribute("src") || "", {
+          tagName: "IMG",
+          allowMailto: false,
+          allowTel: false,
+          allowAnchors: false,
+          allowImageData: true,
+        });
+        if (!src) {
           element.remove();
+          return;
         }
+        element.setAttribute("src", src);
+        return;
+      }
+
+      if (tagName === "IFRAME") {
+        const src = sanitizeUrl(element.getAttribute("src") || "", {
+          tagName: "IFRAME",
+          allowMailto: false,
+          allowTel: false,
+          allowAnchors: false,
+          allowRelative: false,
+          trustedEmbedOnly: true,
+        });
+        if (!src) {
+          element.remove();
+          return;
+        }
+        element.setAttribute("src", src);
+        element.removeAttribute("srcdoc");
+        element.setAttribute("loading", "lazy");
+        element.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        element.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation");
       }
     });
 
@@ -1693,17 +1906,7 @@
         if (name.startsWith("on")) return;
 
         if (name === "class") {
-          const classes = value
-            .split(/\s+/)
-            .filter((className) => (
-              CLASS_ALLOWLIST.has(className) ||
-              sanitizerExtensions.classes.has(className) ||
-              /^language-[a-z0-9+._-]+$/i.test(className) ||
-              (className.startsWith(FONT_CLASS_PREFIX) && FONT_FAMILY_LOOKUP.has(className.slice(FONT_CLASS_PREFIX.length))) ||
-              Boolean(parseFontSizeClass(className)) ||
-              (className.startsWith(TEXT_COLOR_CLASS_PREFIX) && TEXT_COLOR_LOOKUP.has(className.slice(TEXT_COLOR_CLASS_PREFIX.length))) ||
-              (className.startsWith(HIGHLIGHT_CLASS_PREFIX) && HIGHLIGHT_COLOR_LOOKUP.has(className.slice(HIGHLIGHT_CLASS_PREFIX.length)))
-            ));
+          const classes = sanitizeClassList(value, sanitizerExtensions);
           if (classes.length) {
             clean.setAttribute("class", classes.join(" "));
           }
@@ -1711,25 +1914,18 @@
         }
 
         if (name === "style") {
-          const safeStyles = [];
-          const colorMatch = value.match(/(?:^|;)\s*color\s*:\s*(#[0-9a-f]{3}|#[0-9a-f]{6})\s*(?:;|$)/i);
-          const colorHex = normalizeHexColor(colorMatch && colorMatch[1]);
-          if (colorHex) {
-            safeStyles.push(`color:${colorHex}`);
-          }
-          const highlightMatch = value.match(/(?:^|;)\s*background-color\s*:\s*(#[0-9a-f]{3}|#[0-9a-f]{6})\s*(?:;|$)/i);
-          const highlightHex = normalizeHexColor(highlightMatch && highlightMatch[1]);
-          if (highlightHex) {
-            safeStyles.push(`background-color:${highlightHex}`);
-          }
-          if (safeStyles.length) {
-            clean.setAttribute("style", safeStyles.join(";"));
+          const safeStyle = sanitizeInlineStyle(value);
+          if (safeStyle) {
+            clean.setAttribute("style", safeStyle);
           }
           return;
         }
 
         if (name === "data-type") {
-          clean.setAttribute(name, value);
+          const safeType = sanitizeDataType(tagName, value);
+          if (safeType) {
+            clean.setAttribute(name, safeType);
+          }
           return;
         }
 
@@ -1739,7 +1935,10 @@
         }
 
         if (name === "data-language" && tagName === "FIGURE") {
-          clean.setAttribute(name, value);
+          const language = sanitizeCodeLanguage(value);
+          if (language) {
+            clean.setAttribute(name, language);
+          }
           return;
         }
 
@@ -1756,7 +1955,7 @@
         }
 
         if (name === "title" && node.classList.contains(BOOKMARK_CLASS)) {
-          clean.setAttribute("title", value);
+          clean.setAttribute("title", String(value || "").trim());
           return;
         }
 
@@ -1769,16 +1968,38 @@
 
         if (URL_ATTRS.has(name)) {
           if (tagName === "IFRAME") {
-            if (!getYouTubeEmbedUrl(value)) return;
-            clean.setAttribute(name, getYouTubeEmbedUrl(value));
+            const embedUrl = sanitizeUrl(value, {
+              tagName: "IFRAME",
+              allowMailto: false,
+              allowTel: false,
+              allowAnchors: false,
+              allowRelative: false,
+              trustedEmbedOnly: true,
+            });
+            if (!embedUrl) return;
+            clean.setAttribute(name, embedUrl);
+            clean.setAttribute("loading", "lazy");
+            clean.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+            clean.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation");
             return;
           }
-          if (!isSafeUrl(value, tagName)) return;
-          clean.setAttribute(name, value);
+          const safeUrl = sanitizeUrl(value, {
+            tagName,
+            allowMailto: tagName !== "IMG",
+            allowTel: tagName !== "IMG",
+            allowAnchors: tagName !== "IMG",
+            allowRelative: true,
+            allowImageData: tagName === "IMG",
+          });
+          if (!safeUrl) return;
+          clean.setAttribute(name, safeUrl);
           if (tagName === "A" && name === "href") {
-            if (!String(value).trim().startsWith("#")) {
+            if (!safeUrl.startsWith("#")) {
               clean.setAttribute("target", "_blank");
               clean.setAttribute("rel", "noopener noreferrer");
+            } else {
+              clean.removeAttribute("target");
+              clean.removeAttribute("rel");
             }
           }
           return;
@@ -1800,7 +2021,7 @@
           return;
         }
 
-        if (tagName === "IFRAME" && ["title", "frameborder", "allow", "loading", "allowfullscreen"].includes(name)) {
+        if (tagName === "IFRAME" && ["title", "allow", "loading", "allowfullscreen", "referrerpolicy", "sandbox"].includes(name)) {
           if (name === "allowfullscreen") {
             clean.setAttribute("allowfullscreen", "");
           } else {
@@ -1826,7 +2047,7 @@
       try {
         transform(container);
       } catch (error) {
-        console.warn("OllowEditor sanitizer rule failed.", error);
+        // Ignore third-party sanitizer transform failures without exposing raw content.
       }
     });
     return normalizeOutputHtml(container.innerHTML);
@@ -2170,8 +2391,12 @@
     }
 
     if (!range) {
-      root.insertAdjacentHTML("beforeend", html);
-      return root.lastElementChild || null;
+      const template = document.createElement("template");
+      template.innerHTML = html;
+      const fragment = template.content.cloneNode(true);
+      const lastNode = fragment.lastChild;
+      root.appendChild(fragment);
+      return lastNode;
     }
 
     const mediaBlock = getClosestMediaBlock(range.commonAncestorContainer, root);
@@ -3802,8 +4027,9 @@
             type: "html",
             html: `
               <div class="ollow-help-panel">
-                <p>OllowEditor combines WYSIWYG editing, source mode, import/export workflows, media blocks, tables, code blocks, bookmarks, and editorial formatting in one browser-based surface.</p>
-                <p>The desktop menu bar and grouped toolbar reuse the same editor commands, so menu actions and toolbar actions stay in sync.</p>
+                <p>OllowEditor is a standalone rich text publishing editor for modern web applications.</p>
+                <p>It provides WYSIWYG editing, source mode, media tools, galleries, embeds, tables, code blocks, bookmarks, find/replace, import/export workflows, and clean HTML output in one lightweight browser-based editor.</p>
+                <p>Built for developers, writers, and editorial teams, OllowEditor is designed to be easy to integrate, responsive, secure, and flexible for long-form content workflows.</p>
               </div>
             `,
           },
@@ -7035,9 +7261,11 @@
     }
 
     insertHTML(html) {
+      const clean = this.sanitizeHTML(html);
+      if (!clean) return;
       this.focus();
       this.restoreSelection();
-      insertHtmlAtSelection(this.content, html, this.savedSelection);
+      insertHtmlAtSelection(this.content, clean, this.savedSelection);
       this.saveSelection();
       this.handleContentChange();
     }
@@ -7066,6 +7294,7 @@
       let suffix = 2;
       while (
         Array.from(this.content.querySelectorAll(`[id="${candidate}"]`)).some((node) => node !== exceptBookmark)
+        || (document.getElementById(candidate) && document.getElementById(candidate) !== exceptBookmark)
       ) {
         candidate = `${base}-${suffix}`;
         suffix += 1;
@@ -7762,11 +7991,21 @@
       if (config.alignment && config.alignment !== "reset") {
         classes.push(`ollow-align-${config.alignment}`);
       }
-      const imgHtml = `<img src="${escapeHtml(config.src)}" alt="${escapeHtml(config.alt)}">`;
+      const safeImageSrc = sanitizeUrl(config.src, {
+        tagName: "IMG",
+        allowMailto: false,
+        allowTel: false,
+        allowAnchors: false,
+        allowRelative: true,
+        allowImageData: true,
+      });
+      if (!safeImageSrc) return "";
+      const imgHtml = `<img src="${escapeHtml(safeImageSrc)}" alt="${escapeHtml(config.alt)}">`;
       const linkUrl = String(config.linkUrl || "").trim();
-      const safeLink = linkUrl && isSafeUrl(linkUrl, "A") ? linkUrl : "";
+      const safeLink = sanitizeUrl(linkUrl, { tagName: "A" });
+      const openInNewTab = Boolean(config.openInNewTab) && !safeLink.startsWith("#");
       const mediaHtml = safeLink
-        ? `<a href="${escapeHtml(safeLink)}"${config.openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : ""}>${imgHtml}</a>`
+        ? `<a href="${escapeHtml(safeLink)}"${openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : ""}>${imgHtml}</a>`
         : imgHtml;
       return `<figure class="${escapeHtml(classes.join(" "))}" data-type="image">${mediaHtml}<figcaption>${escapeHtml(config.caption || "")}</figcaption></figure>`;
     }
@@ -8604,7 +8843,7 @@
       for (const item of items) {
         if (item.kind !== "file") continue;
         hasFile = true;
-        if (item.type && !item.type.startsWith("image/")) {
+        if (item.type && !SAFE_IMAGE_FILE_MIME_TYPES.has(String(item.type || "").toLowerCase())) {
           return false;
         }
       }
@@ -8612,14 +8851,14 @@
     }
 
     isImageFile(file) {
-      return Boolean(file instanceof File && file.type && file.type.startsWith("image/"));
+      return Boolean(file instanceof File && SAFE_IMAGE_FILE_MIME_TYPES.has(String(file.type || "").toLowerCase()));
     }
 
     fileToDataURL(file) {
       if (!(file instanceof File)) {
         return Promise.reject(new Error("A file is required."));
       }
-      return readFileAsDataURL(file);
+      return readImageFileAsDataURL(file);
     }
 
     getUploadUrl(type) {
@@ -8672,6 +8911,18 @@
         return Promise.all(fileList.map((file) => this.fileToDataURL(file)));
       }
 
+      const safeUploadUrl = sanitizeUrl(uploadUrl, {
+        tagName: "A",
+        allowMailto: false,
+        allowTel: false,
+        allowAnchors: false,
+        allowRelative: true,
+        allowImageData: false,
+      });
+      if (!safeUploadUrl) {
+        throw new Error("Upload URL is not safe.");
+      }
+
       const formData = new FormData();
       const fieldName = type === "attachment" ? "file" : "image";
       fileList.forEach((file) => {
@@ -8687,11 +8938,11 @@
 
       this.showFeedback(type === "attachment" ? "Uploading attachment..." : "Uploading files...");
       try {
-        const response = await fetch(uploadUrl, {
+        const response = await fetch(safeUploadUrl, {
           method: upload.method || "POST",
           headers,
           body: formData,
-          credentials: upload.credentials || "same-origin",
+          credentials: getSafeUploadCredentials(safeUploadUrl, upload.credentials),
         });
 
         let payload = null;
@@ -8709,7 +8960,16 @@
         }
 
         const urls = extractUploadUrls(payload);
-        const validUrls = urls.filter((url) => isSafeUrl(url, type === "attachment" ? "A" : "IMG"));
+        const validUrls = urls
+          .map((url) => sanitizeUrl(url, {
+            tagName: type === "attachment" ? "A" : "IMG",
+            allowMailto: false,
+            allowTel: false,
+            allowAnchors: false,
+            allowRelative: true,
+            allowImageData: false,
+          }))
+          .filter(Boolean);
         if (!validUrls.length) {
           throw new Error("The upload endpoint must return a valid URL.");
         }
@@ -9471,8 +9731,10 @@
           }
         },
         onConfirm: (values) => {
-          const url = String(values.url || "").trim() || (values.bookmarkId ? `#${values.bookmarkId}` : "");
-          if (!isSafeUrl(url, "A")) {
+          const url = sanitizeUrl(String(values.url || "").trim() || (values.bookmarkId ? `#${values.bookmarkId}` : ""), {
+            tagName: "A",
+          });
+          if (!url) {
             return "Enter a valid URL.";
           }
           this.restoreSelection();
@@ -9735,7 +9997,7 @@
 
           if (embedUrl) {
             this.insertHTML(
-              `<figure class="ollow-media ollow-embed" data-type="embed"><div class="ollow-video-wrapper"><iframe src="${escapeHtml(embedUrl)}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe></div>${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ""}</figure>`
+              `<figure class="ollow-media ollow-embed" data-type="embed"><div class="ollow-video-wrapper"><iframe src="${escapeHtml(embedUrl)}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation"></iframe></div>${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ""}</figure>`
             );
             return null;
           }
@@ -10825,9 +11087,16 @@
       Array.from(root.querySelectorAll("iframe[src]")).forEach((iframe) => {
         const url = getYouTubeWatchUrl(iframe.getAttribute("src") || "") || iframe.getAttribute("src") || "";
         const paragraph = document.createElement("p");
-        paragraph.innerHTML = url
-          ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>`
-          : "Embedded video";
+        if (url) {
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.target = "_blank";
+          anchor.rel = "noopener noreferrer";
+          anchor.textContent = url;
+          paragraph.appendChild(anchor);
+        } else {
+          paragraph.textContent = "Embedded video";
+        }
         const figure = iframe.closest("figure, section, div");
         if (figure && figure.querySelector("figcaption")) {
           const caption = figure.querySelector("figcaption");
@@ -11203,6 +11472,7 @@ body {
 
     buildPdfExportArticle(html, options) {
       const wrapper = document.createElement("div");
+      // The PDF export body is built only from sanitized editor HTML returned by getHTML().
       wrapper.innerHTML = `<main class="ollow-pdf-document"><article class="ollow-exported-content">${html || ""}</article></main>`;
       Array.from(wrapper.querySelectorAll("iframe[src]")).forEach((iframe) => {
         const src = iframe.getAttribute("src");

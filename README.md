@@ -1790,6 +1790,224 @@ Ollow Editor works in modern browsers:
 
 ---
 
+## Security Audit
+
+Audit date: `2026-07-07`
+
+### Security Status
+
+OllowEditor is a standalone client-side editor. The current hardening is focused on preventing unsafe HTML, script execution, unsafe URLs, and unsafe inline styles from entering saved or exported content.
+
+The editor is hardened against common XSS and unsafe HTML injection vectors. It is not claimed to be 100% secure, and any host application still needs server-side validation and normal web application controls.
+
+### Scope
+
+Audited surfaces:
+
+- pasted HTML cleanup
+- source / HTML mode
+- Markdown import
+- DOCX import
+- image, gallery, embed, link, bookmark, related, fact box, and attachment insertion
+- autosave restore
+- export HTML / PDF / DOCX builders
+- upload adapter URL handling
+
+### Summary
+
+The main real risk in OllowEditor was client-side XSS through permissive HTML, URL, and file handling. No SQL execution or direct database access exists in the standalone editor.
+
+The audit hardened the editor around an allowlist sanitizer, strict URL filtering, safe bookmark IDs, restricted image data URLs, trusted embed handling, sanitized autosave restore, and sanitized export pipelines.
+
+### Fixed Issues
+
+- blocked unsafe `javascript:`, `vbscript:`, protocol-relative, and `data:text/html` URLs
+- blocked `data:image/svg+xml` and other non-approved image data URLs
+- restricted image upload fallbacks to safe bitmap MIME types only
+- forced iframe embeds through trusted YouTube embed normalization
+- added iframe `sandbox` and `referrerpolicy`
+- prevented cross-origin upload requests from sending credentials by default
+- hardened bookmark IDs against unsafe characters and reserved DOM-clobbering names
+- sanitized `insertHTML()` centrally so plugin or feature callers cannot bypass the sanitizer
+- removed UI-only selection and find-highlight classes from sanitized/saved output
+- stripped dangerous tags such as `script`, `style`, `base`, `object`, `embed`, `form`, `input`, `button`, `svg`, and `math`
+- reduced unsafe inline style preservation to an allowlist
+
+### Sanitizer Policy
+
+The sanitizer is allowlist-based.
+
+Allowed content tags are limited to editor-supported rich text and media structures, including:
+
+- `p`, `br`, `strong`, `em`, `u`, `s`, `sub`, `sup`, `code`
+- `h2`, `h3`, `h4`
+- `ul`, `ol`, `li`
+- `blockquote`, `hr`
+- `span`, `a`
+- `figure`, `figcaption`, `img`, `iframe`
+- `table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`
+- `pre`
+- `div`, `section` only for approved editor block types
+
+Removed tags include:
+
+- `script`
+- `style`
+- `link`
+- `meta`
+- `base`
+- `object`
+- `embed`
+- `applet`
+- `form`
+- `input`
+- `textarea`
+- `select`
+- `option`
+- `button`
+- `svg`
+- `math`
+
+### Allowed Attributes
+
+Attributes are restricted by tag and sanitized before output.
+
+Examples:
+
+- links: `href`, `target`, `rel`
+- images: `src`, `alt`
+- bookmarks: safe `id`, `data-bookmark="true"`, `contenteditable="false"`, `title`
+- tables: safe `colspan`, `rowspan`, `scope`
+- code figures: safe `data-language`
+- iframes: trusted `src`, `title`, `allow`, `allowfullscreen`, `loading`, `referrerpolicy`, `sandbox`
+
+All event handler attributes such as `onclick`, `onerror`, and `onload` are removed.
+
+### URL Scheme Policy
+
+Allowed URL forms:
+
+- `http:`
+- `https:`
+- `mailto:`
+- `tel:`
+- safe relative URLs
+- safe internal anchors such as `#section-id`
+
+Blocked URL forms:
+
+- `javascript:`
+- `vbscript:`
+- `data:text/html`
+- protocol-relative URLs such as `//example.com`
+- malformed or control-character-bearing URLs
+
+For images, only these data URLs are allowed:
+
+- `data:image/png;base64,...`
+- `data:image/jpeg;base64,...`
+- `data:image/gif;base64,...`
+- `data:image/webp;base64,...`
+
+`data:image/svg+xml` is blocked.
+
+### Embed Provider Policy
+
+Iframe embeds are restricted to trusted YouTube formats:
+
+- `youtube.com`
+- `www.youtube.com`
+- `m.youtube.com`
+- `youtu.be`
+- `youtube-nocookie.com`
+
+Unsupported iframe sources are removed during sanitization. The rich embed UI still allows an external link fallback block, but arbitrary iframe HTML is not preserved.
+
+### Inline Style Policy
+
+Only a very small style allowlist is preserved:
+
+- `color` with valid hex only
+- `background-color` with valid hex only
+
+Unsafe style values and functions such as `url()`, `expression()`, `var()`, `calc()`, `background-image`, `filter`, and similar dynamic CSS are removed.
+
+### Class Allowlist Policy
+
+Saved HTML keeps only approved content classes, including:
+
+- `ollow-font-*`
+- `ollow-font-size-*`
+- `ollow-text-color-*`
+- `ollow-highlight-*`
+- `ollow-align-*`
+- `ollow-image-*`
+- `ollow-editor-image`
+- `ollow-editor-code`
+- `ollow-editor-table`
+- `ollow-gallery`
+- `ollow-bookmark`
+- approved block classes such as related, fact box, attachment, and style presets
+
+Temporary UI classes are removed, including selection, find-highlight, and editor-only state classes.
+
+### Export Safety
+
+- Export HTML uses sanitized editor content only.
+- Export PDF builds a print document from sanitized editor HTML only.
+- Export DOCX / Word-compatible export uses sanitized editor content only.
+- Editor toolbar, modal, floating toolbar, autosave UI, and find-highlight artifacts are excluded from exported content.
+
+### Autosave Safety
+
+- autosaved content is restored through the same sanitizer path before rendering
+- malformed or unsafe restored HTML is reduced to supported editor content
+- no authentication secrets or tokens are stored by the editor itself
+
+### CSRF Status
+
+CSRF is not applicable to the standalone static editor itself.
+
+For host applications that configure upload endpoints:
+
+- the editor can send a CSRF header when available
+- cross-origin upload requests are forced to omit credentials by default
+- the host application must still implement CSRF protection server-side
+
+### SQL Injection Status
+
+SQL injection is not applicable inside the standalone editor because OllowEditor does not execute SQL queries or connect directly to a database.
+
+Any host backend that stores editor output must still use parameterized queries and normal server-side validation.
+
+### Dependency / CDN Notes
+
+- the demo page loads `Mammoth.js` from a pinned CDN URL for optional DOCX import
+- the script is loaded with `crossorigin="anonymous"` and `referrerpolicy="no-referrer"`
+- Google Fonts are still loaded externally in the demo page
+
+For stricter deployments, host applications should prefer local bundling or a fully controlled asset pipeline.
+
+### Known Limitations
+
+- client-side sanitization is a strong first line of defense, not a replacement for server-side validation
+- host applications should still apply a Content Security Policy, safe upload validation, and server-side HTML policy checks if editor output is re-used elsewhere
+- custom plugins that generate HTML should continue using editor helpers instead of bypassing sanitizer boundaries
+
+### Host Application Recommendations
+
+Host applications should still implement:
+
+- authentication
+- authorization
+- CSRF protection for backend upload/import endpoints
+- server-side validation and sanitization
+- CSP headers
+- safe file upload validation
+- rate limiting where appropriate
+
+---
+
 ## Roadmap
 
 Possible future improvements:

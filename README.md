@@ -271,6 +271,7 @@ Less-used commands are managed through a responsive overflow system instead of k
 - on desktop, rare export and utility commands move into a `More` menu
 - on tablet, the overflow menu grows and absorbs more low-frequency actions
 - on mobile, those same lower-priority actions remain available through the bottom-sheet `More` drawer
+- `Emoji`, `Related`, `Fact Box`, and `Attachment` stay visible in the main editor tools row instead of being duplicated inside `More`
 
 The `More` button opens the overflow menu on desktop and tablet. The menu is rendered on demand, grouped into clear sections, supports quick search/filtering, and uses the same command handlers as the visible toolbar buttons. The responsive command metadata controls which actions stay visible and which actions move into overflow at each breakpoint.
 

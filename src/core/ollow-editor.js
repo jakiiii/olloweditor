@@ -2669,6 +2669,9 @@ const globalScope = typeof window !== "undefined" ? window : globalThis;
     build() {
       this.wrapper = document.createElement("div");
       this.wrapper.className = "nw-editor";
+      if (this.options.className) {
+        this.wrapper.classList.add(...String(this.options.className).split(/\s+/).filter(Boolean));
+      }
       this.wrapper.dataset.editorId = this.id;
       this.applyTheme();
 
@@ -2692,11 +2695,14 @@ const globalScope = typeof window !== "undefined" ? window : globalThis;
 
       this.content = document.createElement("div");
       this.content.className = "nw-editor-content";
-      this.content.contentEditable = "true";
+      this.content.contentEditable = this.options.readOnly ? "false" : "true";
       this.content.spellcheck = true;
       this.content.dataset.placeholder = this.options.placeholder;
       this.content.setAttribute("role", "textbox");
       this.content.setAttribute("aria-multiline", "true");
+      if (this.options.readOnly) {
+        this.content.setAttribute("aria-readonly", "true");
+      }
 
       surface.appendChild(this.content);
 
@@ -8982,9 +8988,33 @@ const globalScope = typeof window !== "undefined" ? window : globalThis;
       const upload = this.options.upload || {};
       const uploadUrl = this.getUploadUrl(type);
       const allowFallback = Boolean(upload.allowFallback);
+      const uploadImage = typeof this.options.uploadImage === "function" ? this.options.uploadImage : null;
 
       if (type === "gallery" && !upload.galleryUrl && upload.imageUrl) {
         return Promise.all(fileList.map((item) => this.uploadFile(item, "image")));
+      }
+
+      if ((type === "image" || type === "gallery") && uploadImage) {
+        this.showFeedback("Uploading files...");
+        try {
+          const urls = await Promise.all(fileList.map((file) => Promise.resolve(uploadImage(file))));
+          const validUrls = urls
+            .map((url) => sanitizeUrl(url, {
+              tagName: "IMG",
+              allowMailto: false,
+              allowTel: false,
+              allowAnchors: false,
+              allowRelative: true,
+              allowImageData: false,
+            }))
+            .filter(Boolean);
+          if (!validUrls.length || validUrls.length !== fileList.length) {
+            throw new Error("uploadImage(file) must return a valid image URL.");
+          }
+          return validUrls;
+        } finally {
+          this.clearFeedback();
+        }
       }
 
       if (!uploadUrl) {
@@ -11877,8 +11907,14 @@ ${this.getExportPDFStyles(options)}
 
   function normalizeOptions(textarea, options) {
     const config = Object.assign({}, options || {});
+    if (typeof config.initialHTML === "string" && !textarea.value.trim()) {
+      textarea.value = config.initialHTML;
+    }
     config.placeholder = config.placeholder || textarea.getAttribute("placeholder") || textarea.dataset.placeholder || DEFAULT_PLACEHOLDER;
     config.autosaveDelay = Number(config.autosaveDelay || textarea.dataset.autosaveDelay || DEFAULT_AUTOSAVE_DELAY) || DEFAULT_AUTOSAVE_DELAY;
+    config.readOnly = Boolean(config.readOnly || textarea.readOnly || textarea.disabled);
+    config.className = config.className || "";
+    config.uploadImage = typeof config.uploadImage === "function" ? config.uploadImage : null;
     const explicitTheme = config.theme || textarea.dataset.theme || "";
     if (typeof config.persistTheme === "undefined") {
       if (typeof textarea.dataset.persistTheme !== "undefined") {
@@ -11911,6 +11947,113 @@ ${this.getExportPDFStyles(options)}
     config.upload = uploadConfig;
     config.docx = Object.assign({ enabled: true }, config.docx || {});
     return config;
+  }
+
+  function resolveElement(target) {
+    if (typeof target === "string") {
+      return document.querySelector(target);
+    }
+    return target || null;
+  }
+
+  function createCoreTextarea(element, options) {
+    if (element.tagName && element.tagName.toUpperCase() === "TEXTAREA") {
+      const textarea = element;
+      if (typeof options.initialHTML === "string" && !textarea.value.trim()) {
+        textarea.value = options.initialHTML;
+      }
+      if (options.placeholder && !textarea.getAttribute("placeholder")) {
+        textarea.setAttribute("placeholder", options.placeholder);
+      }
+      if (options.readOnly) {
+        textarea.readOnly = true;
+      }
+      return { textarea, host: textarea.parentElement, isManaged: false };
+    }
+
+    const host = element;
+    const textarea = document.createElement("textarea");
+    textarea.value = typeof options.initialHTML === "string" ? options.initialHTML : host.innerHTML || "";
+    if (options.placeholder) {
+      textarea.setAttribute("placeholder", options.placeholder);
+    }
+    if (options.readOnly) {
+      textarea.readOnly = true;
+    }
+    host.replaceChildren(textarea);
+    return { textarea, host, isManaged: true };
+  }
+
+  function bindCoreOnChange(instance, handler) {
+    if (typeof handler !== "function") {
+      return () => {};
+    }
+    return instance.on("change", (detail) => {
+      handler(detail && typeof detail.html === "string" ? detail.html : instance.getHTML());
+    });
+  }
+
+  class OllowEditorCore {
+    constructor(element, options) {
+      const resolvedElement = resolveElement(element);
+      if (!(resolvedElement instanceof HTMLElement)) {
+        throw new Error("OllowEditorCore requires a valid HTMLElement.");
+      }
+      this.element = resolvedElement;
+      this.options = Object.assign({
+        initialHTML: "",
+        placeholder: "Start writing...",
+        readOnly: false,
+      }, options || {});
+      this._mount = createCoreTextarea(this.element, this.options);
+      this.textarea = this._mount.textarea;
+      this.instance = api.init(this.textarea, this.options);
+      this._unbindOnChange = this.instance ? bindCoreOnChange(this.instance, this.options.onChange) : () => {};
+      this._destroyed = false;
+      if (this.instance && typeof this.options.onChange === "function" && this.options.initialHTML) {
+        this.options.onChange(this.instance.getHTML());
+      }
+    }
+
+    getHTML() {
+      return this.instance ? this.instance.getHTML() : "";
+    }
+
+    setHTML(html) {
+      if (!this.instance) return;
+      this.instance.setHTML(html);
+      if (typeof this.options.onChange === "function") {
+        this.options.onChange(this.instance.getHTML());
+      }
+    }
+
+    focus() {
+      if (this.instance) {
+        this.instance.focus();
+      }
+    }
+
+    destroy() {
+      if (this._destroyed) return;
+      const currentHtml = this.instance ? this.instance.getHTML() : "";
+      this._unbindOnChange();
+      if (this.instance) {
+        this.instance.destroy();
+      }
+      if (this._mount && this._mount.isManaged && this._mount.host) {
+        this._mount.host.innerHTML = currentHtml;
+      }
+      this.instance = null;
+      this._destroyed = true;
+    }
+  }
+
+  function createOllowEditor(selector, options) {
+    const element = resolveElement(selector);
+    if (!(element instanceof HTMLElement)) {
+      throw new Error("createOllowEditor requires a valid selector or HTMLElement.");
+    }
+    return new OllowEditorCore(element, options);
   }
 
   const api = {
@@ -11962,5 +12105,5 @@ ${this.getExportPDFStyles(options)}
     globalScope.OllowEditor = api;
   }
 
-export { api as NationWireEditor, api as OllowEditor };
+export { createOllowEditor, OllowEditorCore, api as NationWireEditor, api as OllowEditor };
 export default api;

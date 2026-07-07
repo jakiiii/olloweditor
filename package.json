@@ -17,6 +17,7 @@
       "import": "./src/react/index.js",
       "default": "./src/react/index.js"
     },
+    "./style.css": "./src/styles/ollow-editor.css",
     "./styles.css": "./src/styles/ollow-editor.css",
     "./package.json": "./package.json"
   },

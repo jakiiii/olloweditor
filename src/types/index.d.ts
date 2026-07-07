@@ -7,7 +7,6 @@ export interface OllowEditorOptions {
   className?: string;
   onChange?: (html: string) => void;
   uploadImage?: (file: File) => Promise<string> | string;
-  [key: string]: unknown;
 }
 
 export declare class OllowEditorCore {
@@ -23,16 +22,3 @@ export declare function createOllowEditor(
   selector: OllowEditorSelector,
   options?: OllowEditorOptions
 ): OllowEditorCore;
-
-export interface OllowEditorApi {
-  registerPlugin(name: string, factory: (editor: Record<string, unknown>, options: Record<string, unknown>) => unknown): unknown;
-  initAll(root?: ParentNode | Document, options?: OllowEditorOptions): Record<string, unknown>[];
-  init(target: string | HTMLTextAreaElement, options?: OllowEditorOptions): Record<string, unknown> | null;
-  get(target: string | HTMLTextAreaElement): Record<string, unknown> | null;
-  instances(): Record<string, unknown>[];
-}
-
-export declare const OllowEditor: OllowEditorApi;
-export declare const NationWireEditor: OllowEditorApi;
-
-export default OllowEditor;

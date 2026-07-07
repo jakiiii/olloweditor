@@ -2268,6 +2268,9 @@
       this.tabletOverflowControl = null;
       this.tabletOverflowButton = null;
       this.tabletOverflowMenu = null;
+      this.tabletOverflowMenuContent = null;
+      this.tabletOverflowSearchInput = null;
+      this.tabletOverflowEmptyState = null;
       this.tabletOverflowItems = {};
       this.overflowMenuAnchor = null;
       this.boundOverflowScrollClose = this.closeOverflowMenu.bind(this);
@@ -2621,7 +2624,7 @@
               showOnDesktop: false,
               showOnTablet: false,
               showOnMobile: false,
-              overflowOnDesktop: false,
+              overflowOnDesktop: true,
               overflowOnTablet: true,
               overflowOnMobile: true,
             },
@@ -2634,7 +2637,7 @@
               showOnDesktop: true,
               showOnTablet: false,
               showOnMobile: false,
-              overflowOnDesktop: false,
+              overflowOnDesktop: true,
               overflowOnTablet: true,
               overflowOnMobile: true,
             },
@@ -2647,7 +2650,7 @@
               showOnDesktop: true,
               showOnTablet: false,
               showOnMobile: false,
-              overflowOnDesktop: false,
+              overflowOnDesktop: true,
               overflowOnTablet: true,
               overflowOnMobile: true,
             },
@@ -2660,7 +2663,7 @@
               showOnDesktop: true,
               showOnTablet: false,
               showOnMobile: false,
-              overflowOnDesktop: false,
+              overflowOnDesktop: true,
               overflowOnTablet: true,
               overflowOnMobile: true,
             },
@@ -2674,7 +2677,7 @@
               label: "Special character",
               icon: "special-characters",
               group: "tools",
-              priority: 72,
+              priority: 78,
               showOnDesktop: false,
               showOnTablet: false,
               showOnMobile: false,
@@ -2687,7 +2690,7 @@
               label: "Emoji",
               icon: "emoji",
               group: "tools",
-              priority: 72,
+              priority: 76,
               showOnDesktop: false,
               showOnTablet: false,
               showOnMobile: false,
@@ -2700,11 +2703,11 @@
               label: "Bookmark",
               icon: "bookmark",
               group: "insert",
-              priority: 76,
+              priority: 82,
               showOnDesktop: true,
               showOnTablet: false,
               showOnMobile: false,
-              overflowOnDesktop: false,
+              overflowOnDesktop: true,
               overflowOnTablet: true,
               overflowOnMobile: true,
             },
@@ -2713,11 +2716,11 @@
               label: "Find / Replace",
               icon: "find-replace",
               group: "tools",
-              priority: 80,
+              priority: 84,
               showOnDesktop: true,
               showOnTablet: false,
               showOnMobile: false,
-              overflowOnDesktop: false,
+              overflowOnDesktop: true,
               overflowOnTablet: true,
               overflowOnMobile: true,
             },
@@ -2726,11 +2729,11 @@
               label: "Source / HTML mode",
               icon: "code",
               group: "view",
-              priority: 82,
+              priority: 80,
               showOnDesktop: true,
               showOnTablet: false,
               showOnMobile: false,
-              overflowOnDesktop: false,
+              overflowOnDesktop: true,
               overflowOnTablet: true,
               overflowOnMobile: true,
             },
@@ -2744,7 +2747,7 @@
               label: "Import DOCX",
               icon: "import",
               group: "export",
-              priority: 66,
+              priority: 70,
               showOnDesktop: false,
               showOnTablet: false,
               showOnMobile: false,
@@ -2757,7 +2760,7 @@
               label: "Export DOCX",
               icon: "docx",
               group: "export",
-              priority: 66,
+              priority: 68,
               showOnDesktop: false,
               showOnTablet: false,
               showOnMobile: false,
@@ -2770,7 +2773,7 @@
               label: "Export HTML",
               icon: "export",
               group: "export",
-              priority: 64,
+              priority: 66,
               showOnDesktop: false,
               showOnTablet: false,
               showOnMobile: false,
@@ -2992,16 +2995,61 @@
       return wrapper;
     }
 
+    getResponsiveOverflowDescription(action) {
+      const descriptions = {
+        "special-characters": "Insert editorial symbols and special characters",
+        emoji: "Insert emoji into content",
+        bookmark: "Create and manage internal anchors",
+        "find-replace": "Search and replace inside the document",
+        "source-html": "Switch between visual and source editing",
+        "import-docx": "Import Word documents into the editor",
+        "export-docx": "Export content for Microsoft Word",
+        "export-html": "Export clean HTML markup",
+        "export-pdf": "Open print-ready PDF export",
+        related: "Insert a related content block",
+        "fact-box": "Insert a fact box block",
+        attachment: "Insert an attachment block",
+        "format-painter": "Copy formatting to another selection",
+        "remove-formatting": "Strip inline formatting from selected text",
+        subscript: "Apply subscript formatting",
+        superscript: "Apply superscript formatting",
+      };
+      return descriptions[action] || "";
+    }
+
     createOverflowMenu() {
       const menu = document.createElement("div");
       menu.className = "ollow-tablet-overflow-menu ollow-overflow-menu";
       menu.hidden = true;
       menu.setAttribute("role", "menu");
       menu.setAttribute("aria-label", "More editor tools");
+      menu.innerHTML = `
+        <div class="ollow-overflow-header">
+          <div class="ollow-overflow-header-copy">
+            <div class="ollow-overflow-title">More tools</div>
+            <div class="ollow-overflow-subtitle">Quick access to editor tools</div>
+          </div>
+          <button type="button" class="ollow-overflow-close" aria-label="Close more tools menu">${renderIcon("close")}</button>
+        </div>
+        <label class="ollow-overflow-search">
+          ${renderIcon("find-replace")}
+          <input type="search" placeholder="Search tools..." aria-label="Search tools" data-overflow-search>
+        </label>
+        <div class="ollow-overflow-content" data-overflow-content></div>
+        <div class="ollow-overflow-empty" data-overflow-empty hidden>No tools found</div>
+      `;
       menu.addEventListener("mousedown", (event) => {
         event.preventDefault();
       });
       menu.addEventListener("click", (event) => {
+        const closeButton = event.target.closest(".ollow-overflow-close");
+        if (closeButton) {
+          event.preventDefault();
+          event.stopPropagation();
+          this.closeOverflowMenu();
+          this.overflowMenuAnchor?.focus?.();
+          return;
+        }
         const actionButton = event.target.closest("[data-ollow-overflow-command], [data-overflow-command], [data-overflow-action]");
         if (!actionButton) return;
         event.preventDefault();
@@ -3013,15 +3061,103 @@
           actionButton.dataset.overflowAction
         );
       });
+      menu.addEventListener("keydown", (event) => {
+        const items = this.getVisibleOverflowItems();
+        if (event.key === "Escape") {
+          if (this.tabletOverflowSearchInput && this.tabletOverflowSearchInput.value) {
+            event.preventDefault();
+            this.tabletOverflowSearchInput.value = "";
+            this.filterOverflowMenu("");
+            this.tabletOverflowSearchInput.focus();
+            return;
+          }
+          event.preventDefault();
+          this.closeOverflowMenu();
+          this.overflowMenuAnchor?.focus?.();
+          return;
+        }
+        if (!items.length) return;
+        const activeIndex = items.findIndex((item) => item === document.activeElement);
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          items[(activeIndex + 1 + items.length) % items.length].focus();
+        } else if (event.key === "ArrowUp") {
+          event.preventDefault();
+          items[(activeIndex - 1 + items.length) % items.length].focus();
+        }
+      });
+      const searchInput = menu.querySelector("[data-overflow-search]");
+      searchInput?.addEventListener("input", () => {
+        this.filterOverflowMenu(searchInput.value);
+      });
+      searchInput?.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          if (searchInput.value) {
+            event.preventDefault();
+            searchInput.value = "";
+            this.filterOverflowMenu("");
+          } else {
+            event.preventDefault();
+            this.closeOverflowMenu();
+            this.overflowMenuAnchor?.focus?.();
+          }
+          return;
+        }
+        if (event.key === "ArrowDown") {
+          const firstItem = this.getVisibleOverflowItems()[0];
+          if (firstItem) {
+            event.preventDefault();
+            firstItem.focus();
+          }
+        }
+      });
+      this.tabletOverflowSearchInput = searchInput;
+      this.tabletOverflowMenuContent = menu.querySelector("[data-overflow-content]");
+      this.tabletOverflowEmptyState = menu.querySelector("[data-overflow-empty]");
       this.tabletOverflowMenu = menu;
       return menu;
     }
 
+    getVisibleOverflowItems() {
+      if (!this.tabletOverflowMenuContent) return [];
+      return Array.from(this.tabletOverflowMenuContent.querySelectorAll("[data-ollow-overflow-command]"))
+        .filter((item) => !item.hidden && !item.disabled && item.offsetParent !== null);
+    }
+
+    filterOverflowMenu(query) {
+      if (!this.tabletOverflowMenuContent) return;
+      const term = String(query || "").trim().toLowerCase();
+      let visibleCount = 0;
+      Array.from(this.tabletOverflowMenuContent.querySelectorAll("[data-overflow-group]")).forEach((group) => {
+        const sectionText = (group.dataset.overflowGroup || "").toLowerCase();
+        let sectionVisible = 0;
+        Array.from(group.querySelectorAll("[data-ollow-overflow-command]")).forEach((button) => {
+          const label = (button.dataset.searchLabel || "").toLowerCase();
+          const description = (button.dataset.searchDescription || "").toLowerCase();
+          const matches = !term || label.includes(term) || description.includes(term) || sectionText.includes(term);
+          button.hidden = !matches;
+          if (matches) {
+            sectionVisible += 1;
+            visibleCount += 1;
+          }
+        });
+        const title = group.querySelector(".ollow-overflow-section-title");
+        if (title) title.hidden = sectionVisible === 0;
+        group.hidden = sectionVisible === 0;
+      });
+      if (this.tabletOverflowEmptyState) {
+        this.tabletOverflowEmptyState.hidden = visibleCount !== 0;
+      }
+    }
+
     rebuildResponsiveOverflowMenu() {
-      if (!this.tabletOverflowMenu) return;
+      if (!this.tabletOverflowMenu || !this.tabletOverflowMenuContent) return;
       const mode = this.getOverflowViewportMode();
-      this.tabletOverflowMenu.innerHTML = "";
+      this.tabletOverflowMenuContent.innerHTML = "";
       this.tabletOverflowItems = {};
+      if (this.tabletOverflowEmptyState) {
+        this.tabletOverflowEmptyState.hidden = true;
+      }
       if (mode === "mobile") return;
 
       const registry = this.getResponsiveCommandRegistry();
@@ -3033,17 +3169,16 @@
       registry.forEach((section) => {
         const items = (section.items || []).filter(predicate).sort((a, b) => (b.priority || 0) - (a.priority || 0));
         if (!items.length) return;
-        if (hasAnyItems) {
-          const separator = document.createElement("div");
-          separator.className = "ollow-tablet-overflow-separator ollow-overflow-section";
-          separator.setAttribute("role", "separator");
-          this.tabletOverflowMenu.appendChild(separator);
-        }
         hasAnyItems = true;
+        const sectionBlock = document.createElement("section");
+        sectionBlock.className = "ollow-overflow-section";
+        sectionBlock.dataset.overflowGroup = section.section;
         const heading = document.createElement("div");
-        heading.className = "ollow-tablet-overflow-heading ollow-overflow-section";
+        heading.className = "ollow-overflow-section-title";
         heading.textContent = section.section;
-        this.tabletOverflowMenu.appendChild(heading);
+        sectionBlock.appendChild(heading);
+        const list = document.createElement("div");
+        list.className = "ollow-overflow-section-list";
         items.forEach((item) => {
           const button = document.createElement("button");
           button.type = "button";
@@ -3051,15 +3186,26 @@
           button.dataset.ollowOverflowCommand = item.id;
           button.dataset.overflowCommand = item.id;
           button.dataset.overflowAction = item.id;
+          button.dataset.searchLabel = item.label;
+          button.dataset.searchDescription = this.getResponsiveOverflowDescription(item.id);
           button.setAttribute("role", "menuitem");
-          button.innerHTML = renderIconLabel(item.icon, item.label);
-          this.tabletOverflowMenu.appendChild(button);
+          button.innerHTML = `
+            <span class="ollow-overflow-item-icon">${renderIcon(item.icon)}</span>
+            <span class="ollow-overflow-item-copy">
+              <span class="ollow-overflow-item-label">${escapeHtml(item.label)}</span>
+              <span class="ollow-overflow-item-description">${escapeHtml(this.getResponsiveOverflowDescription(item.id))}</span>
+            </span>
+          `;
+          list.appendChild(button);
           this.tabletOverflowItems[item.id] = button;
         });
+        sectionBlock.appendChild(list);
+        this.tabletOverflowMenuContent.appendChild(sectionBlock);
       });
       if (this.tabletOverflowControl) {
         this.tabletOverflowControl.hidden = !hasAnyItems;
       }
+      this.filterOverflowMenu(this.tabletOverflowSearchInput ? this.tabletOverflowSearchInput.value : "");
     }
 
     runResponsiveOverflowAction(action) {
@@ -3261,7 +3407,12 @@
           button.type = "button";
           button.className = "ollow-action-button";
           button.dataset.drawerCommand = action;
-          button.innerHTML = renderIconLabel(icon, label);
+          button.innerHTML = `
+            <span class="ollow-action-button-icon">${renderIcon(icon)}</span>
+            <span class="ollow-action-button-copy">
+              <span class="ollow-action-button-label">${escapeHtml(label)}</span>
+            </span>
+          `;
           button.setAttribute("aria-label", label);
           grid.appendChild(button);
         });
@@ -3290,20 +3441,32 @@
     positionOverflowMenu(button) {
       if (!this.tabletOverflowMenu || !button) return;
       const menu = this.tabletOverflowMenu;
+      menu.dataset.theme = this.getEffectiveTheme();
+      menu.classList.toggle("is-dark", this.getEffectiveTheme() === "dark");
       const rect = button.getBoundingClientRect();
+      const gap = 10;
+      const viewportPadding = 12;
+      menu.style.visibility = "hidden";
       menu.style.top = "0px";
       menu.style.left = "0px";
-      const menuWidth = menu.offsetWidth || 260;
-      const menuHeight = menu.offsetHeight || 320;
-      const viewportPadding = 12;
-      let left = Math.min(rect.left, window.innerWidth - menuWidth - viewportPadding);
-      left = Math.max(viewportPadding, left);
-      let top = rect.bottom + 8;
-      if (top + menuHeight > window.innerHeight - viewportPadding) {
-        top = Math.max(viewportPadding, rect.top - menuHeight - 8);
+      const menuRect = menu.getBoundingClientRect();
+      let left = rect.left;
+      let top = rect.bottom + gap;
+      if (left + menuRect.width > window.innerWidth - viewportPadding) {
+        left = window.innerWidth - menuRect.width - viewportPadding;
+      }
+      if (left < viewportPadding) {
+        left = viewportPadding;
+      }
+      if (top + menuRect.height > window.innerHeight - viewportPadding) {
+        top = rect.top - menuRect.height - gap;
+      }
+      if (top < viewportPadding) {
+        top = viewportPadding;
       }
       menu.style.left = `${Math.round(left)}px`;
       menu.style.top = `${Math.round(top)}px`;
+      menu.style.visibility = "";
     }
 
     openOverflowMenu(button) {
@@ -3326,12 +3489,24 @@
       this.closeHighlightPopover();
       this.closeThemeMenu();
       this.overflowMenuAnchor = trigger;
+      if (this.tabletOverflowSearchInput) {
+        this.tabletOverflowSearchInput.value = "";
+      }
       this.tabletOverflowMenu.hidden = false;
       this.tabletOverflowMenu.classList.add("is-open");
+      this.filterOverflowMenu("");
       this.positionOverflowMenu(trigger);
       trigger.setAttribute("aria-expanded", "true");
       trigger.classList.add("is-active");
       window.addEventListener("scroll", this.boundOverflowScrollClose, true);
+      window.setTimeout(() => {
+        if (this.tabletOverflowSearchInput) {
+          this.tabletOverflowSearchInput.focus();
+          this.tabletOverflowSearchInput.select();
+        } else {
+          this.getVisibleOverflowItems()[0]?.focus?.();
+        }
+      }, 0);
     }
 
     closeOverflowMenu() {

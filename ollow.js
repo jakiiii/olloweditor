@@ -2312,6 +2312,7 @@
       this.modalConfirm = null;
       this.modalFieldRefs = {};
       this.savedSelection = null;
+      this.lastValidEditorRange = null;
       this.autosaveTimer = null;
       this.lastSavedAt = null;
       this.dragDepth = 0;
@@ -3039,9 +3040,17 @@
         <div class="ollow-overflow-empty" data-overflow-empty hidden>No tools found</div>
       `;
       menu.addEventListener("pointerdown", (event) => {
+        const item = event.target.closest("[data-ollow-overflow-command]");
+        if (item) {
+          event.preventDefault();
+        }
         event.stopPropagation();
       });
       menu.addEventListener("mousedown", (event) => {
+        const item = event.target.closest("[data-ollow-overflow-command]");
+        if (item) {
+          event.preventDefault();
+        }
         event.stopPropagation();
       });
       menu.addEventListener("click", (event) => {
@@ -3216,11 +3225,26 @@
 
     runResponsiveOverflowAction(action) {
       if (!action) return;
+      const requiresSelectionRestore = new Set([
+        "format-painter",
+        "remove-formatting",
+        "subscript",
+        "superscript",
+      ]);
+      if (requiresSelectionRestore.has(action)) {
+        this.restoreLastValidEditorSelection();
+      }
       if (action.startsWith("menu-") || action.startsWith("theme-")) {
         this.executeMenuAction(action);
+        if (requiresSelectionRestore.has(action)) {
+          this.captureEditorSelection();
+        }
         return;
       }
       this.handleAction(action);
+      if (requiresSelectionRestore.has(action)) {
+        this.captureEditorSelection();
+      }
     }
 
     buildMobileToolbar() {
@@ -5488,13 +5512,11 @@
         return true;
       }
 
-      const fragment = range.extractContents();
-      this.stripFormattingWithin(fragment);
-      const lastNode = fragment.lastChild;
-      range.insertNode(fragment);
-      if (lastNode) {
-        placeCaretAfter(lastNode);
-      }
+      const blocks = this.getCurrentBlocksFromSelection();
+      document.execCommand("removeFormat", false, null);
+      blocks.forEach((block) => {
+        this.cleanEmptySpans(block);
+      });
       this.saveSelection();
       this.handleContentChange();
       return true;
@@ -5537,7 +5559,7 @@
         locked: Boolean(locked),
         format,
       };
-      this.showFeedback(locked ? "Format Painter locked. Select text to apply. Press Esc to cancel." : "Select text to apply formatting.");
+      this.showFeedback(locked ? "Format Painter locked. Select target text to apply. Press Esc to cancel." : "Format copied. Select target text.");
       this.updateToolbarState();
       return true;
     }
@@ -6295,6 +6317,20 @@
         this.toggleOverflowMenu(overflowButton);
       });
 
+      this.wrapper.addEventListener("pointerdown", (event) => {
+        const overflowButton = event.target.closest("[data-ollow-overflow-toggle='true']");
+        if (!overflowButton || !this.wrapper.contains(overflowButton)) return;
+        this.captureEditorSelection();
+        event.preventDefault();
+      });
+
+      this.wrapper.addEventListener("mousedown", (event) => {
+        const overflowButton = event.target.closest("[data-ollow-overflow-toggle='true']");
+        if (!overflowButton || !this.wrapper.contains(overflowButton)) return;
+        this.captureEditorSelection();
+        event.preventDefault();
+      });
+
       this.headingSelect.addEventListener("change", () => {
         this.applyBlock(this.headingSelect.value);
       });
@@ -6345,10 +6381,12 @@
       });
 
       this.content.addEventListener("keyup", () => {
+        this.captureEditorSelection();
         this.updateToolbarState();
       });
 
       this.content.addEventListener("mouseup", () => {
+        this.captureEditorSelection();
         window.setTimeout(() => {
           if (!this.tryApplyFormatPainterToSelection()) {
             this.updateToolbarState();
@@ -6407,6 +6445,7 @@
       }
 
       if (this.isFocused || selectionInside(this.content)) {
+        this.captureEditorSelection();
         this.saveSelection();
         this.updateToolbarState();
       }
@@ -10181,6 +10220,9 @@
       const range = selection.getRangeAt(0);
       if (!this.content.contains(range.commonAncestorContainer)) return;
       this.savedSelection = range.cloneRange();
+      if (!range.collapsed) {
+        this.lastValidEditorRange = range.cloneRange();
+      }
     }
 
     restoreSelection() {
@@ -10189,6 +10231,34 @@
       if (!selection) return;
       selection.removeAllRanges();
       selection.addRange(this.savedSelection);
+    }
+
+    captureEditorSelection() {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return false;
+      const range = selection.getRangeAt(0);
+      if (range.collapsed) return false;
+      const common = range.commonAncestorContainer;
+      const node = common.nodeType === Node.TEXT_NODE ? common.parentElement : common;
+      if (!node || !this.content.contains(node)) return false;
+      this.lastValidEditorRange = range.cloneRange();
+      this.savedSelection = range.cloneRange();
+      return true;
+    }
+
+    restoreLastValidEditorSelection() {
+      if (!this.lastValidEditorRange) return false;
+      const common = this.lastValidEditorRange.commonAncestorContainer;
+      const node = common.nodeType === Node.TEXT_NODE ? common.parentElement : common;
+      if (!node || !this.content.contains(node)) return false;
+      const selection = window.getSelection();
+      if (!selection) return false;
+      this.content.focus({ preventScroll: true });
+      selection.removeAllRanges();
+      const restored = this.lastValidEditorRange.cloneRange();
+      selection.addRange(restored);
+      this.savedSelection = restored.cloneRange();
+      return true;
     }
 
     updateToolbarState() {

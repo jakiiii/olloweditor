@@ -2,55 +2,6 @@
   "name": "@codefortify/olloweditor",
   "version": "0.1.0",
   "description": "A modern rich text editor for JavaScript, TypeScript, React, MERN, Node, Vue, Next.js, and NestJS applications.",
-  "type": "module",
-  "main": "./src/index.js",
-  "module": "./src/index.js",
-  "types": "./src/types/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./src/types/index.d.ts",
-      "import": "./src/index.js",
-      "default": "./src/index.js"
-    },
-    "./react": {
-      "types": "./src/types/react.d.ts",
-      "import": "./src/react/index.js",
-      "default": "./src/react/index.js"
-    },
-    "./style.css": "./src/styles/ollow-editor.css",
-    "./styles.css": "./src/styles/ollow-editor.css",
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "src",
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "sideEffects": [
-    "*.css",
-    "**/*.css"
-  ],
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build && npm run build:types",
-    "build:types": "tsc --emitDeclarationOnly",
-    "preview": "vite preview",
-    "prepublishOnly": "npm run build"
-  },
-  "peerDependencies": {
-    "react": ">=18",
-    "react-dom": ">=18"
-  },
-  "devDependencies": {
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.2.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.6"
-  },
   "keywords": [
     "rich-text-editor",
     "wysiwyg",
@@ -67,5 +18,57 @@
     "content-editor",
     "html-editor"
   ],
-  "license": "MIT"
+  "homepage": "https://github.com/CodeFortifyCloud/olloweditor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeFortifyCloud/olloweditor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CodeFortifyCloud/olloweditor/issues"
+  },
+  "license": "MIT",
+  "author": "CodeFortify",
+  "type": "module",
+  "main": "./dist/olloweditor.cjs",
+  "module": "./dist/olloweditor.es.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/olloweditor.css",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/olloweditor.es.js",
+      "require": "./dist/olloweditor.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/olloweditor-react.es.js",
+      "require": "./dist/olloweditor-react.cjs"
+    },
+    "./style.css": "./dist/olloweditor.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build && npm run typecheck"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  }
 }

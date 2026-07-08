@@ -10,7 +10,7 @@ OllowEditor is a modern, lightweight, framework-friendly rich text editor for Ja
 
 ## Preview
 
-![OllowEditor Preview](./olloweditor.png)
+![OllowEditor Preview](olloweditor.jpg)
 
 ## Features
 

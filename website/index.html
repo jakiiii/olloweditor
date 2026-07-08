@@ -46,7 +46,7 @@
             <p class="eyebrow">Free. Lightweight. Developer-first.</p>
             <h1>A Free, Block-Style Editor with <span>Clean JSON Output</span></h1>
             <p class="hero-text">
-              OllowEditor helps developers build clean, structured content with a simple and powerful editing experience for modern web applications.
+              OllowEditor helps JavaScript and MERN stack developers build clean, structured content with a simple and powerful editing experience for modern web applications.
             </p>
             <div class="hero-actions">
               <a class="primary-button" href="#editor-demo">Get Started</a>
@@ -78,6 +78,80 @@
               <span class="material-symbols-outlined feature-icon" aria-hidden="true">terminal</span>
               <h2>Developer Friendly</h2>
               <p>Simple JavaScript API, customizable tools, and easy integration.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="mern-section" aria-labelledby="mern-section-title">
+        <div class="container">
+          <div class="section-heading section-heading-centered">
+            <p class="eyebrow">NPM Package</p>
+            <h2 id="mern-section-title">Built for JavaScript &amp; MERN Stack Developers</h2>
+            <p>Install OllowEditor in seconds and use it in modern JavaScript, React, Next.js, Node.js, NestJS, admin dashboards, CMS forms, and publishing workflows.</p>
+          </div>
+
+          <div class="mern-showcase-grid">
+            <article class="install-command-card" aria-label="npm install command">
+              <div class="install-command-card-header">
+                <span class="material-symbols-outlined" aria-hidden="true">terminal</span>
+                <span>Install from npm</span>
+              </div>
+              <div class="install-command-shell">
+                <code class="install-command">npm i @codefortify/olloweditor</code>
+                <button
+                  class="copy-install-btn"
+                  type="button"
+                  data-copy-command="npm i @codefortify/olloweditor"
+                >
+                  Copy
+                </button>
+              </div>
+            </article>
+
+            <article class="code-example-card" aria-label="React usage example">
+              <div class="install-command-card-header">
+                <span class="material-symbols-outlined" aria-hidden="true">deployed_code</span>
+                <span>React usage</span>
+              </div>
+              <pre><code>import { useState } from "react";
+import { OllowEditor } from "@codefortify/olloweditor/react";
+import "@codefortify/olloweditor/style.css";
+
+export default function App() {
+  const [content, setContent] = useState("");
+
+  return (
+    &lt;OllowEditor
+      value={content}
+      onChange={setContent}
+      placeholder="Write your article..."
+    /&gt;
+  );
+}</code></pre>
+            </article>
+          </div>
+
+          <div class="mern-feature-grid">
+            <article class="mern-feature-card">
+              <span class="material-symbols-outlined feature-icon" aria-hidden="true">view_in_ar</span>
+              <h3>React Ready</h3>
+              <p>Use the official React wrapper for controlled editor state and simple integration.</p>
+            </article>
+            <article class="mern-feature-card">
+              <span class="material-symbols-outlined feature-icon" aria-hidden="true">web</span>
+              <h3>Next.js Compatible</h3>
+              <p>Load OllowEditor on the client side and use it safely in modern Next.js apps.</p>
+            </article>
+            <article class="mern-feature-card">
+              <span class="material-symbols-outlined feature-icon" aria-hidden="true">dns</span>
+              <h3>Backend Friendly</h3>
+              <p>Send HTML output to Express, Node.js, NestJS, Django, Laravel, or any API backend.</p>
+            </article>
+            <article class="mern-feature-card">
+              <span class="material-symbols-outlined feature-icon" aria-hidden="true">dashboard</span>
+              <h3>CMS &amp; Admin Forms</h3>
+              <p>Use OllowEditor inside dashboards, content panels, blog forms, and publishing systems.</p>
             </article>
           </div>
         </div>
@@ -211,7 +285,7 @@
             <img src="./olloweditor_logo.png" alt="OllowEditor logo" class="cta-logo">
             <h2>Start building with OllowEditor</h2>
             <p>
-              A clean, modern editor experience for your next JavaScript project. Explore the documentation, customize blocks, and ship structured content faster.
+              A clean, modern editor experience for your next JavaScript or MERN stack project. Install from npm, customize blocks, and ship structured content faster.
             </p>
             <div class="hero-actions">
               <a class="primary-button" href="./documentation.html">Read Documentation</a>

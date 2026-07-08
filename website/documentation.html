@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Official OllowEditor documentation covering installation, initialization, editor tools, import and export workflows, plugin APIs, browser support, and security notes.">
+  <meta name="description" content="Official OllowEditor documentation for JavaScript, TypeScript, React, Next.js, MERN stack apps, admin dashboards, CMS forms, and publishing workflows.">
   <title>OllowEditor Documentation</title>
   <link rel="icon" href="./favicon/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
@@ -30,7 +30,7 @@
         </button>
         <nav class="site-nav" id="site-nav" aria-label="Primary">
           <a class="site-nav-link-active" href="./documentation.html" aria-current="page">Documentation</a>
-          <a class="nav-button" href="https://github.com/jakiiii/olloweditor" target="_blank" rel="noopener noreferrer">Github</a>
+          <a class="nav-button" href="https://github.com/CodeFortifyCloud/olloweditor" target="_blank" rel="noopener noreferrer">Github</a>
         </nav>
       </div>
     </header>
@@ -50,58 +50,70 @@
             </div>
 
             <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">Base Concepts</p>
+              <p class="docs-sidebar-group-title">Getting Started</p>
               <a class="docs-sidebar-link" href="#introduction">Introduction</a>
-              <a class="docs-sidebar-link" href="#features">Features</a>
-              <a class="docs-sidebar-link" href="#project-structure">Project Structure</a>
-              <a class="docs-sidebar-link" href="#quick-start">Quick Start</a>
               <a class="docs-sidebar-link" href="#installation">Installation</a>
+              <a class="docs-sidebar-link" href="#css-import">CSS Import</a>
+              <a class="docs-sidebar-link" href="#quick-start">Quick Start</a>
             </div>
 
             <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">Usage</p>
-              <a class="docs-sidebar-link" href="#basic-usage">Basic Usage</a>
-              <a class="docs-sidebar-link" href="#example-form">Example Form</a>
-              <a class="docs-sidebar-link" href="#toolbar-overview">Toolbar Overview</a>
-              <a class="docs-sidebar-link" href="#responsive-toolbars">Responsive Toolbars</a>
-              <a class="docs-sidebar-link" href="#keyboard-shortcuts">Keyboard Shortcuts</a>
-              <a class="docs-sidebar-link" href="#bookmarks-anchors">Bookmarks and Anchors</a>
-              <a class="docs-sidebar-link" href="#find-replace">Find and Replace</a>
-              <a class="docs-sidebar-link" href="#source-html-mode">Source / HTML Mode</a>
-              <a class="docs-sidebar-link" href="#themes">Themes</a>
+              <p class="docs-sidebar-group-title">JavaScript Usage</p>
+              <a class="docs-sidebar-link" href="#vanilla-javascript">Vanilla JavaScript</a>
+              <a class="docs-sidebar-link" href="#vanilla-typescript">Vanilla TypeScript</a>
+              <a class="docs-sidebar-link" href="#package-exports">Package Exports</a>
+              <a class="docs-sidebar-link" href="#api-reference">API Reference</a>
             </div>
 
             <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">Editor Tools</p>
-              <a class="docs-sidebar-link" href="#typography-controls">Typography Controls</a>
-              <a class="docs-sidebar-link" href="#text-color-highlight">Text Color and Highlight</a>
-              <a class="docs-sidebar-link" href="#formatting-tools">Formatting Tools</a>
+              <p class="docs-sidebar-group-title">React &amp; Next.js</p>
+              <a class="docs-sidebar-link" href="#react-usage">React Usage</a>
+              <a class="docs-sidebar-link" href="#react-typescript-usage">React TypeScript Usage</a>
+              <a class="docs-sidebar-link" href="#nextjs-usage">Next.js Usage</a>
+              <a class="docs-sidebar-link" href="#react-props">React Props</a>
+            </div>
+
+            <div class="docs-sidebar-group">
+              <p class="docs-sidebar-group-title">MERN / Backend Integration</p>
+              <a class="docs-sidebar-link" href="#mern-stack-usage">MERN Stack Usage</a>
+              <a class="docs-sidebar-link" href="#express-image-upload">Express Image Upload</a>
+              <a class="docs-sidebar-link" href="#nodejs-api-integration">Node.js API Integration</a>
+              <a class="docs-sidebar-link" href="#nestjs-upload-example">NestJS Upload Example</a>
+              <a class="docs-sidebar-link" href="#backend-storage-flow">Backend Storage Flow</a>
+            </div>
+
+            <div class="docs-sidebar-group">
+              <p class="docs-sidebar-group-title">Editor Features</p>
+              <a class="docs-sidebar-link" href="#toolbar-features">Toolbar Features</a>
               <a class="docs-sidebar-link" href="#image-upload">Image Upload</a>
-              <a class="docs-sidebar-link" href="#advanced-image-editing">Advanced Image Editing</a>
-              <a class="docs-sidebar-link" href="#gallery-block">Gallery Block</a>
+              <a class="docs-sidebar-link" href="#gallery-support">Gallery Support</a>
               <a class="docs-sidebar-link" href="#youtube-embed">YouTube Embed</a>
-              <a class="docs-sidebar-link" href="#code-tables">Code Blocks and Tables</a>
+              <a class="docs-sidebar-link" href="#table-support">Table Support</a>
+              <a class="docs-sidebar-link" href="#code-block">Code Block</a>
+              <a class="docs-sidebar-link" href="#keyboard-shortcuts">Keyboard Shortcuts</a>
+              <a class="docs-sidebar-link" href="#theme-support">Theme Support</a>
             </div>
 
             <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">Import / Export</p>
-              <a class="docs-sidebar-link" href="#export-html-pdf">Export HTML and PDF</a>
-              <a class="docs-sidebar-link" href="#docx-workflows">DOCX Import and Export</a>
-              <a class="docs-sidebar-link" href="#markdown-workflows">Markdown Import and Export</a>
-              <a class="docs-sidebar-link" href="#paste-cleanup">Paste Cleanup</a>
-              <a class="docs-sidebar-link" href="#textarea-sync">Textarea Sync</a>
+              <p class="docs-sidebar-group-title">Import &amp; Export</p>
+              <a class="docs-sidebar-link" href="#import-export">Overview</a>
+              <a class="docs-sidebar-link" href="#markdown-import-export">Markdown Import/Export</a>
+              <a class="docs-sidebar-link" href="#export-html">Export HTML</a>
+              <a class="docs-sidebar-link" href="#export-pdf">Export PDF</a>
+              <a class="docs-sidebar-link" href="#import-docx">Import DOCX</a>
+              <a class="docs-sidebar-link" href="#export-docx">Export DOCX</a>
             </div>
 
             <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">Project</p>
-              <a class="docs-sidebar-link" href="#plugin-api">Plugin API</a>
-              <a class="docs-sidebar-link" href="#backend-integration">Backend Integration</a>
-              <a class="docs-sidebar-link" href="#custom-styling">Custom Styling</a>
+              <p class="docs-sidebar-group-title">Reference</p>
+              <a class="docs-sidebar-link" href="#olloweditor-options">OllowEditorOptions</a>
+              <a class="docs-sidebar-link" href="#olloweditor-core-methods">OllowEditorCore Methods</a>
               <a class="docs-sidebar-link" href="#browser-support">Browser Support</a>
-              <a class="docs-sidebar-link" href="#security-audit">Security Audit</a>
-              <a class="docs-sidebar-link" href="#roadmap">Roadmap</a>
+              <a class="docs-sidebar-link" href="#package-structure">Package Structure</a>
+              <a class="docs-sidebar-link" href="#local-development">Local Development</a>
+              <a class="docs-sidebar-link" href="#build-package">Build Package</a>
+              <a class="docs-sidebar-link" href="#publishing">Publishing</a>
               <a class="docs-sidebar-link" href="#license">License</a>
-              <a class="docs-sidebar-link" href="#author">Author</a>
             </div>
           </div>
         </aside>
@@ -110,127 +122,489 @@
           <article class="docs-article">
             <header class="docs-hero">
               <p class="docs-kicker">Documentation</p>
-              <h1>OllowEditor</h1>
+              <h1>OllowEditor Documentation</h1>
               <p class="docs-lead">
-                A clean, reusable, lightweight JavaScript rich-text editor built with plain HTML, CSS, and JavaScript.
-                OllowEditor is designed for newsroom-style writing, blog publishing, CMS forms, article editors, and admin dashboards.
+                OllowEditor is a modern, lightweight, framework-friendly rich text editor for JavaScript, TypeScript, React, MERN, Next.js, Node.js, NestJS, CMS forms, admin dashboards, and publishing workflows.
               </p>
-              <div class="docs-meta">
-                <span>Works with a normal <code>&lt;textarea&gt;</code></span>
-                <span>Zero framework requirement</span>
-                <span>HTML output stays synced for backend forms</span>
+              <div class="docs-badge-row">
+                <span class="docs-badge">JavaScript</span>
+                <span class="docs-badge">TypeScript</span>
+                <span class="docs-badge">React</span>
+                <span class="docs-badge">Next.js</span>
+                <span class="docs-badge">MERN Stack</span>
+                <span class="docs-badge">npm package</span>
+                <span class="docs-badge">MIT License</span>
+              </div>
+              <div class="docs-install-card">
+                <div class="docs-install-copy">
+                  <p>Install from npm</p>
+                  <code id="docs-install-command">npm i @codefortify/olloweditor</code>
+                </div>
+                <button class="docs-copy-btn" type="button" data-copy-target="#docs-install-command">Copy</button>
               </div>
             </header>
 
             <section class="docs-section" id="introduction">
               <h2>Introduction</h2>
               <p>
-                OllowEditor attaches to a regular <code>&lt;textarea&gt;</code>, replaces it with a full editor interface, and keeps the textarea value updated with sanitized HTML.
-                That makes it practical for Django, Laravel, Rails, Express, FastAPI, WordPress admin pages, static forms, or any custom CMS.
+                OllowEditor is a lightweight rich text editor for modern JavaScript applications. It supports Vanilla JavaScript, TypeScript, React, Next.js client-side usage, and backend upload integration while keeping the editor API focused on HTML content.
+              </p>
+              <p>
+                The package exposes a core factory for browser apps and a React wrapper for controlled editor state. That makes it practical for MERN stack apps, admin dashboards, CMS forms, article workflows, and publishing tools that need clean content entry without locking into a framework-specific editor architecture.
               </p>
               <div class="docs-note">
-                <strong>Global API:</strong> the editor is exposed as both <code>OllowEditor</code> and <code>NationWireEditor</code>.
+                <strong>Package focus:</strong> use <code>createOllowEditor</code> in browser-driven JavaScript or TypeScript apps, and use <code>OllowEditor</code> from <code>@codefortify/olloweditor/react</code> in React-based interfaces.
               </div>
-            </section>
-
-            <section class="docs-section" id="features">
-              <h2>Features</h2>
-              <div class="docs-feature-grid">
-                <div class="docs-feature-tile">
-                  <h3>Writing and Formatting</h3>
-                  <ul>
-                    <li>Paragraph and heading support</li>
-                    <li>Bold, italic, underline, strikethrough</li>
-                    <li>Links, bookmarks, emoji, special characters</li>
-                    <li>Find and replace, source / HTML mode</li>
-                  </ul>
-                </div>
-                <div class="docs-feature-tile">
-                  <h3>Blocks and Media</h3>
-                  <ul>
-                    <li>Images, galleries, YouTube embeds</li>
-                    <li>Code blocks and tables</li>
-                    <li>Related blocks, fact boxes, attachments</li>
-                    <li>Media alignment and resize controls</li>
-                  </ul>
-                </div>
-                <div class="docs-feature-tile">
-                  <h3>Import and Export</h3>
-                  <ul>
-                    <li>Markdown import and export</li>
-                    <li>HTML export and PDF export</li>
-                    <li>DOCX import and DOCX fallback export</li>
-                    <li>Synced HTML for normal form submission</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
-
-            <section class="docs-section" id="project-structure">
-              <h2>Project Structure</h2>
-              <pre class="docs-code"><code>olloweditor/
-├── ollow.html
-├── ollow.css
-├── ollow.js
-└── README.md</code></pre>
-            </section>
-
-            <section class="docs-section" id="quick-start">
-              <h2>Quick Start</h2>
-              <p>Open the demo directly in your browser or serve the project locally.</p>
-              <pre class="docs-code"><code class="language-bash">cd /home/jaki/Dev/olloweditor
-xdg-open ollow.html</code></pre>
-              <pre class="docs-code"><code class="language-bash">python3 -m http.server 8000</code></pre>
-              <pre class="docs-code"><code>http://localhost:8000/ollow.html</code></pre>
             </section>
 
             <section class="docs-section" id="installation">
               <h2>Installation</h2>
-              <p>Include the editor stylesheet and script, then initialize the editor after the DOM is ready.</p>
-              <pre class="docs-code"><code class="language-html">&lt;link rel="stylesheet" href="ollow.css" /&gt;
-&lt;script src="ollow.js"&gt;&lt;/script&gt;</code></pre>
+              <p>Install OllowEditor with the package manager you already use in your JavaScript or MERN stack project.</p>
+
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>npm</span>
+                  <button class="docs-copy-btn" type="button" data-copy="npm install @codefortify/olloweditor">Copy</button>
+                </div>
+                <pre class="docs-code"><code>npm install @codefortify/olloweditor</code></pre>
+              </div>
+
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>yarn</span>
+                  <button class="docs-copy-btn" type="button" data-copy="yarn add @codefortify/olloweditor">Copy</button>
+                </div>
+                <pre class="docs-code"><code>yarn add @codefortify/olloweditor</code></pre>
+              </div>
+
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>pnpm</span>
+                  <button class="docs-copy-btn" type="button" data-copy="pnpm add @codefortify/olloweditor">Copy</button>
+                </div>
+                <pre class="docs-code"><code>pnpm add @codefortify/olloweditor</code></pre>
+              </div>
             </section>
 
-            <section class="docs-section" id="basic-usage">
-              <h2>Basic Usage</h2>
-              <p>Add a textarea, optionally define theme behavior, and initialize the editor with JavaScript.</p>
-              <pre class="docs-code"><code class="language-html">&lt;textarea id="ollo-editor" name="content" data-theme="dark" data-persist-theme="true"&gt;&lt;/textarea&gt;</code></pre>
-              <pre class="docs-code"><code class="language-html">&lt;script&gt;
-  document.addEventListener("DOMContentLoaded", function () {
-    OllowEditor.init("#ollo-editor", {
-      theme: "dark",
-      persistTheme: true
+            <section class="docs-section" id="css-import">
+              <h2>CSS Import</h2>
+              <p>Import the packaged stylesheet once in the entry file or page where the editor is used.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>style.css</span>
+                  <button class="docs-copy-btn" type="button" data-copy="import &quot;@codefortify/olloweditor/style.css&quot;;">Copy</button>
+                </div>
+                <pre class="docs-code"><code>import "@codefortify/olloweditor/style.css";</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="quick-start">
+              <h2>Quick Start</h2>
+              <p>The core package mounts the editor into a selector or DOM element and returns an <code>OllowEditorCore</code> instance.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>quick start</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#quick-start-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="quick-start-code"><code>import { createOllowEditor } from "@codefortify/olloweditor";
+import "@codefortify/olloweditor/style.css";
+
+const editor = createOllowEditor("#editor", {
+  initialHTML: "&lt;p&gt;Hello OllowEditor&lt;/p&gt;",
+  placeholder: "Start writing...",
+  onChange: (html) =&gt; {
+    console.log(html);
+  }
+});</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="vanilla-javascript">
+              <h2>Vanilla JavaScript</h2>
+              <p>Use the package directly in a module script when you want an editor inside a plain JavaScript page or custom CMS view.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>vanilla js</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#vanilla-js-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="vanilla-js-code"><code>&lt;div id="editor"&gt;&lt;/div&gt;
+
+&lt;script type="module"&gt;
+  import { createOllowEditor } from "@codefortify/olloweditor";
+  import "@codefortify/olloweditor/style.css";
+
+  const editor = createOllowEditor("#editor", {
+    initialHTML: "&lt;p&gt;Hello OllowEditor&lt;/p&gt;",
+    placeholder: "Start writing...",
+    onChange: (html) =&gt; {
+      console.log(html);
+    }
+  });
+&lt;/script&gt;</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="vanilla-typescript">
+              <h2>Vanilla TypeScript</h2>
+              <p>The package ships type definitions for the core editor and React wrapper, so TypeScript can use the editor without extra ambient declarations.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>typescript</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#vanilla-ts-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="vanilla-ts-code"><code>import {
+  createOllowEditor,
+  type OllowEditorCore,
+  type OllowEditorOptions
+} from "@codefortify/olloweditor";
+import "@codefortify/olloweditor/style.css";
+
+const options: OllowEditorOptions = {
+  initialHTML: "&lt;p&gt;Typed content&lt;/p&gt;",
+  placeholder: "Start writing...",
+  onChange: (html: string) =&gt; {
+    console.log(html);
+  }
+};
+
+const editor: OllowEditorCore = createOllowEditor("#editor", options);
+editor.focus();</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="package-exports">
+              <h2>Package Exports</h2>
+              <p>Import the package based on whether you need the browser factory, the React component, or the packaged stylesheet.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>exports</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#package-exports-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="package-exports-code"><code>import { createOllowEditor } from "@codefortify/olloweditor";
+import { OllowEditor } from "@codefortify/olloweditor/react";
+import "@codefortify/olloweditor/style.css";</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="api-reference">
+              <h2>API Reference</h2>
+              <p>The package surface is intentionally small: one core factory, one core instance type, and one React component export.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>factory</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#api-factory-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="api-factory-code"><code>createOllowEditor(
+  selector: string | HTMLElement,
+  options?: OllowEditorOptions
+): OllowEditorCore</code></pre>
+              </div>
+
+              <h3 id="olloweditor-options">OllowEditorOptions</h3>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>types</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#options-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="options-code"><code>interface OllowEditorOptions {
+  initialHTML?: string;
+  placeholder?: string;
+  readOnly?: boolean;
+  className?: string;
+  onChange?: (html: string) =&gt; void;
+  uploadImage?: (file: File) =&gt; Promise&lt;string&gt; | string;
+}</code></pre>
+              </div>
+
+              <h3 id="olloweditor-core-methods">OllowEditorCore Methods</h3>
+              <ul>
+                <li><code>getHTML()</code> returns the current editor HTML.</li>
+                <li><code>setHTML(html)</code> replaces the current editor content.</li>
+                <li><code>focus()</code> focuses the editable surface.</li>
+                <li><code>destroy()</code> tears down the editor instance and bindings.</li>
+              </ul>
+            </section>
+
+            <section class="docs-section" id="react-usage">
+              <h2>React Usage</h2>
+              <p>Use the official React wrapper for controlled state and straightforward integration inside forms, dashboards, and content management views.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>react</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#react-usage-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="react-usage-code"><code>import { useState } from "react";
+import { OllowEditor } from "@codefortify/olloweditor/react";
+import "@codefortify/olloweditor/style.css";
+
+export default function App() {
+  const [content, setContent] = useState("");
+
+  return (
+    &lt;OllowEditor
+      value={content}
+      onChange={setContent}
+      placeholder="Write your article..."
+    /&gt;
+  );
+}</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="react-typescript-usage">
+              <h2>React TypeScript Usage</h2>
+              <p>In TypeScript React apps, the wrapper props line up with the package type declarations, including an optional <code>uploadImage</code> callback.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>react ts</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#react-ts-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="react-ts-code"><code>import { useState } from "react";
+import { OllowEditor } from "@codefortify/olloweditor/react";
+import type { OllowEditorReactProps } from "@codefortify/olloweditor/react";
+import "@codefortify/olloweditor/style.css";
+
+export default function EditorForm() {
+  const [content, setContent] = useState&lt;string&gt;("");
+
+  const uploadImage: NonNullable&lt;OllowEditorReactProps["uploadImage"]&gt; = async (file) =&gt; {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await fetch("/api/uploads/image", {
+      method: "POST",
+      body: formData
     });
-  });
-&lt;/script&gt;</code></pre>
-              <p>Theme can be set to <code>light</code>, <code>dark</code>, or <code>auto</code>. Plugins can also be registered globally before initialization.</p>
+
+    const data = await response.json();
+    return data.url;
+  };
+
+  return (
+    &lt;OllowEditor
+      value={content}
+      onChange={setContent}
+      placeholder="Write your article..."
+      uploadImage={uploadImage}
+    /&gt;
+  );
+}</code></pre>
+              </div>
             </section>
 
-            <section class="docs-section" id="example-form">
-              <h2>Example Form</h2>
-              <p>The editor keeps the original textarea synchronized, so standard form submission still works.</p>
-              <pre class="docs-code"><code class="language-html">&lt;form method="post"&gt;
-  &lt;textarea id="ollo-editor" name="body"&gt;
-    &lt;h2&gt;Article title&lt;/h2&gt;
-    &lt;p&gt;Start writing your story...&lt;/p&gt;
-  &lt;/textarea&gt;
+            <section class="docs-section" id="nextjs-usage">
+              <h2>Next.js Usage</h2>
+              <p>
+                OllowEditor uses browser APIs, so in Next.js it should be loaded on the client side with dynamic import and <code>ssr: false</code>.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>next.js</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#nextjs-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="nextjs-code"><code>import dynamic from "next/dynamic";
+import { useState } from "react";
+import "@codefortify/olloweditor/style.css";
 
-  &lt;button type="submit"&gt;Save Article&lt;/button&gt;
-&lt;/form&gt;
+const OllowEditor = dynamic(
+  () =&gt; import("@codefortify/olloweditor/react").then((mod) =&gt; mod.OllowEditor),
+  { ssr: false }
+);
 
-&lt;link rel="stylesheet" href="ollow.css" /&gt;
-&lt;script src="ollow.js"&gt;&lt;/script&gt;
-&lt;script&gt;
-  document.addEventListener("DOMContentLoaded", function () {
-    OllowEditor.init("#ollo-editor");
-  });
-&lt;/script&gt;</code></pre>
+export default function ArticleEditorPage() {
+  const [content, setContent] = useState("");
+
+  return (
+    &lt;OllowEditor
+      value={content}
+      onChange={setContent}
+      placeholder="Write your article..."
+    /&gt;
+  );
+}</code></pre>
+              </div>
             </section>
 
-            <section class="docs-section" id="toolbar-overview">
-              <h2>Toolbar Overview</h2>
-              <p>OllowEditor supports a broad set of toolbar actions for writing, editing, media, and export workflows.</p>
-              <div class="docs-table-wrap">
+            <section class="docs-section" id="react-props">
+              <h2>React Props</h2>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>react props</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#react-props-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="react-props-code"><code>interface OllowEditorReactProps {
+  value?: string;
+  onChange?: (html: string) =&gt; void;
+  placeholder?: string;
+  uploadImage?: (file: File) =&gt; Promise&lt;string&gt; | string;
+  readOnly?: boolean;
+  className?: string;
+}</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="mern-stack-usage">
+              <h2>MERN Stack Usage</h2>
+              <p>
+                OllowEditor works well in MERN stack applications because it can run in React on the frontend and send generated HTML content to an Express, Node.js, or NestJS backend.
+              </p>
+              <div class="docs-flow-card">
+                <div class="docs-flow-step">React frontend</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">OllowEditor</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">onChange HTML/content</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">Express API</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">MongoDB database</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">Render in frontend/admin panel</div>
+              </div>
+
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>react form</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#mern-react-form-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="mern-react-form-code"><code>import { useState } from "react";
+import { OllowEditor } from "@codefortify/olloweditor/react";
+import "@codefortify/olloweditor/style.css";
+
+export default function BlogCreateForm() {
+  const [content, setContent] = useState("");
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    await fetch("/api/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title: "My first post",
+        content
+      })
+    });
+  }
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;OllowEditor
+        value={content}
+        onChange={setContent}
+        placeholder="Write your blog post..."
+      /&gt;
+
+      &lt;button type="submit"&gt;Save Post&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+              </div>
+
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>express api</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#mern-express-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="mern-express-code"><code>import express from "express";
+
+const app = express();
+
+app.use(express.json());
+
+app.post("/api/posts", async (req, res) =&gt; {
+  const { title, content } = req.body;
+
+  // Save title and content to MongoDB using your model.
+  // Example:
+  // await Post.create({ title, content });
+
+  res.json({
+    success: true,
+    message: "Post saved successfully"
+  });
+});</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="express-image-upload">
+              <h2>Express Image Upload</h2>
+              <p>README-backed upload flows return URLs to the editor. A small Express endpoint is enough for local disk or proxy-based storage.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>express upload</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#express-upload-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="express-upload-code"><code>import express from "express";
+import multer from "multer";
+
+const app = express();
+const upload = multer({ dest: "uploads/" });
+
+app.post("/api/uploads/image", upload.single("image"), async (req, res) =&gt; {
+  const url = `/uploads/${req.file.filename}`;
+  res.json({ url });
+});</code></pre>
+              </div>
+              <p>Connect this endpoint to OllowEditor using the <code>uploadImage</code> callback.</p>
+            </section>
+
+            <section class="docs-section" id="nodejs-api-integration">
+              <h2>Node.js API Integration</h2>
+              <p>
+                The frontend editor only needs a URL back from your backend. That backend can be Express, a plain Node.js API route, NestJS, or any server that accepts uploads and returns a JSON payload with the stored file location.
+              </p>
+              <div class="docs-note">
+                <strong>Typical contract:</strong> upload the file, store it using your backend strategy, then return <code>{ url: "https://..." }</code> so the editor can place the image into the content.
+              </div>
+            </section>
+
+            <section class="docs-section" id="nestjs-upload-example">
+              <h2>NestJS Upload Example</h2>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>nestjs</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#nestjs-upload-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="nestjs-upload-code"><code>import { Controller, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+
+@Controller("api/uploads")
+export class UploadController {
+  @Post("image")
+  @UseInterceptors(FileInterceptor("image"))
+  uploadImage(@UploadedFile() file: Express.Multer.File) {
+    return {
+      url: `/uploads/${file.filename}`
+    };
+  }
+}</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="backend-storage-flow">
+              <h2>Backend Storage Flow</h2>
+              <div class="docs-flow-card docs-flow-card-compact">
+                <div class="docs-flow-step">Frontend editor</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">uploadImage callback</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">backend upload API</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">image URL</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">editor content</div>
+              </div>
+              <p>
+                OllowEditor does not force a storage provider. You can use local storage, S3, Cloudinary, Supabase Storage, DigitalOcean Spaces, or any custom backend as long as the final upload step returns a usable URL.
+              </p>
+            </section>
+
+            <section class="docs-section" id="toolbar-features">
+              <h2>Toolbar Features</h2>
+              <div class="docs-table-wrapper">
                 <table class="docs-table">
                   <thead>
                     <tr>
@@ -239,35 +613,75 @@ xdg-open ollow.html</code></pre>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr><td>Undo / Redo</td><td>Revert or restore changes</td></tr>
-                    <tr><td>Font Family / Font Size</td><td>Apply approved typography controls</td></tr>
-                    <tr><td>Paragraph / H2 / H3 / H4</td><td>Switch block type</td></tr>
-                    <tr><td>Bold / Italic / Underline</td><td>Format selected text</td></tr>
-                    <tr><td>Link / Unlink / Bookmark</td><td>Create hyperlinks and internal anchors</td></tr>
-                    <tr><td>Find / Replace / HTML</td><td>Search, replace, or toggle source mode</td></tr>
-                    <tr><td>Lists / Pull Quote</td><td>Insert structural content blocks</td></tr>
-                    <tr><td>Image / Gallery / Embed / Table / Code</td><td>Insert media and structured blocks</td></tr>
-                    <tr><td>Import MD / Export MD / Export HTML / Export PDF / Import DOCX / Export DOCX</td><td>Run import and export workflows</td></tr>
+                    <tr><td>Bold / Italic / Underline / Strikethrough</td><td>Format selected text for common writing workflows.</td></tr>
+                    <tr><td>Headings</td><td>Switch between paragraph text and heading levels used in structured content.</td></tr>
+                    <tr><td>Lists</td><td>Create bullet and numbered lists inside articles, admin forms, and CMS content.</td></tr>
+                    <tr><td>Links</td><td>Insert hyperlinks and unlink content when references change.</td></tr>
+                    <tr><td>Images</td><td>Insert uploaded images or image URLs into the editor.</td></tr>
+                    <tr><td>Gallery</td><td>Create a multiple-image gallery block with title and note support.</td></tr>
+                    <tr><td>YouTube Embed</td><td>Render supported YouTube URLs inside a safe embed wrapper.</td></tr>
+                    <tr><td>Tables</td><td>Insert table content inside a scroll-safe wrapper for smaller viewports.</td></tr>
+                    <tr><td>Code Block</td><td>Add preformatted code blocks for technical articles and developer docs.</td></tr>
+                    <tr><td>Markdown Import / Export</td><td>Convert between Markdown workflows and editor HTML.</td></tr>
+                    <tr><td>Export HTML</td><td>Export sanitized HTML content for downstream publishing.</td></tr>
+                    <tr><td>Export PDF</td><td>Use the browser print workflow to create a PDF export.</td></tr>
+                    <tr><td>DOCX Import / Export</td><td>Import Word content and export DOCX or fallback Word-compatible output.</td></tr>
+                    <tr><td>Theme Controls</td><td>Switch between light, dark, and auto theme modes.</td></tr>
                   </tbody>
                 </table>
               </div>
             </section>
 
-            <section class="docs-section" id="responsive-toolbars">
-              <h2>Responsive Toolbars</h2>
-              <p>OllowEditor changes its interaction layer based on viewport width without changing the feature set.</p>
-              <ul>
-                <li><strong>Desktop menu bar:</strong> visible from <code>1024px</code> and above with File, Edit, View, Insert, Format, Tools, and Help.</li>
-                <li><strong>Tablet toolbar:</strong> compact grouped mode between roughly <code>640px</code> and <code>1024px</code>.</li>
-                <li><strong>Mobile toolbar:</strong> compact top row plus a bottom-sheet <code>More</code> drawer at <code>480px</code> and below.</li>
-                <li><strong>Overflow system:</strong> low-frequency actions move into responsive overflow menus instead of forcing page-level overflow.</li>
-              </ul>
+            <section class="docs-section" id="image-upload">
+              <h2>Image Upload</h2>
+              <p>
+                The package-level upload hook is <code>uploadImage(file)</code>. Return a string or a promise that resolves to the final image URL and OllowEditor will insert that image into the current content.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>upload callback</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#image-upload-callback-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="image-upload-callback-code"><code>const editor = createOllowEditor("#editor", {
+  uploadImage: async (file) =&gt; {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await fetch("/api/uploads/image", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+    return data.url;
+  }
+});</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="gallery-support">
+              <h2>Gallery Support</h2>
+              <p>README-supported gallery blocks let content teams place multiple images into a single responsive gallery section.</p>
+            </section>
+
+            <section class="docs-section" id="youtube-embed">
+              <h2>YouTube Embed</h2>
+              <p>Supported YouTube links are normalized into safe iframe embeds so articles can include videos without custom rendering glue.</p>
+            </section>
+
+            <section class="docs-section" id="table-support">
+              <h2>Table Support</h2>
+              <p>Tables render inside a scroll wrapper, which keeps wide tabular content usable on smaller screens and prevents page-level overflow.</p>
+            </section>
+
+            <section class="docs-section" id="code-block">
+              <h2>Code Block</h2>
+              <p>Code blocks are part of the supported block toolset and work well for engineering blogs, internal guides, and technical publishing workflows.</p>
             </section>
 
             <section class="docs-section" id="keyboard-shortcuts">
               <h2>Keyboard Shortcuts</h2>
-              <p>Shortcuts run only while the editor body is focused and are disabled inside modal inputs and other page form controls.</p>
-              <div class="docs-table-wrap">
+              <div class="docs-table-wrapper">
                 <table class="docs-table">
                   <thead>
                     <tr>
@@ -283,397 +697,132 @@ xdg-open ollow.html</code></pre>
                     <tr><td><code>Ctrl/Cmd + Shift + 7</code></td><td>Numbered list</td></tr>
                     <tr><td><code>Ctrl/Cmd + Shift + 8</code></td><td>Bullet list</td></tr>
                     <tr><td><code>Ctrl/Cmd + Shift + C</code></td><td>Code block</td></tr>
-                    <tr><td><code>Ctrl/Cmd + S</code></td><td>Sync HTML and prevent browser save dialog</td></tr>
-                    <tr><td><code>Esc</code></td><td>Close active modal or floating toolbar</td></tr>
+                    <tr><td><code>Ctrl/Cmd + S</code></td><td>Sync editor HTML and prevent the browser save dialog</td></tr>
+                    <tr><td><code>Esc</code></td><td>Close the active modal or floating toolbar</td></tr>
                   </tbody>
                 </table>
               </div>
-              <pre class="docs-code"><code class="language-js">const editor = OllowEditor.get("#ollo-editor");
-
-editor.addShortcut("mod+shift+m", () => {
-  editor.insertHTML("&lt;p&gt;Note&lt;/p&gt;");
-});
-
-editor.removeShortcut("mod+shift+m");
-const shortcuts = editor.getShortcuts();</code></pre>
             </section>
 
-            <section class="docs-section" id="bookmarks-anchors">
-              <h2>Bookmarks and Anchors</h2>
-              <p>The <code>Bookmark</code> tool inserts internal anchors for long-form documents, auto-generates safe slugs, and exposes edit, copy-link, and delete actions.</p>
-              <pre class="docs-code"><code class="language-html">&lt;span class="ollow-bookmark" id="economic-policy-section" data-bookmark="true" contenteditable="false"&gt;
-  🔖 Economic Policy Section
-&lt;/span&gt;</code></pre>
-              <p>Links can target bookmarks directly with <code>href="#economic-policy-section"</code>.</p>
+            <section class="docs-section" id="theme-support">
+              <h2>Theme Support</h2>
+              <p>README-backed theme support includes <code>light</code>, <code>dark</code>, and <code>auto</code> modes with optional theme persistence per editor instance.</p>
             </section>
 
-            <section class="docs-section" id="find-replace">
-              <h2>Find and Replace</h2>
-              <p>The editor search panel supports find, replace, match case, whole word, highlight all, and optional code block inclusion.</p>
+            <section class="docs-section" id="import-export">
+              <h2>Import and Export</h2>
+              <p>OllowEditor includes HTML, PDF, Markdown, and DOCX workflows for teams moving content between editors, admin panels, publishing systems, and offline review tools.</p>
               <ul>
-                <li><code>Ctrl/Cmd + F</code> opens find</li>
-                <li><code>Ctrl/Cmd + H</code> opens replace</li>
-                <li><code>Enter</code> moves to the next match</li>
-                <li><code>Shift + Enter</code> moves to the previous match</li>
-              </ul>
-              <div class="docs-note">
-                Temporary highlight spans are UI-only and are stripped before textarea sync and export.
-              </div>
-            </section>
-
-            <section class="docs-section" id="source-html-mode">
-              <h2>Source / HTML Mode</h2>
-              <p>Use <code>HTML</code> mode to switch between visual editing and raw HTML editing. All source content is sanitized before it returns to the visual surface.</p>
-              <ul>
-                <li><code>editor.toggleSourceMode()</code></li>
-                <li><code>editor.enterSourceMode()</code></li>
-                <li><code>editor.exitSourceMode()</code></li>
-                <li><code>editor.isSourceMode()</code></li>
+                <li>Export HTML for clean downstream rendering.</li>
+                <li>Export PDF through the browser print flow.</li>
+                <li>Import and export Markdown for technical content workflows.</li>
+                <li>Import DOCX with a browser-side parser when available.</li>
+                <li>Export DOCX through the configured runtime exporter or fallback mode.</li>
               </ul>
             </section>
 
-            <section class="docs-section" id="themes">
-              <h2>Themes</h2>
-              <p>OllowEditor supports <code>light</code>, <code>dark</code>, and <code>auto</code> themes with optional persistence through <code>localStorage</code>.</p>
-              <pre class="docs-code"><code class="language-html">&lt;textarea
-  id="ollo-editor"
-  name="body"
-  data-ollow-editor
-  data-theme="dark"
-  data-persist-theme="true"&gt;&lt;/textarea&gt;</code></pre>
-              <pre class="docs-code"><code class="language-js">const editor = OllowEditor.get("#ollo-editor");
-
-editor.setTheme("light");
-editor.setTheme("dark");
-editor.setTheme("auto");
-
-const theme = editor.getTheme();</code></pre>
+            <section class="docs-section" id="markdown-import-export">
+              <h2>Markdown Import / Export</h2>
+              <p>Markdown support is intended for conversion workflows. The editor still stores and emits HTML content as its main output.</p>
             </section>
 
-            <section class="docs-section" id="typography-controls">
-              <h2>Typography Controls</h2>
-              <p>The main toolbar includes Microsoft Office-style controls for font family, font size, style presets, and recent font tracking.</p>
-              <ul>
-                <li>Font size values are clamped between <code>8</code> and <code>96</code>.</li>
-                <li>Unknown font classes are stripped during sanitization.</li>
-                <li>Saved HTML uses safe classes such as <code>ollow-font-georgia</code> and <code>ollow-font-size-22</code>.</li>
-              </ul>
-              <pre class="docs-code"><code class="language-html">&lt;p&gt;
-  &lt;span class="ollow-font-georgia ollow-font-size-22"&gt;Styled text&lt;/span&gt;
-&lt;/p&gt;</code></pre>
+            <section class="docs-section" id="export-html">
+              <h2>Export HTML</h2>
+              <p>Export HTML produces sanitized editor output so you can store or render the content directly in a frontend or backend publishing pipeline.</p>
             </section>
 
-            <section class="docs-section" id="text-color-highlight">
-              <h2>Text Color and Highlight</h2>
-              <p>Text color and highlight controls use approved classes for presets and safe hex inline styles for custom values.</p>
-              <pre class="docs-code"><code class="language-html">&lt;p&gt;
-  &lt;span class="ollow-text-color-blue"&gt;Blue text&lt;/span&gt;
-  &lt;span class="ollow-highlight-yellow"&gt;Highlighted text&lt;/span&gt;
-&lt;/p&gt;</code></pre>
-              <div class="docs-note">
-                Only hex color values are preserved for inline <code>color</code> and <code>background-color</code>. Dynamic CSS functions are stripped.
-              </div>
+            <section class="docs-section" id="export-pdf">
+              <h2>Export PDF</h2>
+              <p>PDF export depends on browser print support and uses the native print-to-PDF flow rather than generating PDF bytes directly inside the package.</p>
             </section>
 
-            <section class="docs-section" id="formatting-tools">
-              <h2>Formatting Tools</h2>
-              <p>Inline and block formatting includes style presets, strikethrough, subscript, superscript, remove formatting, and format painter.</p>
-              <ul>
-                <li><code>Ctrl/Cmd + Shift + X</code> toggles strikethrough.</li>
-                <li><code>Ctrl/Cmd + ,</code> applies subscript.</li>
-                <li><code>Ctrl/Cmd + .</code> applies superscript.</li>
-                <li><code>Ctrl/Cmd + \</code> removes formatting from the current selection or block.</li>
-                <li>Double-click <code>Format Painter</code> to keep it armed for multiple applications.</li>
-              </ul>
-              <pre class="docs-code"><code class="language-html">&lt;p&gt;Normal &lt;s&gt;struck text&lt;/s&gt; and H&lt;sub&gt;2&lt;/sub&gt;O&lt;/p&gt;</code></pre>
+            <section class="docs-section" id="import-docx">
+              <h2>Import DOCX</h2>
+              <p>DOCX import expects a browser-compatible parser such as Mammoth to be available when that workflow is used.</p>
             </section>
 
-            <section class="docs-section" id="image-upload">
-              <h2>Image Upload</h2>
-              <p>Images can be inserted from local files, external URLs, or backend upload endpoints configured through data attributes or JavaScript.</p>
-              <pre class="docs-code"><code class="language-html">&lt;textarea
-  id="ollo-editor"
-  name="body"
-  data-ollow-editor
-  data-image-upload-url="/upload/image"
-  data-gallery-upload-url="/upload/gallery"
-  data-attachment-upload-url="/upload/attachment"&gt;
-&lt;/textarea&gt;</code></pre>
-              <pre class="docs-code"><code class="language-js">OllowEditor.init("#ollo-editor", {
-  upload: {
-    imageUrl: "/upload/image",
-    galleryUrl: "/upload/gallery",
-    attachmentUrl: "/upload/attachment",
-    allowFallback: false
-  }
-});</code></pre>
-              <div class="docs-table-wrap">
-                <table class="docs-table">
-                  <thead>
-                    <tr>
-                      <th>Upload Flow</th>
-                      <th>Contract</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Single file</td><td><code>{ "url": "/media/editor/images/file.jpg" }</code></td></tr>
-                    <tr><td>Multiple files</td><td><code>{ "urls": ["/media/editor/gallery/1.jpg", "/media/editor/gallery/2.jpg"] }</code></td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p>Drag-and-drop is also supported. Multiple dropped images retain order, and non-image files are rejected with a visible editor error.</p>
-            </section>
-
-            <section class="docs-section" id="advanced-image-editing">
-              <h2>Advanced Image Editing</h2>
-              <p>Inserted images expose a floating image toolbar and an image edit modal for alignment, sizing, captions, links, alt text, and replacements.</p>
-              <pre class="docs-code"><code class="language-html">&lt;figure class="ollow-editor-image ollow-image-medium ollow-align-center" data-type="image"&gt;
-  &lt;a href="https://example.com" target="_blank" rel="noopener noreferrer"&gt;
-    &lt;img src="/media/example.jpg" alt="Alt text"&gt;
-  &lt;/a&gt;
-  &lt;figcaption&gt;Caption text&lt;/figcaption&gt;
-&lt;/figure&gt;</code></pre>
-            </section>
-
-            <section class="docs-section" id="gallery-block">
-              <h2>Gallery Block</h2>
-              <p>Gallery blocks support multiple uploaded images and render them in a responsive grid with optional title and note.</p>
-              <pre class="docs-code"><code class="language-html">&lt;section class="ollow-media ollow-gallery"&gt;
-  &lt;div class="ollow-gallery-header"&gt;
-    &lt;h3&gt;Gallery title&lt;/h3&gt;
-    &lt;p&gt;Gallery note or caption&lt;/p&gt;
-  &lt;/div&gt;
-  &lt;div class="ollow-gallery-grid"&gt;
-    &lt;figure&gt;&lt;img src="image-1.jpg" alt="Gallery image 1" /&gt;&lt;/figure&gt;
-    &lt;figure&gt;&lt;img src="image-2.jpg" alt="Gallery image 2" /&gt;&lt;/figure&gt;
-  &lt;/div&gt;
-&lt;/section&gt;</code></pre>
-            </section>
-
-            <section class="docs-section" id="youtube-embed">
-              <h2>YouTube Embed</h2>
-              <p>Supported YouTube URLs are normalized into trusted iframe embeds with lazy loading and a safe wrapper.</p>
-              <pre class="docs-code"><code>https://www.youtube.com/watch?v=VIDEO_ID
-https://youtu.be/VIDEO_ID
-https://www.youtube.com/embed/VIDEO_ID</code></pre>
-              <pre class="docs-code"><code class="language-html">&lt;figure class="ollow-media ollow-embed"&gt;
-  &lt;div class="ollow-video-wrapper"&gt;
-    &lt;iframe src="https://www.youtube.com/embed/VIDEO_ID" title="YouTube video player" allowfullscreen loading="lazy"&gt;&lt;/iframe&gt;
-  &lt;/div&gt;
-  &lt;figcaption&gt;Video caption&lt;/figcaption&gt;
-&lt;/figure&gt;</code></pre>
-            </section>
-
-            <section class="docs-section" id="code-tables">
-              <h2>Code Blocks and Tables</h2>
-              <p>Code blocks store escaped content in semantic HTML, and tables use a scroll container to avoid page-level overflow on smaller screens.</p>
-              <pre class="docs-code"><code class="language-html">&lt;figure class="ollow-editor-code" data-type="code" data-language="python"&gt;
-  &lt;figcaption&gt;example.py&lt;/figcaption&gt;
-  &lt;pre&gt;&lt;code class="language-python"&gt;print("Hello")&lt;/code&gt;&lt;/pre&gt;
-&lt;/figure&gt;</code></pre>
-              <pre class="docs-code"><code class="language-html">&lt;figure class="ollow-editor-table ollow-table-bordered ollow-table-striped" data-type="table"&gt;
-  &lt;div class="ollow-editor-table-scroll"&gt;
-    &lt;table&gt;...&lt;/table&gt;
-  &lt;/div&gt;
-  &lt;figcaption&gt;Table caption&lt;/figcaption&gt;
-&lt;/figure&gt;</code></pre>
-            </section>
-
-            <section class="docs-section" id="export-html-pdf">
-              <h2>Export HTML and PDF</h2>
-              <p>HTML export produces sanitized editor content only. PDF export creates a print-ready iframe document and relies on the browser’s native print-to-PDF flow.</p>
-              <pre class="docs-code"><code class="language-js">const html = editor.exportHTML({
-  fullDocument: true,
-  includeStyles: true,
-  title: "Article Export"
-});
-
-editor.exportPDF({
-  title: "Article",
-  pageSize: "A4",
-  orientation: "portrait",
-  margin: "normal"
-});</code></pre>
-              <div class="docs-note">
-                OllowEditor does not generate PDF bytes directly. Use the browser print dialog and disable browser headers and footers for a clean final PDF.
-              </div>
-            </section>
-
-            <section class="docs-section" id="docx-workflows">
-              <h2>DOCX Import and Export</h2>
-              <p>DOCX import is client-side and uses an optional parser such as Mammoth.js. Real DOCX export requires an optional export adapter; otherwise the editor falls back to a Word-compatible HTML document.</p>
-              <pre class="docs-code"><code class="language-js">editor.importDOCX(file, {
-  mode: "replace",
-  preserveFormatting: true,
-  importImages: true
-});
-
-editor.exportDOCX({
-  filename: "article.docx",
-  title: "Article Title",
-  includeImages: true,
-  fallbackToDoc: true
-});</code></pre>
-            </section>
-
-            <section class="docs-section" id="markdown-workflows">
-              <h2>Markdown Import and Export</h2>
-              <p>Markdown is used for conversion workflows only. The editor still stores sanitized HTML in the hidden textarea.</p>
-              <pre class="docs-code"><code class="language-js">const editor = OllowEditor.get("#ollo-editor");
-
-editor.importMarkdown("## Heading\n\nParagraph text", {
-  mode: "replace"
-});
-
-const markdown = editor.exportMarkdown();</code></pre>
-              <ul>
-                <li>Headings, paragraphs, links, lists, blockquotes, horizontal rules, inline code, fenced code blocks, images, and basic tables are supported.</li>
-                <li>Import supports replace mode and insert-at-cursor mode.</li>
-              </ul>
-            </section>
-
-            <section class="docs-section" id="paste-cleanup">
-              <h2>Paste Cleanup</h2>
-              <p>OllowEditor cleans pasted content from Google Docs, Microsoft Word, LibreOffice, browsers, and plain text before insertion.</p>
-              <ul>
-                <li>Keeps useful structure like headings, paragraphs, lists, blockquotes, tables, code, links, and safe images.</li>
-                <li>Removes scripts, styles, Word-specific classes, comments, event handlers, unsafe URLs, and unsupported iframes.</li>
-                <li>Maps pasted typography only when it matches approved OllowEditor font and size rules.</li>
-              </ul>
-              <pre class="docs-code"><code class="language-js">const editor = OllowEditor.get("#ollo-editor");
-
-const cleanedHtml = editor.cleanPastedHTML(dirtyHtml);
-const cleanedText = editor.cleanPlainText("Line one\n\nLine two");
-const sanitized = editor.sanitizeHTML("&lt;p&gt;Safe HTML&lt;/p&gt;");</code></pre>
-            </section>
-
-            <section class="docs-section" id="textarea-sync">
-              <h2>Textarea Sync</h2>
-              <p>The original textarea remains the source submitted with the form. OllowEditor updates it automatically whenever content changes or the form submits.</p>
-              <pre class="docs-code"><code class="language-html">&lt;textarea name="content"&gt;&lt;/textarea&gt;</code></pre>
-            </section>
-
-            <section class="docs-section" id="plugin-api">
-              <h2>Plugin API</h2>
-              <p>Plugins are registered globally and enabled per editor. They can add buttons, commands, events, shortcuts, and sanitizer rules.</p>
-              <pre class="docs-code"><code class="language-js">OllowEditor.registerPlugin("alertBox", function (editor, options) {
-  editor.addSanitizerRule({
-    classes: ["ollow-alert-box"]
-  });
-
-  editor.addToolbarButton({
-    name: "alertBox",
-    label: options.label || "Alert",
-    icon: "!",
-    group: "blocks",
-    title: "Insert alert box",
-    onClick() {
-      editor.insertHTML('&lt;section class="ollow-alert-box"&gt;&lt;p&gt;Alert text&lt;/p&gt;&lt;/section&gt;');
-    }
-  });
-});</code></pre>
-              <pre class="docs-code"><code class="language-js">OllowEditor.init("#ollo-editor", {
-  plugins: {
-    alertBox: {
-      label: "Alert"
-    }
-  }
-});</code></pre>
-              <p>Plugin-facing helpers include <code>addToolbarButton</code>, <code>addToolbarGroup</code>, <code>addCommand</code>, <code>runCommand</code>, <code>insertHTML</code>, <code>openModal</code>, <code>getHTML</code>, <code>setHTML</code>, <code>sync</code>, <code>focus</code>, and <code>destroy</code>.</p>
-            </section>
-
-            <section class="docs-section" id="backend-integration">
-              <h2>Backend Integration</h2>
-              <p>OllowEditor is backend-independent and works with Django, Laravel, Express.js, FastAPI, Rails, WordPress admin pages, static HTML forms, and custom CMS flows.</p>
-              <pre class="docs-code"><code class="language-js">OllowEditor.init("#ollo-editor", {
-  upload: {
-    imageUrl: "/upload/image",
-    galleryUrl: "/upload/gallery",
-    attachmentUrl: "/upload/attachment",
-    allowFallback: false
-  }
-});
-
-const editor = OllowEditor.get("#ollo-editor");
-
-await editor.uploadFile(file, "image");
-await editor.uploadFile(file, "attachment");</code></pre>
-            </section>
-
-            <section class="docs-section" id="custom-styling">
-              <h2>Custom Styling</h2>
-              <p>All editor visuals live in <code>ollow.css</code>. You can adapt those classes to match your own application or design system.</p>
-              <pre class="docs-code"><code class="language-css">.ollow-editor
-.ollow-toolbar
-.ollow-content
-.ollow-media
-.ollow-image
-.ollow-gallery
-.ollow-gallery-grid
-.ollow-embed
-.ollow-video-wrapper</code></pre>
+            <section class="docs-section" id="export-docx">
+              <h2>Export DOCX</h2>
+              <p>DOCX export depends on the configured exporter available to the editor at runtime. When a real DOCX exporter is not available, the editor can fall back to a Word-compatible document flow.</p>
             </section>
 
             <section class="docs-section" id="browser-support">
               <h2>Browser Support</h2>
-              <p>OllowEditor is designed for modern browsers.</p>
               <ul>
                 <li>Chrome</li>
                 <li>Edge</li>
                 <li>Firefox</li>
                 <li>Safari</li>
+                <li>Other modern Chromium-based browsers</li>
               </ul>
             </section>
 
-            <section class="docs-section" id="security-audit">
-              <h2>Security Audit</h2>
-              <p>Audit date: <code>2026-07-07</code>. The current hardening focuses on unsafe HTML, script execution, unsafe URLs, inline styles, and trusted media/embed handling.</p>
-              <div class="docs-note">
-                OllowEditor is hardened against common XSS and unsafe HTML injection vectors, but host applications still need server-side validation, CSP, and safe upload handling.
+            <section class="docs-section" id="package-structure">
+              <h2>Package Structure</h2>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>dist</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#package-structure-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="package-structure-code"><code>dist/
+├── olloweditor.es.js
+├── olloweditor.cjs
+├── olloweditor-react.es.js
+├── olloweditor-react.cjs
+├── olloweditor.css
+├── index.d.ts
+└── react.d.ts</code></pre>
               </div>
-              <h3>Audit Highlights</h3>
-              <ul>
-                <li>Blocked <code>javascript:</code>, <code>vbscript:</code>, protocol-relative, and unsafe data URLs.</li>
-                <li>Restricted image data URLs to safe bitmap MIME types only.</li>
-                <li>Normalized iframe embeds to trusted YouTube URLs only.</li>
-                <li>Removed dangerous tags like <code>script</code>, <code>style</code>, <code>object</code>, <code>embed</code>, <code>svg</code>, and form controls.</li>
-                <li>Limited inline style preservation to safe hex-based <code>color</code> and <code>background-color</code>.</li>
-              </ul>
-              <h3>Allowed URL Schemes</h3>
-              <ul>
-                <li><code>http:</code>, <code>https:</code>, <code>mailto:</code>, <code>tel:</code></li>
-                <li>Safe relative URLs and internal anchors such as <code>#section-id</code></li>
-              </ul>
-              <h3>Host Application Recommendations</h3>
-              <ul>
-                <li>Authentication and authorization</li>
-                <li>CSRF protection for backend upload/import endpoints</li>
-                <li>Server-side validation and sanitization</li>
-                <li>Content Security Policy headers</li>
-                <li>Safe file upload validation and rate limiting</li>
-              </ul>
             </section>
 
-            <section class="docs-section" id="roadmap">
-              <h2>Roadmap</h2>
-              <p>The README roadmap still lists the editor’s ongoing priorities and expected refinements.</p>
+            <section class="docs-section" id="local-development">
+              <h2>Local Development</h2>
+              <p>For package development, clone the repository and install dependencies before starting the local development workflow.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>local dev</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#local-dev-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="local-dev-code"><code>git clone https://github.com/CodeFortifyCloud/olloweditor.git
+cd olloweditor
+npm install
+npm run dev</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="build-package">
+              <h2>Build Package</h2>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>build</span>
+                  <button class="docs-copy-btn" type="button" data-copy="npm run build">Copy</button>
+                </div>
+                <pre class="docs-code"><code>npm run build</code></pre>
+              </div>
+              <p>The build output should produce the distributable JavaScript, React, CSS, and type definition files shown in the package structure above.</p>
+            </section>
+
+            <section class="docs-section" id="publishing">
+              <h2>Publishing</h2>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>publish</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#publishing-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="publishing-code"><code>npm login
+npm publish --access public</code></pre>
+              </div>
+              <p>Use semantic versioning for releases:</p>
               <ul>
-                <li>Typography controls and styles dropdown</li>
-                <li>Advanced image and table controls</li>
-                <li>Find / replace and special character workflows</li>
-                <li>Source / HTML mode, export workflows, and DOCX import</li>
+                <li><strong>patch</strong> for bug fixes</li>
+                <li><strong>minor</strong> for new features</li>
+                <li><strong>major</strong> for breaking changes</li>
               </ul>
             </section>
 
             <section class="docs-section" id="license">
               <h2>License</h2>
-              <p>This project is open for personal and commercial use. You can customize it freely for your own applications.</p>
-            </section>
-
-            <section class="docs-section" id="author">
-              <h2>Author</h2>
-              <p>Built for custom CMS and publishing workflows.</p>
-              <p><strong>Ollow Editor</strong> — a lightweight reusable JavaScript editor.</p>
+              <p>MIT License.</p>
             </section>
           </article>
         </div>
@@ -684,13 +833,17 @@ await editor.uploadFile(file, "attachment");</code></pre>
             <nav class="docs-toc-links">
               <a href="#introduction">Introduction</a>
               <a href="#installation">Installation</a>
-              <a href="#basic-usage">Basic Usage</a>
-              <a href="#toolbar-overview">Toolbar Overview</a>
+              <a href="#quick-start">Quick Start</a>
+              <a href="#vanilla-javascript">JavaScript Usage</a>
+              <a href="#react-usage">React Usage</a>
+              <a href="#nextjs-usage">Next.js Usage</a>
+              <a href="#mern-stack-usage">MERN Stack Usage</a>
               <a href="#image-upload">Image Upload</a>
-              <a href="#export-html-pdf">Export HTML and PDF</a>
-              <a href="#plugin-api">Plugin API</a>
-              <a href="#security-audit">Security Audit</a>
-              <a href="#license">License</a>
+              <a href="#api-reference">API Reference</a>
+              <a href="#toolbar-features">Toolbar Features</a>
+              <a href="#import-export">Import and Export</a>
+              <a href="#browser-support">Browser Support</a>
+              <a href="#publishing">Publishing</a>
             </nav>
           </div>
         </aside>

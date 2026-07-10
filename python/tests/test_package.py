@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import subprocess
+import sys
+
 import olloweditor
 
 from olloweditor.resources import asset_exists, get_asset_path, get_static_root
@@ -7,6 +10,20 @@ from olloweditor.resources import asset_exists, get_asset_path, get_static_root
 
 def test_import_package() -> None:
     assert olloweditor is not None
+
+
+def test_base_import_does_not_import_django() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import sys, olloweditor; print('django' in sys.modules)",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert result.stdout.strip() == "False"
 
 
 def test_version_available() -> None:

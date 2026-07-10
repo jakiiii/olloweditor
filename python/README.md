@@ -92,6 +92,71 @@ window.bootOllowEditor(root)
 
 This is intended for dynamically inserted forms, modals, and partial page updates.
 
+## Django
+
+Install the Django integration with:
+
+```bash
+pip install "olloweditor[django]"
+```
+
+Register the app in `settings.py`:
+
+```python
+INSTALLED_APPS = [
+    # ...
+    "olloweditor.apps.OllowEditorConfig",
+]
+```
+
+Use the model field directly:
+
+```python
+from django.db import models
+from olloweditor.integrations.django import OllowEditorField
+
+
+class Article(models.Model):
+    title = models.CharField(max_length=255)
+    content = OllowEditorField()
+```
+
+Use the widget on an existing text field:
+
+```python
+from django import forms
+from olloweditor.integrations.django import OllowEditorWidget
+
+
+class ArticleForm(forms.ModelForm):
+    content = forms.CharField(
+        widget=OllowEditorWidget(
+            options={
+                "theme": "auto",
+            }
+        )
+    )
+```
+
+Template usage:
+
+```django
+{{ form.media }}
+{{ form }}
+```
+
+Django admin works automatically for `OllowEditorField`. For an existing `TextField`, assign `OllowEditorWidget` in a custom form used by `ModelAdmin`.
+
+In production, remember to run:
+
+```bash
+python manage.py collectstatic
+```
+
+Security note:
+
+OllowEditor does not automatically sanitize or trust saved HTML on the server side. Applications must apply their own HTML sanitization and rendering policy for untrusted content.
+
 ## Development
 
 From the repository root:

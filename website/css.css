@@ -526,7 +526,7 @@ img {
 .editor-demo-card {
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(135, 160, 198, 0.26);
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.94);
@@ -570,7 +570,7 @@ img {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 249, 255, 0.92)),
     radial-gradient(circle at top, rgba(70, 216, 236, 0.08), transparent 28%);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .editor-demo-shell textarea {
@@ -633,8 +633,7 @@ img {
 
 .editor-demo-shell .nw-toolbar-row,
 .editor-demo-shell .nw-insert-row {
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: visible;
   scrollbar-width: thin;
 }
 
@@ -1893,5 +1892,202 @@ img {
 
   .docs-table {
     min-width: 460px;
+  }
+}
+
+/* =========================================================
+   OllowEditor website demo dropdown fix
+   Keeps font, size, color, highlight, style and theme menus
+   above the second toolbar row and prevents parent clipping.
+   ========================================================= */
+
+.editor-demo-section,
+.editor-demo-layout,
+.editor-demo-card,
+.editor-demo-shell,
+.editor-demo-shell .nw-editor,
+.editor-demo-shell .nw-editor-card,
+.editor-demo-shell .nw-editor-toolbar,
+.editor-demo-shell .ollow-toolbar-top,
+.editor-demo-shell .nw-toolbar-row,
+.editor-demo-shell .nw-toolbar-group,
+.editor-demo-shell .ollow-typography-controls,
+.editor-demo-shell .ollow-font-control,
+.editor-demo-shell .ollow-size-control,
+.editor-demo-shell .ollow-text-color-wrap,
+.editor-demo-shell .ollow-highlight-wrap,
+.editor-demo-shell .ollow-styles-control,
+.editor-demo-shell .ollow-theme-control {
+  overflow: visible !important;
+}
+
+.editor-demo-card {
+  position: relative;
+  z-index: 20;
+}
+
+.editor-demo-shell {
+  position: relative;
+  z-index: 30;
+}
+
+.editor-demo-shell .nw-editor-card {
+  position: relative;
+  z-index: 1;
+}
+
+.editor-demo-shell .nw-editor-toolbar {
+  position: relative;
+  z-index: 200;
+}
+
+.editor-demo-shell .nw-toolbar-row {
+  position: relative;
+  z-index: 300;
+}
+
+.editor-demo-shell .nw-insert-row {
+  position: relative;
+  z-index: 100;
+  overflow: visible !important;
+}
+
+.editor-demo-shell .ollow-font-control,
+.editor-demo-shell .ollow-size-control,
+.editor-demo-shell .ollow-text-color-wrap,
+.editor-demo-shell .ollow-highlight-wrap,
+.editor-demo-shell .ollow-styles-control,
+.editor-demo-shell .ollow-theme-control {
+  position: relative;
+  z-index: 500;
+}
+
+.editor-demo-shell .ollow-font-menu,
+.editor-demo-shell .ollow-size-menu,
+.editor-demo-shell .ollow-styles-menu,
+.editor-demo-shell .ollow-text-color-popover,
+.editor-demo-shell .ollow-highlight-popover,
+.editor-demo-shell .ollow-theme-menu {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  left: 0 !important;
+  z-index: 99999 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: min(420px, calc(100vh - 140px)) !important;
+  background: var(--ollow-surface, #ffffff) !important;
+  color: var(--ollow-text-strong, #111827) !important;
+  border: 1px solid var(--nw-border, #d9dde3) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--ollow-shadow-float, 0 16px 40px rgba(15, 23, 42, 0.18)) !important;
+}
+
+.editor-demo-shell .ollow-font-menu {
+  min-width: 260px !important;
+  max-width: min(360px, calc(100vw - 32px)) !important;
+}
+
+.editor-demo-shell .ollow-size-menu {
+  min-width: 90px !important;
+  max-width: 120px !important;
+}
+
+.editor-demo-shell .ollow-styles-menu {
+  min-width: 248px !important;
+  max-width: min(340px, calc(100vw - 32px)) !important;
+}
+
+.editor-demo-shell .ollow-text-color-popover,
+.editor-demo-shell .ollow-highlight-popover {
+  min-width: 260px !important;
+  max-width: min(340px, calc(100vw - 32px)) !important;
+}
+
+.editor-demo-shell .ollow-font-menu[hidden],
+.editor-demo-shell .ollow-size-menu[hidden],
+.editor-demo-shell .ollow-styles-menu[hidden],
+.editor-demo-shell .ollow-text-color-popover[hidden],
+.editor-demo-shell .ollow-highlight-popover[hidden],
+.editor-demo-shell .ollow-theme-menu[hidden] {
+  display: none !important;
+}
+
+.editor-demo-shell .ollow-font-option,
+.editor-demo-shell .ollow-size-menu button,
+.editor-demo-shell .ollow-style-option,
+.editor-demo-shell .ollow-text-color-reset,
+.editor-demo-shell .ollow-text-color-swatch,
+.editor-demo-shell .ollow-highlight-reset,
+.editor-demo-shell .ollow-highlight-swatch {
+  position: relative;
+  z-index: 1;
+}
+
+.editor-demo-shell .nw-toolbar-button,
+.editor-demo-shell .nw-insert-pill {
+  position: relative;
+  z-index: 1;
+}
+
+.editor-demo-shell .ollow-font-menu::-webkit-scrollbar,
+.editor-demo-shell .ollow-size-menu::-webkit-scrollbar,
+.editor-demo-shell .ollow-styles-menu::-webkit-scrollbar,
+.editor-demo-shell .ollow-text-color-popover::-webkit-scrollbar,
+.editor-demo-shell .ollow-highlight-popover::-webkit-scrollbar {
+  width: 8px;
+}
+
+.editor-demo-shell .ollow-font-menu::-webkit-scrollbar-thumb,
+.editor-demo-shell .ollow-size-menu::-webkit-scrollbar-thumb,
+.editor-demo-shell .ollow-styles-menu::-webkit-scrollbar-thumb,
+.editor-demo-shell .ollow-text-color-popover::-webkit-scrollbar-thumb,
+.editor-demo-shell .ollow-highlight-popover::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.35);
+  border-radius: 999px;
+}
+
+.editor-demo-shell .ollow-font-menu::-webkit-scrollbar-track,
+.editor-demo-shell .ollow-size-menu::-webkit-scrollbar-track,
+.editor-demo-shell .ollow-styles-menu::-webkit-scrollbar-track,
+.editor-demo-shell .ollow-text-color-popover::-webkit-scrollbar-track,
+.editor-demo-shell .ollow-highlight-popover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (max-width: 640px) {
+  .editor-demo-shell .ollow-font-menu,
+  .editor-demo-shell .ollow-size-menu,
+  .editor-demo-shell .ollow-styles-menu,
+  .editor-demo-shell .ollow-text-color-popover,
+  .editor-demo-shell .ollow-highlight-popover,
+  .editor-demo-shell .ollow-theme-menu {
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: auto !important;
+    bottom: 72px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: min(70vh, 520px) !important;
+    z-index: 99999 !important;
+  }
+
+  .editor-demo-shell .nw-toolbar-row,
+  .editor-demo-shell .nw-insert-row {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .editor-demo-shell .ollow-font-menu,
+  .editor-demo-shell .ollow-size-menu,
+  .editor-demo-shell .ollow-styles-menu,
+  .editor-demo-shell .ollow-text-color-popover,
+  .editor-demo-shell .ollow-highlight-popover,
+  .editor-demo-shell .ollow-theme-menu {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 68px !important;
   }
 }

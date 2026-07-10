@@ -1,6 +1,6 @@
 # Release
 
-This project does not publish automatically during local verification. The release flow is manual by design.
+This project does not publish automatically during local verification. The release flow is manual by design, and PyPI publishing is gated through GitHub Actions Trusted Publishing.
 
 ## Before you start
 
@@ -24,11 +24,25 @@ Prepare:
 - a PyPI account
 - a TestPyPI account
 - two-factor authentication on both
-- either:
-  - API tokens for manual `twine upload`, or
-  - trusted publishing configured in CI
+- trusted publishing configured in CI
 
 Do not store PyPI or TestPyPI tokens in this repository.
+
+## Trusted Publishing setup
+
+Configure a PyPI trusted publisher with these values:
+
+- PyPI project name: `olloweditor`
+- GitHub owner: `jakiiii`
+- GitHub repository: `olloweditor`
+- Workflow filename: `.github/workflows/publish-python.yml`
+- Environment name: `pypi`
+
+Notes:
+
+- publishing uses GitHub OpenID Connect, not a stored API token
+- the `pypi` GitHub environment should be protected and may require manual approval
+- if the repository owner changes, update the PyPI trusted publisher configuration before the next release
 
 ## Clean local release process
 
@@ -55,6 +69,34 @@ You can also run the broader local verifier:
 ```bash
 python scripts/verify_release.py
 ```
+
+For release-tag validation without publishing:
+
+```bash
+python scripts/validate_publish_release.py \
+  --release-tag v0.1.0 \
+  --skip-git-check
+```
+
+## GitHub Actions publish flow
+
+Publishing happens only after a GitHub release is published.
+
+Workflow behavior:
+
+- `workflow_dispatch` runs a manual dry run for an existing git tag and does not publish
+- `release.published` builds the frontend and Python distributions, validates metadata, and uploads artifacts
+- the `publish` job downloads the exact artifact created by the build job and publishes that artifact to PyPI
+- failed builds never reach the publish step
+- PyPI rejects re-upload of an existing version
+
+Before the workflow builds distributions, it verifies:
+
+- release tag format matches `v<version>`
+- `python/pyproject.toml` version matches the tag
+- `package.json` version matches the tag
+- the checked out commit is exactly the tagged commit
+- the version is not already published on PyPI
 
 ## TestPyPI upload
 
@@ -93,7 +135,7 @@ After TestPyPI upload, install and smoke-test the package in a clean virtual env
 
 ## Real PyPI upload
 
-Manual upload command:
+Manual upload command, if you intentionally need a fallback outside Trusted Publishing:
 
 ```bash
 python -m twine upload dist/*
@@ -116,4 +158,5 @@ python -m twine upload dist/*
 - [ ] framework examples tested
 - [ ] git tag created
 - [ ] GitHub release created
+- [ ] `publish-python.yml` completed successfully
 - [ ] PyPI package verified

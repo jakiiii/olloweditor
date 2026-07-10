@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Flask OllowEditor Example</title>
+    {{ olloweditor_assets() }}
+    <style>
+        body { font-family: sans-serif; margin: 2rem auto; max-width: 960px; padding: 0 1rem; }
+        input[type="text"], textarea { width: 100%; box-sizing: border-box; }
+        .error { color: #a00; }
+    </style>
+</head>
+<body>
+    <h1>Flask OllowEditor Example</h1>
+    <p>The editor keeps the textarea synchronized, and Flask receives HTML through standard form submission.</p>
+    <form method="post" action="{{ url_for('create_article') }}">
+        <p>
+            <label for="title">Title</label>
+            <input id="title" name="title" type="text" value="{{ title }}" maxlength="255" required>
+            {% if errors.title %}<span class="error">{{ errors.title }}</span>{% endif %}
+        </p>
+        <p>
+            <label for="content">Content</label>
+            {{ olloweditor_textarea('content', content, id='content') }}
+            {% if errors.content %}<span class="error">{{ errors.content }}</span>{% endif %}
+        </p>
+        <button type="submit">Save article</button>
+    </form>
+</body>
+</html>

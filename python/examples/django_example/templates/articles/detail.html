@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ object.title }}{% endblock %}
+{% block content %}
+<h1>{{ object.title }}</h1>
+<p>Created {{ object.created_at }} | Updated {{ object.updated_at }}</p>
+<p class="help">Stored HTML is escaped below. Only render untrusted HTML after applying a server-side sanitization policy.</p>
+<pre>{{ object.content }}</pre>
+<p><a href="{% url 'article-update' object.pk %}">Edit article</a></p>
+{% endblock %}

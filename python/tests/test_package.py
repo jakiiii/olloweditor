@@ -17,13 +17,13 @@ def test_base_import_does_not_import_django() -> None:
         [
             sys.executable,
             "-c",
-            "import sys, olloweditor; print('django' in sys.modules, 'rest_framework' in sys.modules, 'flask' in sys.modules)",
+            "import sys, olloweditor; print('django' in sys.modules, 'rest_framework' in sys.modules, 'flask' in sys.modules, 'fastapi' in sys.modules)",
         ],
         check=True,
         capture_output=True,
         text=True,
     )
-    assert result.stdout.strip() == "False False False"
+    assert result.stdout.strip() == "False False False False"
 
 
 def test_version_available() -> None:

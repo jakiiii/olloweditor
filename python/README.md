@@ -9,7 +9,7 @@ This package will distribute the existing OllowEditor JavaScript and CSS assets 
 - Flask
 - FastAPI
 
-This package includes the base asset packaging layer plus Django, Django REST Framework, and Flask integrations. FastAPI is planned for a later phase.
+This package includes the base asset packaging layer plus Django, Django REST Framework, Flask, and FastAPI integrations.
 
 ## Status
 
@@ -21,11 +21,12 @@ Current scope:
 - Django form/widget/model field integration
 - Django REST Framework serializer field integration
 - Flask extension and asset-serving blueprint
+- FastAPI static mount and template helpers
 - unit tests for asset resolution and path validation
 
 Not included yet:
 
-- FastAPI mounting helpers
+- framework-specific upload endpoints
 
 ## Installation
 
@@ -204,6 +205,63 @@ class ArticleSerializer(serializers.Serializer):
         allow_blank=True,
         sanitizer=sanitize_html,
     )
+```
+
+Security warning:
+
+- HTML from users can contain unsafe markup.
+- The editor is not a server-side security boundary.
+- Applications must sanitize untrusted HTML before rendering it.
+
+## FastAPI
+
+Install the FastAPI integration with:
+
+```bash
+pip install "olloweditor[fastapi]"
+```
+
+Mount the packaged assets on the application:
+
+```python
+from fastapi import FastAPI
+from olloweditor.integrations.fastapi import mount_olloweditor
+
+
+app = FastAPI()
+mount_olloweditor(app)
+```
+
+Register the HTML helper for Jinja templates:
+
+```python
+from fastapi.templating import Jinja2Templates
+from olloweditor.integrations.fastapi import olloweditor_assets
+
+
+templates = Jinja2Templates(directory="templates")
+templates.env.globals["olloweditor_assets"] = olloweditor_assets
+```
+
+Template usage:
+
+```html
+{{ olloweditor_assets() }}
+
+<textarea
+  name="content"
+  data-olloweditor="true"></textarea>
+```
+
+You may also generate a textarea directly from Python with `olloweditor_textarea(...)`.
+
+If your application accepts HTML form submissions, FastAPI applications commonly need `python-multipart` installed for form parsing.
+
+Submitted editor HTML is available through the normal FastAPI request form APIs:
+
+```python
+form = await request.form()
+content = form["content"]
 ```
 
 Security warning:

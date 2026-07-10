@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OllowEditor Browser Bundle Example</title>
+  <link rel="stylesheet" href="../../dist/olloweditor.css">
+</head>
+<body>
+  <main>
+    <textarea id="content" name="content"><p>Browser bundle example</p></textarea>
+  </main>
+
+  <script src="../../dist/olloweditor.browser.js"></script>
+  <script>
+    window.OllowEditor.create(
+      document.getElementById("content"),
+      {
+        theme: "light"
+      }
+    );
+  </script>
+</body>
+</html>

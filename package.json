@@ -1,0 +1,82 @@
+{
+  "name": "@codefortify/olloweditor",
+  "version": "0.1.0",
+  "description": "A modern rich text editor for JavaScript, TypeScript, React, MERN, Node, Vue, Next.js, and NestJS applications.",
+  "keywords": [
+    "rich-text-editor",
+    "wysiwyg",
+    "editor",
+    "javascript-editor",
+    "typescript-editor",
+    "react-editor",
+    "react-typescript-editor",
+    "mern-editor",
+    "node-editor",
+    "vue-editor",
+    "nextjs-editor",
+    "nestjs-editor",
+    "content-editor",
+    "html-editor"
+  ],
+  "homepage": "https://github.com/CodeFortifyCloud/olloweditor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeFortifyCloud/olloweditor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CodeFortifyCloud/olloweditor/issues"
+  },
+  "license": "MIT",
+  "author": "CodeFortify",
+  "type": "module",
+  "main": "./dist/olloweditor.cjs",
+  "module": "./dist/olloweditor.es.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/olloweditor.css",
+  "unpkg": "./dist/olloweditor.browser.js",
+  "jsdelivr": "./dist/olloweditor.browser.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/olloweditor.es.js",
+      "require": "./dist/olloweditor.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/olloweditor-react.es.js",
+      "require": "./dist/olloweditor-react.cjs"
+    },
+    "./style.css": "./dist/olloweditor.css",
+    "./browser": "./dist/olloweditor.browser.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "examples"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "build": "node scripts/build-browser-bundle.js",
+    "build:browser": "node scripts/build-browser-bundle.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test tests/browser/*.test.js",
+    "test:browser": "node --test tests/browser/*.test.js",
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build && npm run typecheck && npm test"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0 || >=19.0.0-0",
+    "react-dom": ">=18.0.0 || >=19.0.0-0"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "jsdom": "^26.1.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "typescript": "latest",
+    "vite": "latest"
+  }
+}

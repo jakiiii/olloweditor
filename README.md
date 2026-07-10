@@ -105,6 +105,14 @@ Include the editor CSS and JavaScript:
 <script src="ollow.js"></script>
 ```
 
+For the packaged browser bundle, use the `dist/` assets:
+
+```html
+<link rel="stylesheet" href="./dist/olloweditor.css" />
+
+<script src="./dist/olloweditor.browser.js"></script>
+```
+
 Initialize the editor:
 
 ```html
@@ -118,9 +126,32 @@ Initialize the editor:
 </script>
 ```
 
+Preferred browser-bundle API:
+
+```html
+<script>
+  window.OllowEditor.create(
+    document.getElementById("ollo-editor"),
+    {
+      theme: "dark",
+      persistTheme: true
+    }
+  );
+</script>
+```
+
 After editing, the textarea will contain the synced HTML output.
 
-The global API is available as both `OllowEditor` and `NationWireEditor`.
+The browser runtime exposes:
+
+- `window.OllowEditor.create(target, options)`
+- `window.OllowEditor.init(target, options)`
+- `window.OllowEditor.initAll(root, options)`
+- `window.OllowEditor.get(target)`
+- `window.OllowEditor.instances()`
+- `window.OllowEditor.registerPlugin(name, factory)`
+
+The legacy alias `window.NationWireEditor` remains available for compatibility.
 
 Plugins can be registered globally before initialization with `OllowEditor.registerPlugin(...)`.
 
@@ -162,7 +193,7 @@ You can also configure image uploads during initialization:
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    OllowEditor.init("#ollo-editor");
+    window.OllowEditor.create("#ollo-editor");
   });
 </script>
 ```

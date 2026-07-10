@@ -1,5 +1,7 @@
 # olloweditor
 
+[![Python CI](https://github.com/CodeFortifyCloud/olloweditor/actions/workflows/python-ci.yml/badge.svg)](https://github.com/CodeFortifyCloud/olloweditor/actions/workflows/python-ci.yml)
+
 `olloweditor` packages the OllowEditor browser build for Python applications and adds framework integrations for Django, Django REST Framework, Flask, and FastAPI.
 
 It does not reimplement the editor in Python. The package ships the compiled JavaScript, CSS, and initialization assets, then provides Python helpers for serving those assets and wiring them into forms, templates, and APIs.

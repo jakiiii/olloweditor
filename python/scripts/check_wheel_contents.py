@@ -7,6 +7,7 @@ from pathlib import Path
 REQUIRED = {
     "olloweditor/static/olloweditor/olloweditor.browser.js",
     "olloweditor/static/olloweditor/olloweditor.css",
+    "olloweditor/static/olloweditor/olloweditor-init.js",
 }
 
 

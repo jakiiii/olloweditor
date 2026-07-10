@@ -23,6 +23,7 @@ def test_static_root_resolves() -> None:
 def test_expected_assets_exist() -> None:
     assert asset_exists("olloweditor.browser.js") is True
     assert asset_exists("olloweditor.css") is True
+    assert asset_exists("olloweditor-init.js") is True
 
 
 def test_asset_path_returns_traversable() -> None:
@@ -41,6 +42,12 @@ def test_css_bundle_is_readable() -> None:
     asset = get_asset_path("olloweditor.css")
     content = asset.read_text(encoding="utf8")
     assert ".nw-editor" in content
+
+
+def test_initializer_bundle_is_readable() -> None:
+    asset = get_asset_path("olloweditor-init.js")
+    content = asset.read_text(encoding="utf8")
+    assert "bootOllowEditor" in content
 
 
 def test_unsafe_path_is_rejected() -> None:

@@ -134,12 +134,13 @@ async function sync() {
     files: copied.map((entry) => entry.relative)
   };
 
-  const notice = [
+const notice = [
     "Generated asset directory for the Python package.",
-    "Do not edit files here manually.",
+    "Do not edit generated files here manually.",
     "Source of truth:",
     "  - dist/olloweditor.browser.js",
     "  - dist/olloweditor.css",
+    "Package-specific files in this directory, such as olloweditor-init.js, are maintained separately.",
     "Regenerate with:",
     "  npm run build",
     "  npm run build:python-assets"

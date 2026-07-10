@@ -11,6 +11,10 @@ const requiredAssets = [
   "olloweditor.css"
 ];
 
+const packageSpecificAssets = [
+  "olloweditor-init.js"
+];
+
 function sha256(content) {
   return crypto.createHash("sha256").update(content).digest("hex");
 }
@@ -69,6 +73,16 @@ async function verify() {
     throw new Error("Packaged browser bundle does not expose the expected browser global.");
   }
 
+  const initJs = (await readFileChecked(targetRoot, "olloweditor-init.js")).content.toString("utf8");
+  if (!initJs.includes("bootOllowEditor")) {
+    throw new Error("Packaged initializer does not expose bootOllowEditor.");
+  }
+
+  for (const relative of packageSpecificAssets) {
+    const asset = await readFileChecked(targetRoot, relative);
+    results.push(`verified ${relative} (${asset.content.length} bytes)`);
+  }
+
   const cssContent = (await readFileChecked(targetRoot, "olloweditor.css")).content.toString("utf8");
   const cssUrls = extractCssUrls(cssContent);
   for (const reference of cssUrls) {
@@ -88,6 +102,7 @@ async function verify() {
     console.log(`- ${line}`);
   }
   console.log(`- browser global detected in olloweditor.browser.js`);
+  console.log(`- bootOllowEditor detected in olloweditor-init.js`);
   console.log(`- CSS asset references validated (${cssUrls.length} references)`);
 }
 

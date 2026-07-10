@@ -38,12 +38,13 @@ classifiers = [
   "Topic :: Internet :: WWW/HTTP",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Framework :: Django",
-  "Framework :: Flask"
+  "Framework :: Flask",
+  "Framework :: FastAPI"
 ]
 
 [project.urls]
 Homepage = "https://github.com/CodeFortifyCloud/olloweditor"
-Documentation = "https://github.com/CodeFortifyCloud/olloweditor#readme"
+Documentation = "https://github.com/CodeFortifyCloud/olloweditor/tree/main/python"
 Repository = "https://github.com/CodeFortifyCloud/olloweditor"
 Issues = "https://github.com/CodeFortifyCloud/olloweditor/issues"
 

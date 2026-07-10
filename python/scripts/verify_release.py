@@ -74,6 +74,13 @@ def main() -> int:
                 *[str(path) for path in wheels],
             ]
         )
+        run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "verify_wheel_installs.py"),
+                str(wheels[0]),
+            ]
+        )
     except subprocess.CalledProcessError as exc:
         return exc.returncode
     return 0

@@ -59,6 +59,8 @@
     "start": "vite",
     "build": "node scripts/build-browser-bundle.js",
     "build:browser": "node scripts/build-browser-bundle.js",
+    "build:python-assets": "node scripts/sync-python-assets.mjs",
+    "verify:python-assets": "node scripts/verify-python-assets.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --test tests/browser/*.test.js",
     "test:browser": "node --test tests/browser/*.test.js",

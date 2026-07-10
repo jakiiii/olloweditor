@@ -31,6 +31,18 @@ def test_asset_path_returns_traversable() -> None:
     assert asset.name == "olloweditor.browser.js"
 
 
+def test_browser_bundle_is_readable() -> None:
+    asset = get_asset_path("olloweditor.browser.js")
+    content = asset.read_text(encoding="utf8")
+    assert "OllowEditor" in content
+
+
+def test_css_bundle_is_readable() -> None:
+    asset = get_asset_path("olloweditor.css")
+    content = asset.read_text(encoding="utf8")
+    assert ".nw-editor" in content
+
+
 def test_unsafe_path_is_rejected() -> None:
     try:
         get_asset_path("../secret")

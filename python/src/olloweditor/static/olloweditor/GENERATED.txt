@@ -1,0 +1,8 @@
+Generated asset directory for the Python package.
+Do not edit files here manually.
+Source of truth:
+  - dist/olloweditor.browser.js
+  - dist/olloweditor.css
+Regenerate with:
+  npm run build
+  npm run build:python-assets

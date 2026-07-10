@@ -62,6 +62,10 @@ In this phase, the current OllowEditor browser bundle and CSS are included as pa
 From the repository root:
 
 ```bash
+npm run build
+npm run build:python-assets
+npm run verify:python-assets
+
 cd python
 python3 -m venv .venv
 source .venv/bin/activate
@@ -70,7 +74,15 @@ python -m pip install -e ".[dev,test]"
 python -m pytest
 python -m build
 python -m twine check dist/*
+python scripts/check_wheel_contents.py dist/*.whl
 ```
+
+Recommended release order:
+
+1. Build JavaScript assets.
+2. Synchronize Python package assets.
+3. Verify synchronized Python assets.
+4. Build the Python package and validate the wheel.
 
 ## License
 

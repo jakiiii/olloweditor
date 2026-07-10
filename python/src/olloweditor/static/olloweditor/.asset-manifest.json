@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-07-10T06:01:29.280Z",
+  "sourceRoot": "dist",
+  "targetRoot": "python/src/olloweditor/static/olloweditor",
+  "files": [
+    "olloweditor.browser.js",
+    "olloweditor.css"
+  ]
+}

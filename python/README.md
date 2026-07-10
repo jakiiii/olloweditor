@@ -9,7 +9,7 @@ This package will distribute the existing OllowEditor JavaScript and CSS assets 
 - Flask
 - FastAPI
 
-This phase provides only the base package structure and packaged static-resource helpers. Framework integrations are added in later phases.
+This package includes the base asset packaging layer plus Django, Django REST Framework, and Flask integrations. FastAPI is planned for a later phase.
 
 ## Status
 
@@ -18,13 +18,13 @@ Current scope:
 - Python package metadata and packaging configuration
 - packaged static asset layout
 - safe resource lookup helpers based on `importlib.resources`
+- Django form/widget/model field integration
+- Django REST Framework serializer field integration
+- Flask extension and asset-serving blueprint
 - unit tests for asset resolution and path validation
 
 Not included yet:
 
-- Django widgets or template tags
-- DRF serializer helpers
-- Flask blueprint helpers
 - FastAPI mounting helpers
 
 ## Installation
@@ -212,6 +212,67 @@ Security warning:
 - The editor is not a server-side security boundary.
 - Applications must sanitize untrusted HTML before rendering it.
 - This package does not ship a default server-side HTML sanitizer.
+
+## Flask
+
+Install the Flask integration with:
+
+```bash
+pip install "olloweditor[flask]"
+```
+
+Direct application setup:
+
+```python
+from flask import Flask
+from olloweditor.integrations.flask import OllowEditor
+
+
+app = Flask(__name__)
+olloweditor = OllowEditor(app)
+```
+
+Application factory setup:
+
+```python
+from flask import Flask
+from olloweditor.integrations.flask import OllowEditor
+
+
+olloweditor = OllowEditor()
+
+
+def create_app() -> Flask:
+    app = Flask(__name__)
+    olloweditor.init_app(app)
+    return app
+```
+
+Template usage:
+
+```html
+{{ olloweditor_assets() }}
+
+<textarea
+  name="content"
+  data-olloweditor="true"></textarea>
+```
+
+Submitted HTML is available through the normal Flask form APIs:
+
+```python
+from flask import request
+
+content = request.form["content"]
+```
+
+The extension serves packaged assets from a blueprint under `/olloweditor` by default. Set `OLLOWEDITOR_URL_PREFIX` to change the prefix.
+
+Security warning:
+
+- HTML from users can contain unsafe markup.
+- The editor is not a server-side security boundary.
+- Applications must sanitize untrusted HTML before rendering it.
 
 ## Development
 

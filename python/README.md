@@ -157,6 +157,62 @@ Security note:
 
 OllowEditor does not automatically sanitize or trust saved HTML on the server side. Applications must apply their own HTML sanitization and rendering policy for untrusted content.
 
+## Django REST Framework
+
+Install the DRF integration with:
+
+```bash
+pip install "olloweditor[drf]"
+```
+
+Use the serializer field directly:
+
+```python
+from rest_framework import serializers
+from olloweditor.integrations.drf import OllowEditorHTMLField
+
+
+class ArticleSerializer(serializers.ModelSerializer):
+    content = OllowEditorHTMLField(
+        allow_blank=True,
+        required=False,
+    )
+```
+
+Expected JSON:
+
+```json
+{
+  "title": "Article title",
+  "content": "<p>Article content</p>"
+}
+```
+
+Supplying a trusted sanitizer callable:
+
+```python
+from rest_framework import serializers
+from olloweditor.integrations.drf import OllowEditorHTMLField
+
+
+def sanitize_html(value: str) -> str:
+    return value
+
+
+class ArticleSerializer(serializers.Serializer):
+    content = OllowEditorHTMLField(
+        allow_blank=True,
+        sanitizer=sanitize_html,
+    )
+```
+
+Security warning:
+
+- HTML from users can contain unsafe markup.
+- The editor is not a server-side security boundary.
+- Applications must sanitize untrusted HTML before rendering it.
+- This package does not ship a default server-side HTML sanitizer.
+
 ## Development
 
 From the repository root:

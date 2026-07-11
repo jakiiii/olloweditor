@@ -46,8 +46,18 @@
             <p class="eyebrow">Free. Lightweight. Developer-first.</p>
             <h1>A Free, Block-Style Editor with <span>Clean JSON Output</span></h1>
             <p class="hero-text">
-              OllowEditor helps JavaScript and MERN stack developers build clean, structured content with a simple and powerful editing experience for modern web applications.
+              OllowEditor helps JavaScript, MERN, and Python developers build clean, structured content with a simple and powerful editing experience for modern web applications.
             </p>
+            <div class="python-badge-row hero-badge-row" aria-label="Supported packages and frameworks">
+              <span class="python-badge">npm package</span>
+              <span class="python-badge">pip package</span>
+              <span class="python-badge">JavaScript</span>
+              <span class="python-badge">Python</span>
+              <span class="python-badge">MERN</span>
+              <span class="python-badge">Django</span>
+              <span class="python-badge">Flask</span>
+              <span class="python-badge">FastAPI</span>
+            </div>
             <div class="hero-actions">
               <a class="primary-button" href="#editor-demo">Get Started</a>
               <a class="secondary-button" href="https://github.com/CodeFortifyCloud/olloweditor" target="_blank" rel="noopener noreferrer">View Github</a>
@@ -79,6 +89,44 @@
               <h2>Developer Friendly</h2>
               <p>Simple JavaScript API, customizable tools, and easy integration.</p>
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="editor-demo-section" id="editor-demo">
+        <div class="editor-demo-band"></div>
+        <div class="container editor-demo-layout">
+          <div class="section-heading">
+            <p class="eyebrow">Live Demo</p>
+            <h2>Try OllowEditor</h2>
+            <p>Write, format, insert media, and export structured content directly from the demo.</p>
+          </div>
+          <div class="editor-demo-card">
+            <div class="demo-card-topbar" aria-hidden="true">
+              <div class="demo-window-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="demo-window-spacer"></div>
+            </div>
+            <div class="editor-demo-shell">
+              <textarea
+                id="ollow-editor-demo-input"
+                name="body"
+                data-nw-editor
+                data-theme="light"
+                data-persist-theme="false"
+                data-placeholder="Start writing with OllowEditor..."
+              ><h2>Welcome to OllowEditor</h2>
+<p>OllowEditor is a clean block-style JavaScript editor built for structured content.</p>
+<ul>
+  <li>Block-based editing</li>
+  <li>Clean JSON output</li>
+  <li>Media support</li>
+  <li>Developer-friendly API</li>
+</ul></textarea>
+            </div>
           </div>
         </div>
       </section>
@@ -157,43 +205,144 @@ export default function App() {
         </div>
       </section>
 
-      <section class="editor-demo-section" id="editor-demo">
-        <div class="editor-demo-band"></div>
-        <div class="container editor-demo-layout">
-          <div class="section-heading">
-            <p class="eyebrow">Live Demo</p>
-            <h2>Try OllowEditor</h2>
-            <p>Write, format, insert media, and export structured content directly from the demo.</p>
+      <section class="python-section" aria-labelledby="python-section-title">
+        <div class="container">
+          <div class="section-heading section-heading-centered">
+            <p class="eyebrow">Pip Package</p>
+            <h2 id="python-section-title">OllowEditor for Python</h2>
+            <p>Use OllowEditor in Django, Django REST Framework, Flask, and FastAPI without managing a separate npm asset pipeline.</p>
           </div>
-          <div class="editor-demo-card">
-            <div class="demo-card-topbar" aria-hidden="true">
-              <div class="demo-window-dots">
-                <span></span>
-                <span></span>
-                <span></span>
+
+          <div class="python-showcase-grid">
+            <div class="python-stack">
+              <article class="python-install-card install-command-card" aria-label="pip install command">
+                <div class="install-command-card-header">
+                  <span class="material-symbols-outlined" aria-hidden="true">terminal</span>
+                  <span>Install from pip</span>
+                </div>
+                <p class="python-section-text">
+                  The Python package ships the compiled OllowEditor browser bundle, stylesheet, and shared initialization script, then adds framework helpers for forms, templates, serializer fields, and static asset serving.
+                </p>
+                <div class="python-badge-row" aria-label="Python package integrations">
+                  <span class="python-badge">Python</span>
+                  <span class="python-badge">Django</span>
+                  <span class="python-badge">DRF</span>
+                  <span class="python-badge">Flask</span>
+                  <span class="python-badge">FastAPI</span>
+                  <span class="python-badge">pip package</span>
+                </div>
+                <div class="install-command-shell">
+                  <code class="install-command">pip install olloweditor</code>
+                  <button
+                    class="copy-install-btn"
+                    type="button"
+                    data-copy-command="pip install olloweditor"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <div class="python-extras-grid" aria-label="Optional Python extras">
+                  <article class="python-extra-card">
+                    <div class="python-extra-head">
+                      <span>Django</span>
+                      <button class="copy-install-btn python-inline-copy-btn" type="button" data-copy-command="pip install &quot;olloweditor[django]&quot;">Copy</button>
+                    </div>
+                    <code>pip install "olloweditor[django]"</code>
+                  </article>
+                  <article class="python-extra-card">
+                    <div class="python-extra-head">
+                      <span>Django REST Framework</span>
+                      <button class="copy-install-btn python-inline-copy-btn" type="button" data-copy-command="pip install &quot;olloweditor[drf]&quot;">Copy</button>
+                    </div>
+                    <code>pip install "olloweditor[drf]"</code>
+                  </article>
+                  <article class="python-extra-card">
+                    <div class="python-extra-head">
+                      <span>Flask</span>
+                      <button class="copy-install-btn python-inline-copy-btn" type="button" data-copy-command="pip install &quot;olloweditor[flask]&quot;">Copy</button>
+                    </div>
+                    <code>pip install "olloweditor[flask]"</code>
+                  </article>
+                  <article class="python-extra-card">
+                    <div class="python-extra-head">
+                      <span>FastAPI</span>
+                      <button class="copy-install-btn python-inline-copy-btn" type="button" data-copy-command="pip install &quot;olloweditor[fastapi]&quot;">Copy</button>
+                    </div>
+                    <code>pip install "olloweditor[fastapi]"</code>
+                  </article>
+                  <article class="python-extra-card">
+                    <div class="python-extra-head">
+                      <span>All integrations</span>
+                      <button class="copy-install-btn python-inline-copy-btn" type="button" data-copy-command="pip install &quot;olloweditor[all]&quot;">Copy</button>
+                    </div>
+                    <code>pip install "olloweditor[all]"</code>
+                  </article>
+                </div>
+              </article>
+            </div>
+
+            <article class="python-code-card" aria-label="Django and FastAPI examples">
+              <div class="install-command-card-header">
+                <span class="material-symbols-outlined" aria-hidden="true">integration_instructions</span>
+                <span>Django quick start</span>
               </div>
-              <div class="demo-window-spacer"></div>
-            </div>
-            <div class="editor-demo-shell">
-              <textarea
-                id="ollow-editor-demo-input"
-                name="body"
-                data-nw-editor
-                data-theme="light"
-                data-persist-theme="false"
-                data-placeholder="Start writing with OllowEditor..."
-              ><h2>Welcome to OllowEditor</h2>
-<p>OllowEditor is a clean block-style JavaScript editor built for structured content.</p>
-<ul>
-  <li>Block-based editing</li>
-  <li>Clean JSON output</li>
-  <li>Media support</li>
-  <li>Developer-friendly API</li>
-</ul></textarea>
-            </div>
+              <pre><code>from django import forms
+from olloweditor.integrations.django import OllowEditorWidget
+from .models import Article
+
+class ArticleForm(forms.ModelForm):
+    content = forms.CharField(
+        widget=OllowEditorWidget(
+            options={
+                "theme": "auto",
+            }
+        )
+    )
+
+    class Meta:
+        model = Article
+        fields = ["title", "content"]</code></pre>
+
+              <article class="python-framework-card" aria-label="FastAPI helper example">
+                <div class="python-framework-card-header">
+                  <span class="python-framework-badge">FastAPI helper</span>
+                  <button class="copy-install-btn python-inline-copy-btn" type="button" data-copy-command="from fastapi import FastAPI&#10;from olloweditor.integrations.fastapi import mount_olloweditor&#10;&#10;app = FastAPI()&#10;mount_olloweditor(app)">Copy</button>
+                </div>
+                <pre><code>from fastapi import FastAPI
+from olloweditor.integrations.fastapi import mount_olloweditor
+
+app = FastAPI()
+mount_olloweditor(app)</code></pre>
+              </article>
+            </article>
+          </div>
+
+          <div class="python-feature-grid">
+            <article class="python-feature-card">
+              <span class="material-symbols-outlined feature-icon" aria-hidden="true">edit_note</span>
+              <h3>Django Forms &amp; Admin</h3>
+              <p>Use OllowEditorWidget and OllowEditorField in Django forms, models, and admin workflows.</p>
+            </article>
+            <article class="python-feature-card">
+              <span class="material-symbols-outlined feature-icon" aria-hidden="true">data_object</span>
+              <h3>Django REST Framework</h3>
+              <p>Accept OllowEditor-generated HTML through serializer fields and apply your own sanitizer when needed.</p>
+            </article>
+            <article class="python-feature-card">
+              <span class="material-symbols-outlined feature-icon" aria-hidden="true">webhook</span>
+              <h3>Flask Integration</h3>
+              <p>Use the Flask extension, asset blueprint, and Jinja helpers to add OllowEditor to server-rendered forms.</p>
+            </article>
+            <article class="python-feature-card">
+              <span class="material-symbols-outlined feature-icon" aria-hidden="true">cloud_sync</span>
+              <h3>FastAPI Helpers</h3>
+              <p>Mount packaged static assets and use template helpers for FastAPI-powered pages.</p>
+            </article>
           </div>
         </div>
       </section>
+
+
 
       <section class="json-output-section">
         <div class="container json-output-layout">
@@ -285,11 +434,25 @@ export default function App() {
             <img src="./olloweditor_logo.png" alt="OllowEditor logo" class="cta-logo">
             <h2>Start building with OllowEditor</h2>
             <p>
-              A clean, modern editor experience for your next JavaScript or MERN stack project. Install from npm, customize blocks, and ship structured content faster.
+              A clean, modern editor experience for your next JavaScript, MERN, or Python project. Install from npm or pip, customize blocks, and ship structured content faster.
             </p>
             <div class="hero-actions">
               <a class="primary-button" href="./documentation.html">Read Documentation</a>
               <a class="secondary-button" href="https://github.com/CodeFortifyCloud/olloweditor" target="_blank" rel="noopener noreferrer">View on Github</a>
+            </div>
+            <div class="cta-install-grid" aria-label="OllowEditor install commands">
+              <article class="install-command-card install-command-card-compact">
+                <div class="install-command-shell">
+                  <code class="install-command">npm i @codefortify/olloweditor</code>
+                  <button class="copy-install-btn" type="button" data-copy-command="npm i @codefortify/olloweditor">Copy</button>
+                </div>
+              </article>
+              <article class="install-command-card install-command-card-compact">
+                <div class="install-command-shell">
+                  <code class="install-command">pip install olloweditor</code>
+                  <button class="copy-install-btn" type="button" data-copy-command="pip install olloweditor">Copy</button>
+                </div>
+              </article>
             </div>
           </div>
         </div>

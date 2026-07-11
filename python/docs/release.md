@@ -133,6 +133,28 @@ python -m pip install \
 
 After TestPyPI upload, install and smoke-test the package in a clean virtual environment before touching real PyPI.
 
+## Verify a TestPyPI release
+
+Use the dedicated verifier from the `python/` directory:
+
+```bash
+python scripts/verify_testpypi_release.py \
+  --package olloweditor \
+  --version 0.1.0
+```
+
+What it does:
+
+- downloads the exact wheel for the requested version from TestPyPI
+- verifies that the artifact metadata and packaged files match expectations
+- installs that downloaded wheel into isolated virtual environments
+- tests the base package and every supported extra
+- checks packaged static assets and browser-runtime behavior
+- writes a Markdown report and a JSON report
+- exits non-zero when any required verification fails
+
+The verifier does not publish anything and does not require stored credentials.
+
 ## Real PyPI upload
 
 Manual upload command, if you intentionally need a fallback outside Trusted Publishing:

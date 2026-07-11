@@ -1,0 +1,268 @@
+name: Python CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/python-ci.yml"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/**"
+      - "src/**"
+      - "tests/**"
+      - "dist/**"
+      - "python/**"
+      - "tsconfig.json"
+      - "vite.config.*"
+  pull_request:
+    paths:
+      - ".github/workflows/python-ci.yml"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/**"
+      - "src/**"
+      - "tests/**"
+      - "dist/**"
+      - "python/**"
+      - "tsconfig.json"
+      - "vite.config.*"
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend bundles
+        run: npm run build
+
+      - name: Typecheck frontend
+        run: npm run typecheck
+
+      - name: Run frontend tests
+        run: npm test
+
+      - name: Synchronize Python assets
+        run: npm run build:python-assets
+
+      - name: Verify synchronized Python assets
+        run: npm run verify:python-assets
+
+      - name: Upload synchronized Python assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-static-assets
+          path: python/src/olloweditor/static/olloweditor
+          if-no-files-found: error
+
+  python-tests:
+    runs-on: ubuntu-latest
+    needs: frontend-build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download synchronized Python assets
+        uses: actions/download-artifact@v4
+        with:
+          name: python-static-assets
+          path: python/src/olloweditor/static
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: python/pyproject.toml
+
+      - name: Install Python package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e "./python[all,test,dev]"
+
+      - name: Run Python test suite
+        working-directory: python
+        run: python -m pytest
+
+      - name: Run Ruff
+        if: matrix.python-version == '3.12'
+        working-directory: python
+        run: |
+          python -m ruff check .
+          python -m ruff format --check .
+
+      - name: Run mypy
+        if: matrix.python-version == '3.12'
+        working-directory: python
+        run: python -m mypy src
+
+  package-build:
+    runs-on: ubuntu-latest
+    needs:
+      - frontend-build
+      - python-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download synchronized Python assets
+        uses: actions/download-artifact@v4
+        with:
+          name: python-static-assets
+          path: python/src/olloweditor/static
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: python/pyproject.toml
+
+      - name: Install Python packaging dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e "./python[all,test,dev]"
+
+      - name: Build distributions
+        working-directory: python
+        run: |
+          rm -rf build dist src/*.egg-info
+          python -m build
+
+      - name: Validate metadata rendering
+        working-directory: python
+        run: python -m twine check dist/*
+
+      - name: Inspect wheel contents
+        working-directory: python
+        run: python scripts/check_wheel_contents.py dist/*.whl
+
+      - name: Verify wheel installs cleanly
+        working-directory: python
+        run: python scripts/verify_wheel_installs.py dist/*.whl
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: python/dist
+          if-no-files-found: error
+
+  dependency-isolation:
+    runs-on: ubuntu-latest
+    needs: package-build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: base
+            requirement: "olloweditor"
+            import_target: "olloweditor"
+            check_expr: |
+              import importlib.util
+              assert importlib.util.find_spec("django") is None
+              assert importlib.util.find_spec("rest_framework") is None
+              assert importlib.util.find_spec("flask") is None
+              assert importlib.util.find_spec("fastapi") is None
+          - label: django
+            requirement: "olloweditor[django]"
+            import_target: "olloweditor.integrations.django"
+            check_expr: |
+              import importlib.util
+              assert importlib.util.find_spec("django") is not None
+          - label: drf
+            requirement: "olloweditor[drf]"
+            import_target: "olloweditor.integrations.drf"
+            check_expr: |
+              import importlib.util
+              assert importlib.util.find_spec("django") is not None
+              assert importlib.util.find_spec("rest_framework") is not None
+          - label: flask
+            requirement: "olloweditor[flask]"
+            import_target: "olloweditor.integrations.flask"
+            check_expr: |
+              import importlib.util
+              assert importlib.util.find_spec("flask") is not None
+          - label: fastapi
+            requirement: "olloweditor[fastapi]"
+            import_target: "olloweditor.integrations.fastapi"
+            check_expr: |
+              import importlib.util
+              assert importlib.util.find_spec("fastapi") is not None
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: python/dist
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: python/pyproject.toml
+
+      - name: Verify isolated install for ${{ matrix.label }}
+        shell: bash
+        run: |
+          WHEEL_PATH=$(find "$GITHUB_WORKSPACE/python/dist" -maxdepth 1 -name '*.whl' -print -quit)
+          if [ -z "$WHEEL_PATH" ]; then
+            echo "Wheel artifact not found in python/dist" >&2
+            exit 1
+          fi
+          python -m venv .venv-${{ matrix.label }}
+          . .venv-${{ matrix.label }}/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install "${{ matrix.requirement }} @ file://$WHEEL_PATH"
+          python -c "import ${{ matrix.import_target }}; print('ok')"
+          python - <<'PY'
+          ${{ matrix.check_expr }}
+          PY
+
+  example-smoke:
+    runs-on: ubuntu-latest
+    needs:
+      - frontend-build
+      - python-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download synchronized Python assets
+        uses: actions/download-artifact@v4
+        with:
+          name: python-static-assets
+          path: python/src/olloweditor/static
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: python/pyproject.toml
+
+      - name: Install Python package and example dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e "./python[all,test,dev]"
+
+      - name: Run example smoke tests
+        working-directory: python
+        run: python -m pytest tests/test_examples.py

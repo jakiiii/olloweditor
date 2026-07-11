@@ -3,8 +3,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!text) return false;
 
     if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-      await navigator.clipboard.writeText(text);
-      return true;
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (_error) {
+        // Fall through to the textarea fallback on permission or browser failures.
+      }
     }
 
     const fallbackTextarea = document.createElement("textarea");
@@ -195,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!(button instanceof HTMLButtonElement)) return;
 
     const originalLabel = button.textContent ? button.textContent.trim() : "Copy";
+    let resetTimeoutId = null;
 
     button.addEventListener("click", async () => {
       const explicitCopy = button.getAttribute("data-copy");
@@ -212,9 +217,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const copied = await copyTextToClipboard(textToCopy);
         if (!copied) return;
 
+        if (resetTimeoutId) {
+          window.clearTimeout(resetTimeoutId);
+        }
         button.textContent = "Copied!";
-        window.setTimeout(() => {
+        resetTimeoutId = window.setTimeout(() => {
           button.textContent = originalLabel;
+          resetTimeoutId = null;
         }, 1500);
       } catch (_error) {
         // Swallow clipboard failures to avoid noisy console errors on unsupported browsers.

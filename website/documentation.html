@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Official OllowEditor documentation for JavaScript, TypeScript, React, Next.js, MERN stack apps, admin dashboards, CMS forms, and publishing workflows.">
+  <meta name="description" content="Official OllowEditor documentation for the browser editor, npm package, MERN stack usage, and Python integrations for Django, DRF, Flask, and FastAPI.">
   <title>OllowEditor Documentation</title>
   <link rel="icon" href="./favicon/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
@@ -12,7 +12,7 @@
   <link rel="manifest" href="./favicon/site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Newsreader:opsz,wght@6..72,500;6..72,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css.css">
   <script src="./script.js" defer></script>
@@ -50,53 +50,21 @@
             </div>
 
             <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">Getting Started</p>
+              <p class="docs-sidebar-group-title">Overview</p>
               <a class="docs-sidebar-link" href="#introduction">Introduction</a>
-              <a class="docs-sidebar-link" href="#installation">Installation</a>
-              <a class="docs-sidebar-link" href="#css-import">CSS Import</a>
-              <a class="docs-sidebar-link" href="#quick-start">Quick Start</a>
+              <a class="docs-sidebar-link" href="#package-options">Package Options</a>
+              <a class="docs-sidebar-link" href="#feature-overview">Feature Overview</a>
+              <a class="docs-sidebar-link" href="#installation-commands">Installation Commands</a>
             </div>
 
             <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">JavaScript Usage</p>
-              <a class="docs-sidebar-link" href="#vanilla-javascript">Vanilla JavaScript</a>
-              <a class="docs-sidebar-link" href="#vanilla-typescript">Vanilla TypeScript</a>
-              <a class="docs-sidebar-link" href="#package-exports">Package Exports</a>
-              <a class="docs-sidebar-link" href="#api-reference">API Reference</a>
-            </div>
-
-            <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">React &amp; Next.js</p>
-              <a class="docs-sidebar-link" href="#react-usage">React Usage</a>
-              <a class="docs-sidebar-link" href="#react-typescript-usage">React TypeScript Usage</a>
-              <a class="docs-sidebar-link" href="#nextjs-usage">Next.js Usage</a>
-              <a class="docs-sidebar-link" href="#react-props">React Props</a>
-            </div>
-
-            <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">MERN / Backend Integration</p>
-              <a class="docs-sidebar-link" href="#mern-stack-usage">MERN Stack Usage</a>
-              <a class="docs-sidebar-link" href="#express-image-upload">Express Image Upload</a>
-              <a class="docs-sidebar-link" href="#nodejs-api-integration">Node.js API Integration</a>
-              <a class="docs-sidebar-link" href="#nestjs-upload-example">NestJS Upload Example</a>
-              <a class="docs-sidebar-link" href="#backend-storage-flow">Backend Storage Flow</a>
-            </div>
-
-            <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">Editor Features</p>
+              <p class="docs-sidebar-group-title">JavaScript Editor</p>
+              <a class="docs-sidebar-link" href="#basic-html-setup">Basic HTML Setup</a>
+              <a class="docs-sidebar-link" href="#editor-initialization">Editor Initialization</a>
               <a class="docs-sidebar-link" href="#toolbar-features">Toolbar Features</a>
               <a class="docs-sidebar-link" href="#image-upload">Image Upload</a>
               <a class="docs-sidebar-link" href="#gallery-support">Gallery Support</a>
               <a class="docs-sidebar-link" href="#youtube-embed">YouTube Embed</a>
-              <a class="docs-sidebar-link" href="#table-support">Table Support</a>
-              <a class="docs-sidebar-link" href="#code-block">Code Block</a>
-              <a class="docs-sidebar-link" href="#keyboard-shortcuts">Keyboard Shortcuts</a>
-              <a class="docs-sidebar-link" href="#theme-support">Theme Support</a>
-            </div>
-
-            <div class="docs-sidebar-group">
-              <p class="docs-sidebar-group-title">Import &amp; Export</p>
-              <a class="docs-sidebar-link" href="#import-export">Overview</a>
               <a class="docs-sidebar-link" href="#markdown-import-export">Markdown Import/Export</a>
               <a class="docs-sidebar-link" href="#export-html">Export HTML</a>
               <a class="docs-sidebar-link" href="#export-pdf">Export PDF</a>
@@ -105,13 +73,45 @@
             </div>
 
             <div class="docs-sidebar-group">
+              <p class="docs-sidebar-group-title">NPM / MERN Stack</p>
+              <a class="docs-sidebar-link" href="#npm-installation">NPM Installation</a>
+              <a class="docs-sidebar-link" href="#css-import">CSS Import</a>
+              <a class="docs-sidebar-link" href="#quick-start">Quick Start</a>
+              <a class="docs-sidebar-link" href="#vanilla-javascript-usage">Vanilla JavaScript Usage</a>
+              <a class="docs-sidebar-link" href="#typescript-usage">TypeScript Usage</a>
+              <a class="docs-sidebar-link" href="#react-usage">React Usage</a>
+              <a class="docs-sidebar-link" href="#react-typescript-usage">React TypeScript Usage</a>
+              <a class="docs-sidebar-link" href="#nextjs-usage">Next.js Usage</a>
+              <a class="docs-sidebar-link" href="#mern-stack-usage">MERN Stack Usage</a>
+              <a class="docs-sidebar-link" href="#express-upload-example">Express Upload Example</a>
+              <a class="docs-sidebar-link" href="#nestjs-upload-example">NestJS Upload Example</a>
+              <a class="docs-sidebar-link" href="#api-reference">API Reference</a>
+              <a class="docs-sidebar-link" href="#react-props">React Props</a>
+              <a class="docs-sidebar-link" href="#package-exports">Package Exports</a>
+            </div>
+
+            <div class="docs-sidebar-group">
+              <p class="docs-sidebar-group-title">Python / pip</p>
+              <a class="docs-sidebar-link" href="#pip-installation">pip Installation</a>
+              <a class="docs-sidebar-link" href="#optional-extras">Optional Extras</a>
+              <a class="docs-sidebar-link" href="#django-integration">Django Integration</a>
+              <a class="docs-sidebar-link" href="#django-forms">Django Forms</a>
+              <a class="docs-sidebar-link" href="#django-admin">Django Admin</a>
+              <a class="docs-sidebar-link" href="#django-rest-framework">Django REST Framework</a>
+              <a class="docs-sidebar-link" href="#flask-integration">Flask Integration</a>
+              <a class="docs-sidebar-link" href="#fastapi-integration">FastAPI Integration</a>
+              <a class="docs-sidebar-link" href="#static-assets">Static Assets</a>
+              <a class="docs-sidebar-link" href="#template-helpers">Template Helpers</a>
+              <a class="docs-sidebar-link" href="#python-backend-flow">Python Backend Flow</a>
+              <a class="docs-sidebar-link" href="#security-notes">Security Notes</a>
+            </div>
+
+            <div class="docs-sidebar-group">
               <p class="docs-sidebar-group-title">Reference</p>
-              <a class="docs-sidebar-link" href="#olloweditor-options">OllowEditorOptions</a>
-              <a class="docs-sidebar-link" href="#olloweditor-core-methods">OllowEditorCore Methods</a>
               <a class="docs-sidebar-link" href="#browser-support">Browser Support</a>
               <a class="docs-sidebar-link" href="#package-structure">Package Structure</a>
               <a class="docs-sidebar-link" href="#local-development">Local Development</a>
-              <a class="docs-sidebar-link" href="#build-package">Build Package</a>
+              <a class="docs-sidebar-link" href="#build">Build</a>
               <a class="docs-sidebar-link" href="#publishing">Publishing</a>
               <a class="docs-sidebar-link" href="#license">License</a>
             </div>
@@ -124,7 +124,7 @@
               <p class="docs-kicker">Documentation</p>
               <h1>OllowEditor Documentation</h1>
               <p class="docs-lead">
-                OllowEditor is a modern, lightweight, framework-friendly rich text editor for JavaScript, TypeScript, React, MERN, Next.js, Node.js, NestJS, CMS forms, admin dashboards, and publishing workflows.
+                OllowEditor is a modern, lightweight, framework-friendly rich text editor for JavaScript, TypeScript, React, MERN, Next.js, Node.js, NestJS, Python, Django, Flask, FastAPI, CMS forms, admin dashboards, and publishing workflows.
               </p>
               <div class="docs-badge-row">
                 <span class="docs-badge">JavaScript</span>
@@ -133,34 +133,427 @@
                 <span class="docs-badge">Next.js</span>
                 <span class="docs-badge">MERN Stack</span>
                 <span class="docs-badge">npm package</span>
+                <span class="docs-badge">Python</span>
+                <span class="docs-badge">pip package</span>
+                <span class="docs-badge">Django</span>
+                <span class="docs-badge">Flask</span>
+                <span class="docs-badge">FastAPI</span>
                 <span class="docs-badge">MIT License</span>
-              </div>
-              <div class="docs-install-card">
-                <div class="docs-install-copy">
-                  <p>Install from npm</p>
-                  <code id="docs-install-command">npm i @codefortify/olloweditor</code>
-                </div>
-                <button class="docs-copy-btn" type="button" data-copy-target="#docs-install-command">Copy</button>
               </div>
             </header>
 
             <section class="docs-section" id="introduction">
               <h2>Introduction</h2>
               <p>
-                OllowEditor is a lightweight rich text editor for modern JavaScript applications. It supports Vanilla JavaScript, TypeScript, React, Next.js client-side usage, and backend upload integration while keeping the editor API focused on HTML content.
-              </p>
-              <p>
-                The package exposes a core factory for browser apps and a React wrapper for controlled editor state. That makes it practical for MERN stack apps, admin dashboards, CMS forms, article workflows, and publishing tools that need clean content entry without locking into a framework-specific editor architecture.
+                This page consolidates the standalone browser editor README, the npm package README, and the Python integration README into one reference. The core editor remains a browser-based JavaScript and CSS application. The npm package wraps that editor for JavaScript, TypeScript, React, Next.js, and MERN workflows, while the Python package distributes the compiled browser assets and adds framework helpers for Django, Django REST Framework, Flask, and FastAPI.
               </p>
               <div class="docs-note">
-                <strong>Package focus:</strong> use <code>createOllowEditor</code> in browser-driven JavaScript or TypeScript apps, and use <code>OllowEditor</code> from <code>@codefortify/olloweditor/react</code> in React-based interfaces.
+                <strong>Important:</strong> the Python package does not reimplement OllowEditor in Python. It ships the compiled browser bundle, stylesheet, and shared initializer, then integrates them into Python application patterns.
               </div>
             </section>
 
-            <section class="docs-section" id="installation">
-              <h2>Installation</h2>
-              <p>Install OllowEditor with the package manager you already use in your JavaScript or MERN stack project.</p>
+            <section class="docs-section" id="package-options">
+              <h2>Package Options</h2>
+              <div class="docs-package-grid">
+                <article class="docs-package-card">
+                  <span class="material-symbols-outlined docs-package-icon" aria-hidden="true">language</span>
+                  <h3>JavaScript Editor</h3>
+                  <p>Use the compiled <code>ollow.js</code> and <code>ollow.css</code> files directly in browser pages, CMS forms, and standalone integrations.</p>
+                </article>
+                <article class="docs-package-card">
+                  <span class="material-symbols-outlined docs-package-icon" aria-hidden="true">deployed_code</span>
+                  <h3>NPM Package</h3>
+                  <p>Use <code>@codefortify/olloweditor</code> for JavaScript, TypeScript, React, Next.js, MERN stack, Node.js, and NestJS workflows.</p>
+                </article>
+                <article class="docs-package-card">
+                  <span class="material-symbols-outlined docs-package-icon" aria-hidden="true">terminal</span>
+                  <h3>Python Package</h3>
+                  <p>Use <code>olloweditor</code> when a Python web app needs packaged OllowEditor assets plus helpers for Django, DRF, Flask, or FastAPI.</p>
+                </article>
+              </div>
+            </section>
 
+            <section class="docs-section" id="feature-overview">
+              <h2>Feature Overview</h2>
+              <div class="docs-table-wrapper">
+                <table class="docs-table docs-support-table">
+                  <thead>
+                    <tr>
+                      <th>Feature</th>
+                      <th>JavaScript/NPM</th>
+                      <th>Python/pip</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Rich text editing</td><td>Yes</td><td>Yes</td><td>Python package serves the same browser editor assets.</td></tr>
+                    <tr><td>Toolbar formatting</td><td>Yes</td><td>Yes</td><td>Includes typography, lists, links, bookmarks, and formatting controls.</td></tr>
+                    <tr><td>Images</td><td>Yes</td><td>Yes</td><td>Frontend capability documented in the editor and Python READMEs.</td></tr>
+                    <tr><td>Image upload callback</td><td>Yes</td><td>Framework-specific backend wiring</td><td>npm exposes <code>uploadImage</code>; Python apps receive submitted HTML and can host upload endpoints separately.</td></tr>
+                    <tr><td>Gallery</td><td>Yes</td><td>Yes</td><td>Supported by the frontend editor capabilities list.</td></tr>
+                    <tr><td>YouTube embed</td><td>Yes</td><td>Yes</td><td>Python package relies on the same browser bundle.</td></tr>
+                    <tr><td>Tables</td><td>Yes</td><td>Yes</td><td>Supported by the editor README and npm features list.</td></tr>
+                    <tr><td>Code blocks</td><td>Yes</td><td>Yes</td><td>Supported in all distributions through the frontend editor.</td></tr>
+                    <tr><td>Markdown import/export</td><td>Yes</td><td>Yes</td><td>Frontend workflow; the editor still stores HTML.</td></tr>
+                    <tr><td>Export HTML</td><td>Yes</td><td>Yes</td><td>HTML export runs in the browser editor.</td></tr>
+                    <tr><td>Export PDF</td><td>Yes</td><td>Yes</td><td>Depends on browser print support.</td></tr>
+                    <tr><td>Import DOCX</td><td>Yes</td><td>Yes</td><td>Requires a browser-compatible parser such as Mammoth at runtime.</td></tr>
+                    <tr><td>Export DOCX</td><td>Yes</td><td>Yes</td><td>Depends on the configured browser-side exporter or fallback adapter.</td></tr>
+                    <tr><td>React wrapper</td><td>Yes</td><td>No</td><td>Provided by <code>@codefortify/olloweditor/react</code>.</td></tr>
+                    <tr><td>Next.js support</td><td>Yes</td><td>No</td><td>Client-side loading with <code>ssr: false</code>.</td></tr>
+                    <tr><td>Django integration</td><td>Backend-independent only</td><td>Yes</td><td><code>OllowEditorWidget</code>, <code>OllowEditorField</code>, staticfiles, admin support.</td></tr>
+                    <tr><td>Flask integration</td><td>Backend-independent only</td><td>Yes</td><td>Extension, asset blueprint, and Jinja helpers.</td></tr>
+                    <tr><td>FastAPI integration</td><td>Backend-independent only</td><td>Yes</td><td>Static mount helper and template helpers.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="docs-section" id="installation-commands">
+              <h2>Installation Commands</h2>
+              <div class="docs-install-grid">
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>npm</p>
+                    <code id="install-npm">npm i @codefortify/olloweditor</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#install-npm">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>yarn</p>
+                    <code id="install-yarn">yarn add @codefortify/olloweditor</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#install-yarn">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>pnpm</p>
+                    <code id="install-pnpm">pnpm add @codefortify/olloweditor</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#install-pnpm">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>pip</p>
+                    <code id="install-pip">pip install olloweditor</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#install-pip">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>Django extra</p>
+                    <code id="install-pip-django">pip install "olloweditor[django]"</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#install-pip-django">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>Flask extra</p>
+                    <code id="install-pip-flask">pip install "olloweditor[flask]"</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#install-pip-flask">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>FastAPI extra</p>
+                    <code id="install-pip-fastapi">pip install "olloweditor[fastapi]"</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#install-pip-fastapi">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>All Python integrations</p>
+                    <code id="install-pip-all">pip install "olloweditor[all]"</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#install-pip-all">Copy</button>
+                </article>
+              </div>
+            </section>
+
+            <section class="docs-section" id="basic-html-setup">
+              <h2>Basic HTML Setup</h2>
+              <p>
+                The standalone browser editor uses a synced <code>&lt;textarea&gt;</code>, the compiled stylesheet, and the compiled browser script. The textarea receives the final HTML output after editing.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>browser setup</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#basic-html-setup-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="basic-html-setup-code"><code>&lt;form method="post"&gt;
+  &lt;textarea
+  id="ollo-editor"
+  name="content"
+  data-theme="dark"
+  data-persist-theme="true"
+  &gt;&lt;h2&gt;Article title&lt;/h2&gt;
+&lt;p&gt;Start writing your story...&lt;/p&gt;&lt;/textarea&gt;
+
+  &lt;button type="submit"&gt;Save Article&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;link rel="stylesheet" href="ollow.css" /&gt;
+&lt;script src="ollow.js"&gt;&lt;/script&gt;</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="editor-initialization">
+              <h2>Editor Initialization</h2>
+              <p>
+                Initialize the browser editor after the page loads. The global API is available as both <code>OllowEditor</code> and <code>NationWireEditor</code>. The editor README also documents global plugin registration with <code>OllowEditor.registerPlugin(...)</code>.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>init</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#editor-init-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="editor-init-code"><code>&lt;script&gt;
+  document.addEventListener("DOMContentLoaded", function () {
+    OllowEditor.init("#ollo-editor", {
+      theme: "dark",
+      persistTheme: true,
+      upload: {
+        imageUrl: "/upload/image",
+        galleryUrl: "/upload/gallery",
+        attachmentUrl: "/upload/attachment",
+        allowFallback: false
+      }
+    });
+  });
+&lt;/script&gt;</code></pre>
+              </div>
+              <p>
+                Confirmed editor options in the browser README include per-editor themes with <code>light</code>, <code>dark</code>, and <code>auto</code>, automatic textarea synchronization, and upload adapter configuration for image, gallery, and attachment flows.
+              </p>
+            </section>
+
+            <section class="docs-section" id="toolbar-features">
+              <h2>Toolbar Features</h2>
+              <p>
+                The browser editor README documents a broad toolbar surface including typography, formatting, source mode, export tools, and media blocks. The table below combines the editor README and npm package feature list.
+              </p>
+              <div class="docs-table-wrapper">
+                <table class="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Feature</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Undo / Redo</td><td>History controls for editing sessions.</td></tr>
+                    <tr><td>Font family and size</td><td>Approved typography controls with saved safe classes.</td></tr>
+                    <tr><td>Paragraph and headings</td><td>Paragraph plus heading levels including H2, H3, and H4.</td></tr>
+                    <tr><td>Bold / Italic / Underline / Strikethrough</td><td>Inline text formatting actions.</td></tr>
+                    <tr><td>Links and bookmarks</td><td>Hyperlink management plus internal anchor insertion.</td></tr>
+                    <tr><td>Lists and pull quotes</td><td>Bullet lists, numbered lists, and quote-style blocks.</td></tr>
+                    <tr><td>HTML mode</td><td>Switch between visual editing and sanitized source mode.</td></tr>
+                    <tr><td>Markdown and DOCX tools</td><td>Markdown import/export plus DOCX import/export workflows.</td></tr>
+                    <tr><td>Images, galleries, YouTube embeds</td><td>Media blocks with upload and alignment support.</td></tr>
+                    <tr><td>Tables and code blocks</td><td>Structured content blocks for technical and editorial content.</td></tr>
+                    <tr><td>Responsive toolbars</td><td>Desktop menu bar, tablet groups, and mobile overflow drawers.</td></tr>
+                    <tr><td>Keyboard shortcuts</td><td>Shortcut set for formatting, lists, sync, and modal handling.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="docs-section" id="image-upload">
+              <h2>Image Upload</h2>
+              <p>
+                The browser editor supports local file insertion, URL-based image insertion, drag and drop, and backend upload endpoints. In the standalone editor, uploads are configured with the shared upload adapter.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>browser upload</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#browser-upload-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="browser-upload-code"><code>&lt;textarea
+  id="ollo-editor"
+  name="body"
+  data-ollow-editor
+  data-image-upload-url="/upload/image"
+  data-gallery-upload-url="/upload/gallery"
+  data-attachment-upload-url="/upload/attachment"&gt;
+&lt;/textarea&gt;</code></pre>
+              </div>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>response contract</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#upload-response-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="upload-response-code"><code>{
+  "url": "/media/editor/images/file.jpg"
+}
+
+{
+  "urls": [
+    "/media/editor/gallery/1.jpg",
+    "/media/editor/gallery/2.jpg"
+  ]
+}</code></pre>
+              </div>
+              <p>
+                Confirmed adapter behavior includes automatic CSRF header lookup, optional FileReader fallback, and shared handling for image, gallery, attachment, and drag-and-drop flows.
+              </p>
+            </section>
+
+            <section class="docs-section" id="gallery-support">
+              <h2>Gallery Support</h2>
+              <p>The browser editor can create responsive gallery sections from multiple images.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>gallery html</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#gallery-html-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="gallery-html-code"><code>&lt;section class="ollow-media ollow-gallery"&gt;
+  &lt;div class="ollow-gallery-header"&gt;
+    &lt;h3&gt;Gallery title&lt;/h3&gt;
+    &lt;p&gt;Gallery note or caption&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;div class="ollow-gallery-grid"&gt;
+    &lt;figure&gt;
+      &lt;img src="image-1.jpg" alt="Gallery image 1" /&gt;
+    &lt;/figure&gt;
+    &lt;figure&gt;
+      &lt;img src="image-2.jpg" alt="Gallery image 2" /&gt;
+    &lt;/figure&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="youtube-embed">
+              <h2>YouTube Embed</h2>
+              <p>The browser editor accepts standard YouTube watch, short, and embed URLs and converts them into a wrapped iframe embed.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>embed html</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#youtube-html-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="youtube-html-code"><code>&lt;figure class="ollow-media ollow-embed"&gt;
+  &lt;div class="ollow-video-wrapper"&gt;
+    &lt;iframe
+      src="https://www.youtube.com/embed/VIDEO_ID"
+      title="YouTube video player"
+      frameborder="0"
+      allowfullscreen
+      loading="lazy"&gt;
+    &lt;/iframe&gt;
+  &lt;/div&gt;
+  &lt;figcaption&gt;Video caption&lt;/figcaption&gt;
+&lt;/figure&gt;</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="markdown-import-export">
+              <h2>Markdown Import/Export</h2>
+              <p>
+                The browser editor supports importing Markdown into the current content and exporting editor HTML back to Markdown. Confirmed supported Markdown structures include headings, paragraphs, links, images, lists, blockquotes, horizontal rules, inline code, fenced code blocks, and basic tables.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>markdown api</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#markdown-api-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="markdown-api-code"><code>const editor = OllowEditor.get("#ollo-editor");
+
+editor.importMarkdown("## Heading\n\nParagraph text", {
+  mode: "replace"
+});
+
+const markdown = editor.exportMarkdown();</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="export-html">
+              <h2>Export HTML</h2>
+              <p>
+                Export HTML uses sanitized editor content. The editor README confirms support for body-only export and full standalone HTML export with optional embedded styles.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>export html</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#export-html-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="export-html-code"><code>const html = editor.exportHTML({
+  fullDocument: true,
+  includeStyles: true,
+  title: "Article Export"
+});</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="export-pdf">
+              <h2>Export PDF</h2>
+              <p>
+                PDF export is browser-based. The editor generates a print-ready HTML document and relies on the browser print or save-as-PDF flow rather than producing PDF bytes directly.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>export pdf</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#export-pdf-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="export-pdf-code"><code>editor.exportPDF({
+  title: "Article",
+  pageSize: "A4",
+  orientation: "portrait",
+  margin: "normal"
+});</code></pre>
+              </div>
+              <div class="docs-note">
+                <strong>Limitation:</strong> PDF export depends on browser print support. To suppress browser-added headers and footers, disable them in the print dialog.
+              </div>
+            </section>
+
+            <section class="docs-section" id="import-docx">
+              <h2>Import DOCX</h2>
+              <p>
+                DOCX import is client-side and expects an optional browser parser such as Mammoth.js to be available when that workflow is used. Supported formatting includes headings, paragraphs, inline formatting, lists, links, tables, and images when the parser supports them.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>import docx</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#import-docx-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="import-docx-code"><code>OllowEditor.init("#editor", {
+  docx: {
+    enabled: true
+  }
+});
+
+editor.importDOCX(file, {
+  mode: "replace",
+  preserveFormatting: true,
+  importImages: true
+});</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="export-docx">
+              <h2>Export DOCX</h2>
+              <p>
+                True DOCX generation depends on an optional browser-compatible exporter. If that adapter is unavailable, OllowEditor can fall back to a Word-compatible HTML document flow instead of pretending to generate a native <code>.docx</code>.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>export docx</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#export-docx-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="export-docx-code"><code>editor.exportDOCX({
+  filename: "article.docx",
+  title: "Article Title",
+  includeImages: true,
+  fallbackToDoc: true
+});</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="npm-installation">
+              <h2>NPM Installation</h2>
+              <p>The npm package ships the core editor, the React wrapper, the packaged stylesheet, and bundled TypeScript declarations.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>npm</span>
@@ -168,27 +561,11 @@
                 </div>
                 <pre class="docs-code"><code>npm install @codefortify/olloweditor</code></pre>
               </div>
-
-              <div class="docs-code-block">
-                <div class="docs-code-toolbar">
-                  <span>yarn</span>
-                  <button class="docs-copy-btn" type="button" data-copy="yarn add @codefortify/olloweditor">Copy</button>
-                </div>
-                <pre class="docs-code"><code>yarn add @codefortify/olloweditor</code></pre>
-              </div>
-
-              <div class="docs-code-block">
-                <div class="docs-code-toolbar">
-                  <span>pnpm</span>
-                  <button class="docs-copy-btn" type="button" data-copy="pnpm add @codefortify/olloweditor">Copy</button>
-                </div>
-                <pre class="docs-code"><code>pnpm add @codefortify/olloweditor</code></pre>
-              </div>
             </section>
 
             <section class="docs-section" id="css-import">
               <h2>CSS Import</h2>
-              <p>Import the packaged stylesheet once in the entry file or page where the editor is used.</p>
+              <p>Import the package stylesheet once in the application entry or page where the editor is used.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>style.css</span>
@@ -200,7 +577,7 @@
 
             <section class="docs-section" id="quick-start">
               <h2>Quick Start</h2>
-              <p>The core package mounts the editor into a selector or DOM element and returns an <code>OllowEditorCore</code> instance.</p>
+              <p>The npm package mounts into a selector or DOM element and returns an <code>OllowEditorCore</code> instance.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>quick start</span>
@@ -219,9 +596,8 @@ const editor = createOllowEditor("#editor", {
               </div>
             </section>
 
-            <section class="docs-section" id="vanilla-javascript">
-              <h2>Vanilla JavaScript</h2>
-              <p>Use the package directly in a module script when you want an editor inside a plain JavaScript page or custom CMS view.</p>
+            <section class="docs-section" id="vanilla-javascript-usage">
+              <h2>Vanilla JavaScript Usage</h2>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>vanilla js</span>
@@ -244,96 +620,42 @@ const editor = createOllowEditor("#editor", {
               </div>
             </section>
 
-            <section class="docs-section" id="vanilla-typescript">
-              <h2>Vanilla TypeScript</h2>
-              <p>The package ships type definitions for the core editor and React wrapper, so TypeScript can use the editor without extra ambient declarations.</p>
+            <section class="docs-section" id="typescript-usage">
+              <h2>TypeScript Usage</h2>
+              <p>The npm package bundles its type declarations. No separate <code>@types</code> package is required.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>typescript</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#vanilla-ts-code">Copy</button>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#typescript-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="vanilla-ts-code"><code>import {
+                <pre class="docs-code" id="typescript-code"><code>import {
   createOllowEditor,
-  type OllowEditorCore,
-  type OllowEditorOptions
+  type OllowEditorOptions,
+  type OllowEditorCore
 } from "@codefortify/olloweditor";
+
 import "@codefortify/olloweditor/style.css";
 
 const options: OllowEditorOptions = {
-  initialHTML: "&lt;p&gt;Typed content&lt;/p&gt;",
-  placeholder: "Start writing...",
+  initialHTML: "&lt;p&gt;Hello TypeScript&lt;/p&gt;",
+  placeholder: "Write something...",
   onChange: (html: string) =&gt; {
     console.log(html);
   }
 };
 
-const editor: OllowEditorCore = createOllowEditor("#editor", options);
-editor.focus();</code></pre>
+const editor: OllowEditorCore = createOllowEditor("#editor", options);</code></pre>
               </div>
-            </section>
-
-            <section class="docs-section" id="package-exports">
-              <h2>Package Exports</h2>
-              <p>Import the package based on whether you need the browser factory, the React component, or the packaged stylesheet.</p>
-              <div class="docs-code-block">
-                <div class="docs-code-toolbar">
-                  <span>exports</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#package-exports-code">Copy</button>
-                </div>
-                <pre class="docs-code" id="package-exports-code"><code>import { createOllowEditor } from "@codefortify/olloweditor";
-import { OllowEditor } from "@codefortify/olloweditor/react";
-import "@codefortify/olloweditor/style.css";</code></pre>
-              </div>
-            </section>
-
-            <section class="docs-section" id="api-reference">
-              <h2>API Reference</h2>
-              <p>The package surface is intentionally small: one core factory, one core instance type, and one React component export.</p>
-              <div class="docs-code-block">
-                <div class="docs-code-toolbar">
-                  <span>factory</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#api-factory-code">Copy</button>
-                </div>
-                <pre class="docs-code" id="api-factory-code"><code>createOllowEditor(
-  selector: string | HTMLElement,
-  options?: OllowEditorOptions
-): OllowEditorCore</code></pre>
-              </div>
-
-              <h3 id="olloweditor-options">OllowEditorOptions</h3>
-              <div class="docs-code-block">
-                <div class="docs-code-toolbar">
-                  <span>types</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#options-code">Copy</button>
-                </div>
-                <pre class="docs-code" id="options-code"><code>interface OllowEditorOptions {
-  initialHTML?: string;
-  placeholder?: string;
-  readOnly?: boolean;
-  className?: string;
-  onChange?: (html: string) =&gt; void;
-  uploadImage?: (file: File) =&gt; Promise&lt;string&gt; | string;
-}</code></pre>
-              </div>
-
-              <h3 id="olloweditor-core-methods">OllowEditorCore Methods</h3>
-              <ul>
-                <li><code>getHTML()</code> returns the current editor HTML.</li>
-                <li><code>setHTML(html)</code> replaces the current editor content.</li>
-                <li><code>focus()</code> focuses the editable surface.</li>
-                <li><code>destroy()</code> tears down the editor instance and bindings.</li>
-              </ul>
             </section>
 
             <section class="docs-section" id="react-usage">
               <h2>React Usage</h2>
-              <p>Use the official React wrapper for controlled state and straightforward integration inside forms, dashboards, and content management views.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>react</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#react-usage-code">Copy</button>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#react-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="react-usage-code"><code>import { useState } from "react";
+                <pre class="docs-code" id="react-code"><code>import { useState } from "react";
 import { OllowEditor } from "@codefortify/olloweditor/react";
 import "@codefortify/olloweditor/style.css";
 
@@ -353,21 +675,23 @@ export default function App() {
 
             <section class="docs-section" id="react-typescript-usage">
               <h2>React TypeScript Usage</h2>
-              <p>In TypeScript React apps, the wrapper props line up with the package type declarations, including an optional <code>uploadImage</code> callback.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>react ts</span>
                   <button class="docs-copy-btn" type="button" data-copy-target="#react-ts-code">Copy</button>
                 </div>
                 <pre class="docs-code" id="react-ts-code"><code>import { useState } from "react";
-import { OllowEditor } from "@codefortify/olloweditor/react";
-import type { OllowEditorReactProps } from "@codefortify/olloweditor/react";
+import {
+  OllowEditor,
+  type OllowEditorReactProps
+} from "@codefortify/olloweditor/react";
+
 import "@codefortify/olloweditor/style.css";
 
-export default function EditorForm() {
+export default function App() {
   const [content, setContent] = useState&lt;string&gt;("");
 
-  const uploadImage: NonNullable&lt;OllowEditorReactProps["uploadImage"]&gt; = async (file) =&gt; {
+  const uploadImage: OllowEditorReactProps["uploadImage"] = async (file) =&gt; {
     const formData = new FormData();
     formData.append("image", file);
 
@@ -376,7 +700,7 @@ export default function EditorForm() {
       body: formData
     });
 
-    const data = await response.json();
+    const data: { url: string } = await response.json();
     return data.url;
   };
 
@@ -394,60 +718,30 @@ export default function EditorForm() {
 
             <section class="docs-section" id="nextjs-usage">
               <h2>Next.js Usage</h2>
-              <p>
-                OllowEditor uses browser APIs, so in Next.js it should be loaded on the client side with dynamic import and <code>ssr: false</code>.
-              </p>
+              <p>OllowEditor uses browser APIs, so load it client-side with dynamic import and <code>ssr: false</code>.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>next.js</span>
                   <button class="docs-copy-btn" type="button" data-copy-target="#nextjs-code">Copy</button>
                 </div>
                 <pre class="docs-code" id="nextjs-code"><code>import dynamic from "next/dynamic";
-import { useState } from "react";
 import "@codefortify/olloweditor/style.css";
 
 const OllowEditor = dynamic(
-  () =&gt; import("@codefortify/olloweditor/react").then((mod) =&gt; mod.OllowEditor),
+  () =&gt;
+    import("@codefortify/olloweditor/react").then((mod) =&gt; mod.OllowEditor),
   { ssr: false }
 );
 
-export default function ArticleEditorPage() {
-  const [content, setContent] = useState("");
-
-  return (
-    &lt;OllowEditor
-      value={content}
-      onChange={setContent}
-      placeholder="Write your article..."
-    /&gt;
-  );
-}</code></pre>
-              </div>
-            </section>
-
-            <section class="docs-section" id="react-props">
-              <h2>React Props</h2>
-              <div class="docs-code-block">
-                <div class="docs-code-toolbar">
-                  <span>react props</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#react-props-code">Copy</button>
-                </div>
-                <pre class="docs-code" id="react-props-code"><code>interface OllowEditorReactProps {
-  value?: string;
-  onChange?: (html: string) =&gt; void;
-  placeholder?: string;
-  uploadImage?: (file: File) =&gt; Promise&lt;string&gt; | string;
-  readOnly?: boolean;
-  className?: string;
+export default function Page() {
+  return &lt;OllowEditor placeholder="Write in Next.js..." /&gt;;
 }</code></pre>
               </div>
             </section>
 
             <section class="docs-section" id="mern-stack-usage">
               <h2>MERN Stack Usage</h2>
-              <p>
-                OllowEditor works well in MERN stack applications because it can run in React on the frontend and send generated HTML content to an Express, Node.js, or NestJS backend.
-              </p>
+              <p>Confirmed npm README workflow: React frontend, OllowEditor, HTML emitted through <code>onChange</code>, then a backend API stores and returns content for rendering in the application.</p>
               <div class="docs-flow-card">
                 <div class="docs-flow-step">React frontend</div>
                 <div class="docs-flow-arrow" aria-hidden="true">→</div>
@@ -455,19 +749,18 @@ export default function ArticleEditorPage() {
                 <div class="docs-flow-arrow" aria-hidden="true">→</div>
                 <div class="docs-flow-step">onChange HTML/content</div>
                 <div class="docs-flow-arrow" aria-hidden="true">→</div>
-                <div class="docs-flow-step">Express API</div>
+                <div class="docs-flow-step">Express or Node API</div>
                 <div class="docs-flow-arrow" aria-hidden="true">→</div>
-                <div class="docs-flow-step">MongoDB database</div>
+                <div class="docs-flow-step">MongoDB/database</div>
                 <div class="docs-flow-arrow" aria-hidden="true">→</div>
                 <div class="docs-flow-step">Render in frontend/admin panel</div>
               </div>
-
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>react form</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#mern-react-form-code">Copy</button>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#mern-react-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="mern-react-form-code"><code>import { useState } from "react";
+                <pre class="docs-code" id="mern-react-code"><code>import { useState } from "react";
 import { OllowEditor } from "@codefortify/olloweditor/react";
 import "@codefortify/olloweditor/style.css";
 
@@ -502,7 +795,6 @@ export default function BlogCreateForm() {
   );
 }</code></pre>
               </div>
-
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>express api</span>
@@ -529,9 +821,9 @@ app.post("/api/posts", async (req, res) =&gt; {
               </div>
             </section>
 
-            <section class="docs-section" id="express-image-upload">
-              <h2>Express Image Upload</h2>
-              <p>README-backed upload flows return URLs to the editor. A small Express endpoint is enough for local disk or proxy-based storage.</p>
+            <section class="docs-section" id="express-upload-example">
+              <h2>Express Upload Example</h2>
+              <p>The npm README documents <code>uploadImage</code> as a backend callback contract rather than a bundled upload provider.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>express upload</span>
@@ -544,20 +836,10 @@ const app = express();
 const upload = multer({ dest: "uploads/" });
 
 app.post("/api/uploads/image", upload.single("image"), async (req, res) =&gt; {
+  // Store the uploaded file and generate a public URL.
   const url = `/uploads/${req.file.filename}`;
   res.json({ url });
 });</code></pre>
-              </div>
-              <p>Connect this endpoint to OllowEditor using the <code>uploadImage</code> callback.</p>
-            </section>
-
-            <section class="docs-section" id="nodejs-api-integration">
-              <h2>Node.js API Integration</h2>
-              <p>
-                The frontend editor only needs a URL back from your backend. That backend can be Express, a plain Node.js API route, NestJS, or any server that accepts uploads and returns a JSON payload with the stored file location.
-              </p>
-              <div class="docs-note">
-                <strong>Typical contract:</strong> upload the file, store it using your backend strategy, then return <code>{ url: "https://..." }</code> so the editor can place the image into the content.
               </div>
             </section>
 
@@ -566,9 +848,9 @@ app.post("/api/uploads/image", upload.single("image"), async (req, res) =&gt; {
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>nestjs</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#nestjs-upload-code">Copy</button>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#nestjs-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="nestjs-upload-code"><code>import { Controller, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
+                <pre class="docs-code" id="nestjs-code"><code>import { Controller, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 
 @Controller("api/uploads")
@@ -584,170 +866,402 @@ export class UploadController {
               </div>
             </section>
 
-            <section class="docs-section" id="backend-storage-flow">
-              <h2>Backend Storage Flow</h2>
-              <div class="docs-flow-card docs-flow-card-compact">
-                <div class="docs-flow-step">Frontend editor</div>
-                <div class="docs-flow-arrow" aria-hidden="true">→</div>
-                <div class="docs-flow-step">uploadImage callback</div>
-                <div class="docs-flow-arrow" aria-hidden="true">→</div>
-                <div class="docs-flow-step">backend upload API</div>
-                <div class="docs-flow-arrow" aria-hidden="true">→</div>
-                <div class="docs-flow-step">image URL</div>
-                <div class="docs-flow-arrow" aria-hidden="true">→</div>
-                <div class="docs-flow-step">editor content</div>
-              </div>
-              <p>
-                OllowEditor does not force a storage provider. You can use local storage, S3, Cloudinary, Supabase Storage, DigitalOcean Spaces, or any custom backend as long as the final upload step returns a usable URL.
-              </p>
-            </section>
-
-            <section class="docs-section" id="toolbar-features">
-              <h2>Toolbar Features</h2>
-              <div class="docs-table-wrapper">
-                <table class="docs-table">
-                  <thead>
-                    <tr>
-                      <th>Feature</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Bold / Italic / Underline / Strikethrough</td><td>Format selected text for common writing workflows.</td></tr>
-                    <tr><td>Headings</td><td>Switch between paragraph text and heading levels used in structured content.</td></tr>
-                    <tr><td>Lists</td><td>Create bullet and numbered lists inside articles, admin forms, and CMS content.</td></tr>
-                    <tr><td>Links</td><td>Insert hyperlinks and unlink content when references change.</td></tr>
-                    <tr><td>Images</td><td>Insert uploaded images or image URLs into the editor.</td></tr>
-                    <tr><td>Gallery</td><td>Create a multiple-image gallery block with title and note support.</td></tr>
-                    <tr><td>YouTube Embed</td><td>Render supported YouTube URLs inside a safe embed wrapper.</td></tr>
-                    <tr><td>Tables</td><td>Insert table content inside a scroll-safe wrapper for smaller viewports.</td></tr>
-                    <tr><td>Code Block</td><td>Add preformatted code blocks for technical articles and developer docs.</td></tr>
-                    <tr><td>Markdown Import / Export</td><td>Convert between Markdown workflows and editor HTML.</td></tr>
-                    <tr><td>Export HTML</td><td>Export sanitized HTML content for downstream publishing.</td></tr>
-                    <tr><td>Export PDF</td><td>Use the browser print workflow to create a PDF export.</td></tr>
-                    <tr><td>DOCX Import / Export</td><td>Import Word content and export DOCX or fallback Word-compatible output.</td></tr>
-                    <tr><td>Theme Controls</td><td>Switch between light, dark, and auto theme modes.</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            <section class="docs-section" id="image-upload">
-              <h2>Image Upload</h2>
-              <p>
-                The package-level upload hook is <code>uploadImage(file)</code>. Return a string or a promise that resolves to the final image URL and OllowEditor will insert that image into the current content.
-              </p>
+            <section class="docs-section" id="api-reference">
+              <h2>API Reference</h2>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
-                  <span>upload callback</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#image-upload-callback-code">Copy</button>
+                  <span>factory</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#api-factory-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="image-upload-callback-code"><code>const editor = createOllowEditor("#editor", {
-  uploadImage: async (file) =&gt; {
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const response = await fetch("/api/uploads/image", {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await response.json();
-    return data.url;
-  }
-});</code></pre>
+                <pre class="docs-code" id="api-factory-code"><code>createOllowEditor(
+  selector: string | HTMLElement,
+  options?: OllowEditorOptions
+): OllowEditorCore</code></pre>
               </div>
-            </section>
-
-            <section class="docs-section" id="gallery-support">
-              <h2>Gallery Support</h2>
-              <p>README-supported gallery blocks let content teams place multiple images into a single responsive gallery section.</p>
-            </section>
-
-            <section class="docs-section" id="youtube-embed">
-              <h2>YouTube Embed</h2>
-              <p>Supported YouTube links are normalized into safe iframe embeds so articles can include videos without custom rendering glue.</p>
-            </section>
-
-            <section class="docs-section" id="table-support">
-              <h2>Table Support</h2>
-              <p>Tables render inside a scroll wrapper, which keeps wide tabular content usable on smaller screens and prevents page-level overflow.</p>
-            </section>
-
-            <section class="docs-section" id="code-block">
-              <h2>Code Block</h2>
-              <p>Code blocks are part of the supported block toolset and work well for engineering blogs, internal guides, and technical publishing workflows.</p>
-            </section>
-
-            <section class="docs-section" id="keyboard-shortcuts">
-              <h2>Keyboard Shortcuts</h2>
-              <div class="docs-table-wrapper">
-                <table class="docs-table">
-                  <thead>
-                    <tr>
-                      <th>Shortcut</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td><code>Ctrl/Cmd + B</code></td><td>Bold</td></tr>
-                    <tr><td><code>Ctrl/Cmd + I</code></td><td>Italic</td></tr>
-                    <tr><td><code>Ctrl/Cmd + U</code></td><td>Underline</td></tr>
-                    <tr><td><code>Ctrl/Cmd + K</code></td><td>Insert or edit link</td></tr>
-                    <tr><td><code>Ctrl/Cmd + Shift + 7</code></td><td>Numbered list</td></tr>
-                    <tr><td><code>Ctrl/Cmd + Shift + 8</code></td><td>Bullet list</td></tr>
-                    <tr><td><code>Ctrl/Cmd + Shift + C</code></td><td>Code block</td></tr>
-                    <tr><td><code>Ctrl/Cmd + S</code></td><td>Sync editor HTML and prevent the browser save dialog</td></tr>
-                    <tr><td><code>Esc</code></td><td>Close the active modal or floating toolbar</td></tr>
-                  </tbody>
-                </table>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>options</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#api-options-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="api-options-code"><code>interface OllowEditorOptions {
+  initialHTML?: string;
+  placeholder?: string;
+  readOnly?: boolean;
+  className?: string;
+  onChange?: (html: string) =&gt; void;
+  uploadImage?: (file: File) =&gt; Promise&lt;string&gt; | string;
+}</code></pre>
               </div>
-            </section>
-
-            <section class="docs-section" id="theme-support">
-              <h2>Theme Support</h2>
-              <p>README-backed theme support includes <code>light</code>, <code>dark</code>, and <code>auto</code> modes with optional theme persistence per editor instance.</p>
-            </section>
-
-            <section class="docs-section" id="import-export">
-              <h2>Import and Export</h2>
-              <p>OllowEditor includes HTML, PDF, Markdown, and DOCX workflows for teams moving content between editors, admin panels, publishing systems, and offline review tools.</p>
               <ul>
-                <li>Export HTML for clean downstream rendering.</li>
-                <li>Export PDF through the browser print flow.</li>
-                <li>Import and export Markdown for technical content workflows.</li>
-                <li>Import DOCX with a browser-side parser when available.</li>
-                <li>Export DOCX through the configured runtime exporter or fallback mode.</li>
+                <li><code>getHTML()</code> returns the current editor HTML.</li>
+                <li><code>setHTML(html)</code> replaces the current editor content.</li>
+                <li><code>focus()</code> moves focus into the editor surface.</li>
+                <li><code>destroy()</code> removes the editor instance and listeners.</li>
               </ul>
             </section>
 
-            <section class="docs-section" id="markdown-import-export">
-              <h2>Markdown Import / Export</h2>
-              <p>Markdown support is intended for conversion workflows. The editor still stores and emits HTML content as its main output.</p>
+            <section class="docs-section" id="react-props">
+              <h2>React Props</h2>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>react props</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#react-props-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="react-props-code"><code>interface OllowEditorReactProps {
+  value?: string;
+  onChange?: (html: string) =&gt; void;
+  placeholder?: string;
+  uploadImage?: (file: File) =&gt; Promise&lt;string&gt; | string;
+  readOnly?: boolean;
+  className?: string;
+}</code></pre>
+              </div>
             </section>
 
-            <section class="docs-section" id="export-html">
-              <h2>Export HTML</h2>
-              <p>Export HTML produces sanitized editor output so you can store or render the content directly in a frontend or backend publishing pipeline.</p>
+            <section class="docs-section" id="package-exports">
+              <h2>Package Exports</h2>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>exports</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#package-exports-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="package-exports-code"><code>import { createOllowEditor } from "@codefortify/olloweditor";
+import { OllowEditor } from "@codefortify/olloweditor/react";
+import "@codefortify/olloweditor/style.css";</code></pre>
+              </div>
             </section>
 
-            <section class="docs-section" id="export-pdf">
-              <h2>Export PDF</h2>
-              <p>PDF export depends on browser print support and uses the native print-to-PDF flow rather than generating PDF bytes directly inside the package.</p>
+            <section class="docs-section" id="pip-installation">
+              <h2>pip Installation</h2>
+              <p>The base Python package installs the packaged browser assets and framework-independent resource helpers only.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>pip</span>
+                  <button class="docs-copy-btn" type="button" data-copy='pip install olloweditor'>Copy</button>
+                </div>
+                <pre class="docs-code"><code>pip install olloweditor</code></pre>
+              </div>
+              <div class="docs-note">
+                <strong>Current README note:</strong> production PyPI publication has not been completed yet. The Python README recommends local wheel or editable installs during current development workflows.
+              </div>
             </section>
 
-            <section class="docs-section" id="import-docx">
-              <h2>Import DOCX</h2>
-              <p>DOCX import expects a browser-compatible parser such as Mammoth to be available when that workflow is used.</p>
+            <section class="docs-section" id="optional-extras">
+              <h2>Optional Extras</h2>
+              <p>Install only the extra your Python application needs.</p>
+              <div class="docs-install-grid docs-install-grid-compact">
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>Django</p>
+                    <code id="pip-django-code">pip install "olloweditor[django]"</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#pip-django-code">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>Django REST Framework</p>
+                    <code id="pip-drf-code">pip install "olloweditor[drf]"</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#pip-drf-code">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>Flask</p>
+                    <code id="pip-flask-code">pip install "olloweditor[flask]"</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#pip-flask-code">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>FastAPI</p>
+                    <code id="pip-fastapi-code">pip install "olloweditor[fastapi]"</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#pip-fastapi-code">Copy</button>
+                </article>
+                <article class="docs-install-card docs-install-card-stacked">
+                  <div class="docs-install-copy">
+                    <p>All integrations</p>
+                    <code id="pip-all-code">pip install "olloweditor[all]"</code>
+                  </div>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#pip-all-code">Copy</button>
+                </article>
+              </div>
             </section>
 
-            <section class="docs-section" id="export-docx">
-              <h2>Export DOCX</h2>
-              <p>DOCX export depends on the configured exporter available to the editor at runtime. When a real DOCX exporter is not available, the editor can fall back to a Word-compatible document flow.</p>
+            <section class="docs-section" id="django-integration">
+              <h2>Django Integration</h2>
+              <p>
+                The Python package includes <code>OllowEditorWidget</code>, <code>OllowEditorField</code>, staticfiles integration, and admin support. It keeps a textarea synchronized with HTML so normal Django form processing continues to work.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>django field</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#django-field-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="django-field-code"><code>from django.db import models
+from olloweditor.integrations.django import OllowEditorField
+
+
+class Article(models.Model):
+    title = models.CharField(max_length=255)
+    content = OllowEditorField()</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="django-forms">
+              <h2>Django Forms</h2>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>django form</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#django-form-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="django-form-code"><code>from django import forms
+from olloweditor.integrations.django import OllowEditorWidget
+
+from .models import Article
+
+
+class ArticleForm(forms.ModelForm):
+    content = forms.CharField(
+        widget=OllowEditorWidget(
+            options={
+                "theme": "auto",
+            }
+        )
+    )
+
+    class Meta:
+        model = Article
+        fields = ["title", "content"]</code></pre>
+              </div>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>template</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#django-template-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="django-template-code"><code>&lt;form method="post"&gt;
+    {% csrf_token %}
+    {{ form.media }}
+    {{ form.as_p }}
+    &lt;button type="submit"&gt;Save article&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="django-admin">
+              <h2>Django Admin</h2>
+              <p>
+                Once <code>olloweditor.apps.OllowEditorConfig</code> is installed, <code>OllowEditorField</code> uses <code>OllowEditorWidget</code> in generated ModelForms, including standard Django admin form construction.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>installed apps</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#django-apps-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="django-apps-code"><code>INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "olloweditor.apps.OllowEditorConfig",
+]</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="django-rest-framework">
+              <h2>Django REST Framework</h2>
+              <p>
+                DRF does not render the browser editor for external API clients. It accepts the HTML string generated by an OllowEditor frontend through <code>OllowEditorHTMLField</code>.
+              </p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>serializer</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#drf-serializer-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="drf-serializer-code"><code>from rest_framework import serializers
+from olloweditor.integrations.drf import OllowEditorHTMLField
+
+
+class ArticleSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    content = OllowEditorHTMLField(
+        allow_blank=True,
+        required=False,
+    )</code></pre>
+              </div>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>sanitizer</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#drf-sanitizer-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="drf-sanitizer-code"><code>def sanitize_article_html(value: str) -&gt; str:
+    return trusted_html_sanitizer.clean(value)
+
+
+class ArticleSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    content = OllowEditorHTMLField(
+        sanitizer=sanitize_article_html,
+    )</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="flask-integration">
+              <h2>Flask Integration</h2>
+              <p>The Python package exposes a Flask extension, packaged asset blueprint, and Jinja helpers.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>flask app</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#flask-app-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="flask-app-code"><code>from flask import Flask, render_template, request
+from olloweditor.integrations.flask import OllowEditor
+
+
+app = Flask(__name__)
+olloweditor = OllowEditor(app)
+
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    content = ""
+
+    if request.method == "POST":
+        content = request.form.get("content", "")
+
+    return render_template("index.html", content=content)</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="fastapi-integration">
+              <h2>FastAPI Integration</h2>
+              <p>The Python package includes a static mount helper and template helper registration pattern for FastAPI applications.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>fastapi app</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#fastapi-app-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="fastapi-app-code"><code>from fastapi import FastAPI, Request
+from fastapi.templating import Jinja2Templates
+
+from olloweditor.integrations.fastapi import (
+    mount_olloweditor,
+    olloweditor_assets,
+)
+
+
+app = FastAPI()
+mount_olloweditor(app)
+
+templates = Jinja2Templates(directory="templates")
+templates.env.globals["olloweditor_assets"] = olloweditor_assets
+
+
+@app.get("/")
+def index(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={},
+    )</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="static-assets">
+              <h2>Static Assets</h2>
+              <p>Installing <code>olloweditor</code> gives the Python package three packaged frontend assets plus resource helpers.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>assets</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#python-assets-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="python-assets-code"><code>olloweditor.browser.js
+olloweditor.css
+olloweditor-init.js
+
+get_static_root()
+get_asset_path(filename)
+asset_exists(filename)</code></pre>
+              </div>
+              <p>
+                Confirmed framework behavior: Django serves these through staticfiles, Flask through the extension blueprint, FastAPI through <code>StaticFiles</code>, and the base package exposes resource helpers through <code>olloweditor.resources</code>.
+              </p>
+            </section>
+
+            <section class="docs-section" id="template-helpers">
+              <h2>Template Helpers</h2>
+              <p>Flask and FastAPI both expose helper functions that inject the packaged asset tags into server-rendered templates.</p>
+              <div class="docs-framework-grid">
+                <article class="docs-framework-card">
+                  <h3>Flask</h3>
+                  <pre class="docs-code docs-code-compact" id="flask-template-code"><code>&lt;head&gt;
+  {{ olloweditor_assets() }}
+&lt;/head&gt;</code></pre>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#flask-template-code">Copy</button>
+                </article>
+                <article class="docs-framework-card">
+                  <h3>FastAPI</h3>
+                  <pre class="docs-code docs-code-compact" id="fastapi-template-code"><code>&lt;head&gt;
+  {{ olloweditor_assets() }}
+&lt;/head&gt;</code></pre>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#fastapi-template-code">Copy</button>
+                </article>
+              </div>
+            </section>
+
+            <section class="docs-section" id="python-backend-flow">
+              <h2>Python Backend Flow</h2>
+              <p>The Python package keeps the browser editor tied to normal form posts or JSON requests instead of introducing a Python-native editing engine.</p>
+              <div class="docs-flow-card">
+                <div class="docs-flow-step">Textarea</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">OllowEditor browser UI</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">synchronized HTML</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">normal form post or JSON payload</div>
+                <div class="docs-flow-arrow" aria-hidden="true">→</div>
+                <div class="docs-flow-step">Python backend</div>
+              </div>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>submitted content</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#python-content-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="python-content-code"><code># Django
+content = request.POST.get("content", "")
+
+# Flask
+content = request.form.get("content", "")
+
+# FastAPI
+from typing import Annotated
+from fastapi import Form
+
+def create_article(
+    content: Annotated[str, Form()],
+):
+    return {"content": content}</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="security-notes">
+              <h2>Security Notes</h2>
+              <p>
+                Because OllowEditor generates HTML, backend applications should validate and sanitize untrusted HTML before rendering it. The Python README is explicit that client-side cleanup is not a complete security boundary and that the package does not claim arbitrary HTML is safe automatically.
+              </p>
+              <ul>
+                <li>Define allowed tags, attributes, URL schemes, image sources, and embed providers.</li>
+                <li>Validate upload authorization, CSRF, MIME type, extension, file size, storage destination, and rate limits separately.</li>
+                <li>Use Django <code>safe</code>, Jinja <code>|safe</code>, <code>Markup</code>, or equivalent only after sanitization or explicit trust decisions.</li>
+              </ul>
             </section>
 
             <section class="docs-section" id="browser-support">
               <h2>Browser Support</h2>
+              <p>The npm README lists the following modern browser targets:</p>
               <ul>
                 <li>Chrome</li>
                 <li>Edge</li>
@@ -761,26 +1275,31 @@ export class UploadController {
               <h2>Package Structure</h2>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
-                  <span>dist</span>
+                  <span>npm package</span>
                   <button class="docs-copy-btn" type="button" data-copy-target="#package-structure-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="package-structure-code"><code>dist/
-├── olloweditor.es.js
-├── olloweditor.cjs
-├── olloweditor-react.es.js
-├── olloweditor-react.cjs
-├── olloweditor.css
-├── index.d.ts
-└── react.d.ts</code></pre>
+                <pre class="docs-code" id="package-structure-code"><code>olloweditor/
+├── src/
+│   ├── core/
+│   ├── react/
+│   ├── styles/
+│   └── types/
+├── dist/
+├── examples/
+├── website/
+├── package.json
+├── vite.config.js
+├── tsconfig.json
+└── README.md</code></pre>
               </div>
             </section>
 
             <section class="docs-section" id="local-development">
               <h2>Local Development</h2>
-              <p>For package development, clone the repository and install dependencies before starting the local development workflow.</p>
+              <p>The npm README documents the standard frontend development flow, and the Python README adds the Python-specific environment setup.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
-                  <span>local dev</span>
+                  <span>frontend dev</span>
                   <button class="docs-copy-btn" type="button" data-copy-target="#local-dev-code">Copy</button>
                 </div>
                 <pre class="docs-code" id="local-dev-code"><code>git clone https://github.com/CodeFortifyCloud/olloweditor.git
@@ -788,36 +1307,69 @@ cd olloweditor
 npm install
 npm run dev</code></pre>
               </div>
-            </section>
-
-            <section class="docs-section" id="build-package">
-              <h2>Build Package</h2>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
-                  <span>build</span>
+                  <span>python dev</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#python-dev-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="python-dev-code"><code>npm ci
+npm run build
+npm run typecheck
+npm test
+npm run build:python-assets
+npm run verify:python-assets
+
+cd python
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[all,dev,test]"</code></pre>
+              </div>
+            </section>
+
+            <section class="docs-section" id="build">
+              <h2>Build</h2>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>npm build</span>
                   <button class="docs-copy-btn" type="button" data-copy="npm run build">Copy</button>
                 </div>
                 <pre class="docs-code"><code>npm run build</code></pre>
               </div>
-              <p>The build output should produce the distributable JavaScript, React, CSS, and type definition files shown in the package structure above.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>python distributions</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#python-build-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="python-build-code"><code>cd python
+rm -rf build dist src/*.egg-info
+python -m build
+python -m twine check dist/*</code></pre>
+              </div>
             </section>
 
             <section class="docs-section" id="publishing">
               <h2>Publishing</h2>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
-                  <span>publish</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#publishing-code">Copy</button>
+                  <span>npm publish</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#npm-publish-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="publishing-code"><code>npm login
+                <pre class="docs-code" id="npm-publish-code"><code>npm pack --dry-run
+npm pack
+npm login
 npm publish --access public</code></pre>
               </div>
-              <p>Use semantic versioning for releases:</p>
-              <ul>
-                <li><strong>patch</strong> for bug fixes</li>
-                <li><strong>minor</strong> for new features</li>
-                <li><strong>major</strong> for breaking changes</li>
-              </ul>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar">
+                  <span>python wheel verification</span>
+                  <button class="docs-copy-btn" type="button" data-copy-target="#python-publish-code">Copy</button>
+                </div>
+                <pre class="docs-code" id="python-publish-code"><code>pip install dist/olloweditor-&lt;version&gt;-py3-none-any.whl
+python scripts/check_wheel_contents.py dist/*.whl
+python scripts/verify_wheel_installs.py dist/*.whl</code></pre>
+              </div>
+              <p>The Python README documents build and verification commands, but it does not publish a final PyPI release command in the same way the npm README does.</p>
             </section>
 
             <section class="docs-section" id="license">
@@ -832,18 +1384,17 @@ npm publish --access public</code></pre>
             <p class="docs-toc-title">On this page</p>
             <nav class="docs-toc-links">
               <a href="#introduction">Introduction</a>
-              <a href="#installation">Installation</a>
-              <a href="#quick-start">Quick Start</a>
-              <a href="#vanilla-javascript">JavaScript Usage</a>
-              <a href="#react-usage">React Usage</a>
-              <a href="#nextjs-usage">Next.js Usage</a>
-              <a href="#mern-stack-usage">MERN Stack Usage</a>
-              <a href="#image-upload">Image Upload</a>
+              <a href="#package-options">Package Options</a>
+              <a href="#installation-commands">Installation</a>
+              <a href="#basic-html-setup">JavaScript Editor</a>
+              <a href="#npm-installation">NPM / MERN Stack</a>
+              <a href="#pip-installation">Python / pip</a>
               <a href="#api-reference">API Reference</a>
-              <a href="#toolbar-features">Toolbar Features</a>
-              <a href="#import-export">Import and Export</a>
+              <a href="#feature-overview">Features</a>
+              <a href="#markdown-import-export">Import / Export</a>
               <a href="#browser-support">Browser Support</a>
-              <a href="#publishing">Publishing</a>
+              <a href="#local-development">Development</a>
+              <a href="#license">License</a>
             </nav>
           </div>
         </aside>

@@ -8,7 +8,7 @@ Ollow Editor is designed for newsroom-style writing, blog publishing, CMS forms,
 
 ## Preview
 
-![Ollow Editor Preview](./olloweditor.png)
+![Ollow Editor Preview](olloweditor.jpg)
 
 ---
 

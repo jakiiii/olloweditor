@@ -1,6 +1,6 @@
 {
   "name": "@codefortify/olloweditor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A modern rich text editor for JavaScript, TypeScript, React, MERN, Node, Vue, Next.js, and NestJS applications.",
   "keywords": [
     "rich-text-editor",

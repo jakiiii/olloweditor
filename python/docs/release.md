@@ -8,7 +8,7 @@ Verify package status and version availability:
 
 ```bash
 cd python
-python scripts/check_pypi_status.py olloweditor 0.1.0
+python scripts/check_pypi_status.py olloweditor 0.1.1
 ```
 
 Interpretation:
@@ -74,7 +74,7 @@ For release-tag validation without publishing:
 
 ```bash
 python scripts/validate_publish_release.py \
-  --release-tag v0.1.0 \
+  --release-tag v0.1.1 \
   --skip-git-check
 ```
 
@@ -140,7 +140,7 @@ Use the dedicated verifier from the `python/` directory:
 ```bash
 python scripts/verify_testpypi_release.py \
   --package olloweditor \
-  --version 0.1.0
+  --version 0.1.1
 ```
 
 What it does:

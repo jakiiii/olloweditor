@@ -7,4 +7,4 @@ __all__ = ["__version__"]
 try:
     __version__ = version("olloweditor")
 except PackageNotFoundError:
-    __version__ = "0.1.0.dev0"
+    __version__ = "0.1.1.dev0"

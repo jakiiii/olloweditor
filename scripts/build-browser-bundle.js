@@ -4,9 +4,14 @@ import path from "node:path";
 const rootDir = process.cwd();
 const sourceRuntimePath = path.join(rootDir, "ollow.js");
 const sourceCssPath = path.join(rootDir, "ollow.css");
+const packageJsonPath = path.join(rootDir, "package.json");
 const distDir = path.join(rootDir, "dist");
 const browserBundlePath = path.join(distDir, "olloweditor.browser.js");
 const distCssPath = path.join(distDir, "olloweditor.css");
+
+const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8"));
+const packageVersion =
+  typeof packageJson.version === "string" ? packageJson.version : "0.0.0";
 
 const browserFacade = `
 (function (global) {
@@ -61,7 +66,7 @@ const browserFacade = `
   };
 
   Object.defineProperty(browserApi, "version", {
-    value: "0.1.0",
+    value: ${JSON.stringify(packageVersion)},
     enumerable: true
   });
 

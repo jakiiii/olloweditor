@@ -1,7 +1,7 @@
 # OllowEditor for Python
 
-[![Python CI](https://github.com/jakiiii/olloweditor/actions/workflows/python-ci.yml/badge.svg)](https://github.com/jakiiii/olloweditor/actions/workflows/python-ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/jakiiii/olloweditor/blob/main/LICENSE)
+[![Python CI](https://github.com/CodeFortifyCloud/olloweditor/actions/workflows/python-ci.yml/badge.svg)](https://github.com/CodeFortifyCloud/olloweditor/actions/workflows/python-ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/CodeFortifyCloud/olloweditor/blob/pip/LICENSE)
 
 A Python integration package for using OllowEditor with Django, Django REST Framework, Flask, and FastAPI.
 
@@ -40,7 +40,7 @@ Official integrations are included for Django, Django REST Framework, Flask, and
 - Themes, responsive toolbar behavior, and textarea synchronization
 - Browser plugin API for extending the editor
 
-For the full editor feature set, configuration surface, and JavaScript integration details, see the main project README: <https://github.com/jakiiii/olloweditor>.
+For the full editor feature set, configuration surface, and JavaScript integration details, see the main project README: <https://github.com/CodeFortifyCloud/olloweditor>.
 
 ## Supported environments
 
@@ -501,7 +501,7 @@ HTML example:
 
 For the full JavaScript option surface, use the main OllowEditor configuration documentation:
 
-- <https://github.com/jakiiii/olloweditor/blob/main/docs/configuration.md>
+- <https://github.com/CodeFortifyCloud/olloweditor/blob/pip/docs/configuration.md>
 
 ## Working with submitted content
 
@@ -560,8 +560,8 @@ For uploads and rich embeds, also consider image dimensions, storage policy, and
 
 More security guidance:
 
-- <https://github.com/jakiiii/olloweditor/blob/main/python/docs/security.md>
-- <https://github.com/jakiiii/olloweditor/blob/main/docs/security.md>
+- <https://github.com/CodeFortifyCloud/olloweditor/blob/pip/python/docs/security.md>
+- <https://github.com/CodeFortifyCloud/olloweditor/blob/pip/docs/security.md>
 
 ## Framework dependency isolation
 
@@ -583,18 +583,18 @@ This avoids unnecessary framework dependencies and reduces conflict risk in appl
 
 Runnable examples are included for every supported integration:
 
-- [Django example](https://github.com/jakiiii/olloweditor/tree/main/python/examples/django_example)
+- [Django example](https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python/examples/django_example)
   - Model field, forms, admin, and staticfiles integration
-- [Django REST Framework example](https://github.com/jakiiii/olloweditor/tree/main/python/examples/drf_example)
+- [Django REST Framework example](https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python/examples/drf_example)
   - HTML API input plus a small package-backed frontend page
-- [Flask example](https://github.com/jakiiii/olloweditor/tree/main/python/examples/flask_example)
+- [Flask example](https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python/examples/flask_example)
   - Extension registration, packaged assets, and form submission
-- [FastAPI example](https://github.com/jakiiii/olloweditor/tree/main/python/examples/fastapi_example)
+- [FastAPI example](https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python/examples/fastapi_example)
   - Static mount, Jinja template helper, and form handling
 
 There is also an example index:
 
-- <https://github.com/jakiiii/olloweditor/blob/main/python/examples/README.md>
+- <https://github.com/CodeFortifyCloud/olloweditor/blob/pip/python/examples/README.md>
 
 ## Development setup
 
@@ -666,8 +666,8 @@ The package metadata is prepared for PyPI, but the release audit currently recom
 
 Release-oriented references:
 
-- [Release audit](https://github.com/jakiiii/olloweditor/blob/main/python/RELEASE_AUDIT.md)
-- [Release notes](https://github.com/jakiiii/olloweditor/blob/main/python/docs/release.md)
+- [Release audit](https://github.com/CodeFortifyCloud/olloweditor/blob/pip/python/RELEASE_AUDIT.md)
+- [Release notes](https://github.com/CodeFortifyCloud/olloweditor/blob/pip/python/docs/release.md)
 
 After the first real PyPI publication, this README should be updated to remove the pre-publication note and add the production PyPI project link.
 
@@ -683,8 +683,8 @@ Use the npm package when your application wants to consume OllowEditor directly 
 
 Main project documentation:
 
-- <https://github.com/jakiiii/olloweditor>
-- <https://github.com/jakiiii/olloweditor/blob/main/README.md>
+- <https://github.com/CodeFortifyCloud/olloweditor>
+- <https://github.com/CodeFortifyCloud/olloweditor/blob/pip/README.md>
 
 ## Troubleshooting
 
@@ -759,7 +759,7 @@ The repository includes:
 
 See the release audit for the current release-readiness result:
 
-- <https://github.com/jakiiii/olloweditor/blob/main/python/RELEASE_AUDIT.md>
+- <https://github.com/CodeFortifyCloud/olloweditor/blob/pip/python/RELEASE_AUDIT.md>
 
 ## Contributing
 
@@ -773,14 +773,14 @@ To contribute:
 
 ## License
 
-OllowEditor is released under the [MIT License](https://github.com/jakiiii/olloweditor/blob/main/LICENSE).
+OllowEditor is released under the [MIT License](https://github.com/CodeFortifyCloud/olloweditor/blob/pip/LICENSE).
 
 ## Project links
 
-- Main repository: <https://github.com/jakiiii/olloweditor>
-- Main OllowEditor README: <https://github.com/jakiiii/olloweditor/blob/main/README.md>
-- Python package directory: <https://github.com/jakiiii/olloweditor/tree/main/python>
+- Main repository: <https://github.com/CodeFortifyCloud/olloweditor>
+- Main OllowEditor README: <https://github.com/CodeFortifyCloud/olloweditor/blob/pip/README.md>
+- Python package directory: <https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python>
 - Python docs:
-  - <https://github.com/jakiiii/olloweditor/tree/main/python/docs>
+  - <https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python/docs>
 - npm package: <https://www.npmjs.com/package/@codefortify/olloweditor>
-- Issue tracker: <https://github.com/jakiiii/olloweditor/issues>
+- Issue tracker: <https://github.com/CodeFortifyCloud/olloweditor/issues>

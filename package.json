@@ -1,6 +1,6 @@
 {
   "name": "@codefortify/olloweditor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A modern rich text editor for JavaScript, TypeScript, React, MERN, Node, Vue, Next.js, and NestJS applications.",
   "keywords": [
     "rich-text-editor",
@@ -18,13 +18,13 @@
     "content-editor",
     "html-editor"
   ],
-  "homepage": "https://github.com/jakiiii/olloweditor",
+  "homepage": "https://github.com/CodeFortifyCloud/olloweditor",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jakiiii/olloweditor.git"
+    "url": "git+https://github.com/CodeFortifyCloud/olloweditor.git"
   },
   "bugs": {
-    "url": "https://github.com/jakiiii/olloweditor/issues"
+    "url": "https://github.com/CodeFortifyCloud/olloweditor/issues"
   },
   "license": "MIT",
   "author": "CodeFortify",

@@ -267,6 +267,70 @@ class ArticleAdmin(admin.ModelAdmin):
     list_display = ("title",)
 ```
 
+### Safe content previews in Django admin
+
+Using:
+
+```python
+list_display = ("title", "content")
+```
+
+is usually a poor fit for `OllowEditorField`. Django admin will display the raw
+stored HTML source, which is noisy for normal rich text and can become
+extremely large for older records that still contain legacy
+`data:image/...;base64,...` values.
+
+Use the package preview helper instead:
+
+```python
+from django.contrib import admin
+
+from olloweditor.integrations.django.admin import (
+    OllowEditorAdminPreviewMedia,
+    render_olloweditor_admin_preview,
+)
+
+from .models import Article
+
+
+@admin.register(Article)
+class ArticleAdmin(OllowEditorAdminPreviewMedia, admin.ModelAdmin):
+    list_display = ("title", "content_preview")
+    search_fields = ("title", "content")
+
+    @admin.display(
+        description="Content",
+        ordering="content",
+        empty_value="—",
+    )
+    def content_preview(self, obj: Article) -> str:
+        return render_olloweditor_admin_preview(obj.content)
+```
+
+The preview helper:
+
+- does not modify stored content
+- renders only a controlled admin summary
+- converts normal rich text into plain text and truncates it
+- can show a bounded thumbnail for safe media URLs under `MEDIA_URL`
+- labels galleries and attachments without rendering the stored HTML directly
+- hides legacy base64 payloads behind a concise warning
+
+The full OllowEditor form interface remains available on the admin add and
+change pages.
+
+The helper is only for Django admin summaries. It does not make arbitrary
+stored HTML safe for public templates, and it is not a substitute for your
+application’s server-side sanitization policy.
+
+Do not use `mark_safe(article.content)` in Django admin unless the HTML has
+already been processed by a trusted server-side sanitizer and the complete
+rendering behavior is intentionally accepted.
+
+Legacy rows containing `data:image/...;base64,...` remain unchanged in the
+database. The admin preview hides the payload and labels the row, but migrating
+those records to storage-backed media URLs is a separate task.
+
 ## Django media uploads
 
 Storing `data:image/...;base64,...` inside rich text makes database rows much

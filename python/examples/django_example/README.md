@@ -34,6 +34,9 @@ Open `http://127.0.0.1:8000/`.
 - `/olloweditor/upload/gallery/` authenticated gallery upload endpoint
 - `/olloweditor/upload/attachment/` authenticated attachment upload endpoint
 
+The example admin uses the package’s safe preview helper for the changelist, so
+rich content appears as a compact summary instead of raw stored HTML.
+
 ## How HTML reaches the backend
 
 `OllowEditorField` renders a textarea widget. The browser bundle keeps that textarea synchronized, and Django receives the HTML through `request.POST["content"]` inside the normal `ModelForm` flow.

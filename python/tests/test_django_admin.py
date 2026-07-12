@@ -8,7 +8,9 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
 from django.core.management import call_command
+from django.db import connection
 from django.test import Client, override_settings
+from django.test.utils import CaptureQueriesContext
 
 from olloweditor.integrations.django import OllowEditorWidget
 from olloweditor.integrations.django.widgets import AdminOllowEditorWidget
@@ -66,6 +68,7 @@ def test_django_app_imports() -> None:
 
 def test_static_files_are_discoverable() -> None:
     assert finders.find("olloweditor/olloweditor.css")
+    assert finders.find("olloweditor/olloweditor-admin.css")
     assert finders.find("olloweditor/olloweditor.browser.js")
     assert finders.find("olloweditor/olloweditor-init.js")
 
@@ -96,13 +99,16 @@ def test_admin_add_page_renders_olloweditor_media_and_admin_attrs() -> None:
     assert 'data-olloweditor="true"' in html
     assert "vLargeTextField" in html
     assert "olloweditor/olloweditor.css" in html
+    assert "olloweditor/olloweditor-admin.css" in html
     assert "olloweditor/olloweditor.browser.js" in html
     assert "olloweditor/olloweditor-init.js" in html
     assert (
-        html.index("olloweditor/olloweditor.css")
+        html.index("olloweditor/olloweditor-admin.css")
+        < html.index("olloweditor/olloweditor.css")
         < html.index("olloweditor/olloweditor.browser.js")
         < html.index("olloweditor/olloweditor-init.js")
     )
+    assert html.count("olloweditor/olloweditor-admin.css") == 1
     assert html.count("olloweditor/olloweditor.css") == 1
     assert html.count("olloweditor/olloweditor.browser.js") == 1
     assert html.count("olloweditor/olloweditor-init.js") == 1
@@ -138,6 +144,7 @@ def test_admin_change_page_loads_existing_html_into_widget() -> None:
         "&lt;p&gt;&lt;strong&gt;Existing admin content&lt;/strong&gt;&lt;/p&gt;" in html
     )
     assert "olloweditor/olloweditor.css" in html
+    assert "olloweditor/olloweditor-admin.css" in html
     assert "olloweditor/olloweditor.browser.js" in html
     assert "olloweditor/olloweditor-init.js" in html
 
@@ -172,3 +179,92 @@ def test_multiple_olloweditor_fields_share_media_without_duplicate_assets() -> N
     assert media.count("olloweditor/olloweditor.css") == 1
     assert media.count("olloweditor/olloweditor.browser.js") == 1
     assert media.count("olloweditor/olloweditor-init.js") == 1
+
+
+@override_settings(MEDIA_URL="/media/")
+def test_admin_changelist_uses_safe_content_previews() -> None:
+    _ensure_db_ready()
+    Article.objects.all().delete()
+    payload = "A" * 6000
+    Article.objects.bulk_create(
+        [
+            Article(
+                title="Plain",
+                content=(
+                    "<h2>Article heading</h2>"
+                    "<p>This is <strong>formatted article text</strong>.</p>"
+                ),
+            ),
+            Article(
+                title="Image",
+                content=(
+                    '<figure class="olloweditor-image" data-type="image">'
+                    '<img src="/media/olloweditor/images/2026/07/example.jpg" '
+                    'alt="Example">'
+                    "<figcaption>Example image</figcaption>"
+                    "</figure>"
+                ),
+            ),
+            Article(
+                title="Gallery",
+                content=(
+                    '<section class="ollow-media ollow-gallery" data-type="gallery">'
+                    '<div class="ollow-gallery-grid">'
+                    '<figure><img src="/media/olloweditor/gallery/2026/07/one.jpg" '
+                    'alt=""></figure>'
+                    '<figure><img src="/media/olloweditor/gallery/2026/07/two.jpg" '
+                    'alt=""></figure>'
+                    '<figure><img src="/media/olloweditor/gallery/2026/07/three.jpg" '
+                    'alt=""></figure>'
+                    "</div>"
+                    "</section>"
+                ),
+            ),
+            Article(
+                title="Attachment",
+                content=(
+                    '<a href="/media/olloweditor/attachments/2026/07/report.pdf" '
+                    'data-olloweditor-attachment="true">report.pdf</a>'
+                ),
+            ),
+            Article(
+                title="Legacy",
+                content=(
+                    '<figure class="olloweditor-image" data-type="image">'
+                    f'<img src="data:image/png;base64,{payload}">'
+                    "</figure>"
+                ),
+            ),
+            Article(
+                title="Unsafe",
+                content=(
+                    '<script>alert("unsafe")</script>'
+                    '<img src="javascript:alert(1)" onerror="alert(1)">'
+                    '<p onclick="alert(1)">Visible text</p>'
+                ),
+            ),
+        ]
+    )
+    client = _get_admin_client()
+
+    with CaptureQueriesContext(connection) as queries:
+        response = client.get("/admin/django_testapp/article/")
+
+    assert response.status_code == 200
+    assert len(queries) < 20
+
+    html = response.content.decode()
+    assert "Article heading This is formatted article text" in html
+    assert "Gallery · 3 images" in html
+    assert "Attachment · report.pdf" in html
+    assert "Legacy embedded image" in html
+    assert 'src="/media/olloweditor/images/2026/07/example.jpg"' in html
+    assert "<figure" not in html
+    assert "&lt;figure" not in html
+    assert "data:image" not in html
+    assert ";base64," not in html
+    assert "javascript:alert(1)" not in html
+    assert "onerror" not in html
+    assert "onclick" not in html
+    assert 'alert("unsafe")' not in html
+    assert "Visible text" in html

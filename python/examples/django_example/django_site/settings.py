@@ -62,5 +62,36 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+OLLOWEDITOR = {
+    "UPLOADS_ENABLED": True,
+    "UPLOAD_REQUIRE_LOGIN": True,
+    "IMAGE_UPLOAD_PATH": "olloweditor/images/%Y/%m/",
+    "GALLERY_UPLOAD_PATH": "olloweditor/gallery/%Y/%m/",
+    "ATTACHMENT_UPLOAD_PATH": "olloweditor/attachments/%Y/%m/",
+    "MAX_IMAGE_SIZE": 10 * 1024 * 1024,
+    "MAX_GALLERY_FILES": 20,
+    "MAX_ATTACHMENT_SIZE": 25 * 1024 * 1024,
+    "ALLOWED_IMAGE_EXTENSIONS": [
+        "jpg",
+        "jpeg",
+        "png",
+        "gif",
+        "webp",
+    ],
+    "ALLOWED_ATTACHMENT_EXTENSIONS": [
+        "pdf",
+        "doc",
+        "docx",
+        "xls",
+        "xlsx",
+        "ppt",
+        "pptx",
+        "txt",
+        "zip",
+    ],
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

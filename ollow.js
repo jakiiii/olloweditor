@@ -1045,21 +1045,76 @@
   }
 
   function extractUploadUrls(payload) {
+    return extractUploadEntries(payload).map((entry) => entry.url);
+  }
+
+  function extractUploadEntries(payload) {
     if (!payload) return [];
     if (Array.isArray(payload)) {
-      return payload.map((value) => (typeof value === "string" ? value.trim() : "")).filter(Boolean);
+      return payload
+        .map((value) => {
+          if (typeof value === "string") {
+            return { url: value.trim(), name: "", size: 0 };
+          }
+          if (value && typeof value === "object") {
+            const url = extractUploadUrl(value);
+            return {
+              url,
+              name: typeof value.name === "string" ? value.name.trim() : "",
+              size: Number(value.size || 0) || 0,
+            };
+          }
+          return null;
+        })
+        .filter((entry) => entry && entry.url);
     }
     if (typeof payload === "object") {
+      if (Array.isArray(payload.files)) {
+        return extractUploadEntries(payload.files);
+      }
       if (Array.isArray(payload.urls)) {
-        return payload.urls.map((value) => (typeof value === "string" ? value.trim() : "")).filter(Boolean);
+        return extractUploadEntries(payload.urls);
       }
       const single = extractUploadUrl(payload);
-      return single ? [single] : [];
+      return single
+        ? [{
+            url: single,
+            name: typeof payload.name === "string" ? payload.name.trim() : "",
+            size: Number(payload.size || 0) || 0,
+          }]
+        : [];
     }
     if (typeof payload === "string") {
-      return payload.trim() ? [payload.trim()] : [];
+      return payload.trim() ? [{ url: payload.trim(), name: "", size: 0 }] : [];
     }
     return [];
+  }
+
+  function getUploadErrorMessage(payload, response) {
+    if (payload && typeof payload === "object") {
+      if (payload.error && typeof payload.error === "object" && typeof payload.error.message === "string") {
+        return payload.error.message;
+      }
+      if (typeof payload.error === "string") {
+        return payload.error;
+      }
+      if (typeof payload.detail === "string") {
+        return payload.detail;
+      }
+      if (typeof payload.message === "string") {
+        return payload.message;
+      }
+    }
+    if (response && response.status === 401) {
+      return "You must be logged in to upload files.";
+    }
+    if (response && response.status === 403) {
+      return "You do not have permission to upload files.";
+    }
+    if (response && response.status === 413) {
+      return "The selected file is too large.";
+    }
+    return "";
   }
 
   function parseYouTubeTime(value) {
@@ -8969,7 +9024,17 @@
       return files[0] || "";
     }
 
+    async uploadFileDetails(file, type) {
+      const files = await this.uploadFilesDetailed([file], type);
+      return files[0] || null;
+    }
+
     async uploadFiles(files, type) {
+      const entries = await this.uploadFilesDetailed(files, type);
+      return entries.map((entry) => entry.url);
+    }
+
+    async uploadFilesDetailed(files, type) {
       const fileList = Array.from(files || []).filter((file) => file instanceof File);
       if (!fileList.length) {
         throw new Error("A file is required.");
@@ -8982,16 +9047,28 @@
       const upload = this.options.upload || {};
       const uploadUrl = this.getUploadUrl(type);
       const allowFallback = Boolean(upload.allowFallback);
+      const allowBase64 = typeof upload.allowBase64 === "boolean"
+        ? upload.allowBase64
+        : !(upload.imageUrl || upload.galleryUrl || upload.attachmentUrl);
 
       if (type === "gallery" && !upload.galleryUrl && upload.imageUrl) {
-        return Promise.all(fileList.map((item) => this.uploadFile(item, "image")));
+        return Promise.all(fileList.map((item) => this.uploadFileDetails(item, "image")));
       }
 
       if (!uploadUrl) {
         if (type === "attachment") {
           throw new Error("Attachment upload URL is not configured.");
         }
-        return Promise.all(fileList.map((file) => this.fileToDataURL(file)));
+        if (!allowBase64) {
+          throw new Error("Server uploads are required for this editor.");
+        }
+        return Promise.all(
+          fileList.map(async (file) => ({
+            url: await this.fileToDataURL(file),
+            name: file && file.name ? String(file.name) : "",
+            size: Number(file && file.size) || 0,
+          }))
+        );
       }
 
       const safeUploadUrl = sanitizeUrl(uploadUrl, {
@@ -9007,10 +9084,13 @@
       }
 
       const formData = new FormData();
-      const fieldName = type === "attachment" ? "file" : "image";
-      fileList.forEach((file) => {
-        formData.append(fieldName, file);
-      });
+      if (type === "gallery") {
+        fileList.forEach((file) => {
+          formData.append("files", file);
+        });
+      } else {
+        formData.append("file", fileList[0]);
+      }
 
       const headers = Object.assign({}, upload.headers || {});
       const csrfHeaderName = upload.csrfHeaderName || "X-CSRFToken";
@@ -9038,31 +9118,44 @@
         }
 
         if (!response.ok) {
-          const serverMessage = payload && (payload.error || payload.detail || payload.message);
+          const serverMessage = getUploadErrorMessage(payload, response);
           throw new Error(serverMessage || `Upload failed with status ${response.status}.`);
         }
 
-        const urls = extractUploadUrls(payload);
-        const validUrls = urls
-          .map((url) => sanitizeUrl(url, {
-            tagName: type === "attachment" ? "A" : "IMG",
-            allowMailto: false,
-            allowTel: false,
-            allowAnchors: false,
-            allowRelative: true,
-            allowImageData: false,
-          }))
+        const entries = extractUploadEntries(payload)
+          .map((entry) => {
+            const safeUrl = sanitizeUrl(entry.url, {
+              tagName: type === "attachment" ? "A" : "IMG",
+              allowMailto: false,
+              allowTel: false,
+              allowAnchors: false,
+              allowRelative: true,
+              allowImageData: false,
+            });
+            if (!safeUrl) return null;
+            return {
+              name: entry.name || "",
+              size: Number(entry.size || 0) || 0,
+              url: safeUrl,
+            };
+          })
           .filter(Boolean);
-        if (!validUrls.length) {
+        if (!entries.length) {
           throw new Error("The upload endpoint must return a valid URL.");
         }
-        if (fileList.length > 1 && validUrls.length !== fileList.length) {
+        if (fileList.length > 1 && entries.length !== fileList.length) {
           throw new Error("The upload endpoint returned an unexpected number of files.");
         }
-        return validUrls;
+        return entries;
       } catch (error) {
-        if (allowFallback && type !== "attachment") {
-          return Promise.all(fileList.map((item) => this.fileToDataURL(item)));
+        if (allowFallback && type !== "attachment" && allowBase64) {
+          return Promise.all(
+            fileList.map(async (item) => ({
+              url: await this.fileToDataURL(item),
+              name: item && item.name ? String(item.name) : "",
+              size: Number(item && item.size) || 0,
+            }))
+          );
         }
         throw error;
       } finally {
@@ -10140,14 +10233,20 @@
             return "Attachment title is required.";
           }
           let url = values.url.trim();
+          let displayName = values.title.trim();
           if (values.file) {
-            url = await this.uploadFile(values.file, "attachment");
+            const uploaded = await this.uploadFileDetails(values.file, "attachment");
+            url = uploaded && uploaded.url ? uploaded.url : "";
+            displayName = uploaded && uploaded.name ? uploaded.name : displayName;
+          }
+          if (!url) {
+            return "Upload a file or enter an attachment URL.";
           }
           if (url && !isSafeUrl(url, "A")) {
             return "Enter a valid attachment URL.";
           }
           this.insertHTML(
-            `<div class="nw-inline-preview nw-attachment" data-type="attachment"><span class="nw-block-label">Attachment</span><p class="nw-block-title">${escapeHtml(values.title.trim())}</p><p class="nw-block-meta">${escapeHtml((values.type.trim() || "Document") + " • " + (values.visibility.trim() || "Public"))}</p>${url ? `<p><a class="nw-prompt-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Open file</a></p>` : ""}</div>`
+            `<a class="nw-attachment" data-type="attachment" data-olloweditor-attachment="true" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" data-attachment-type="${escapeHtml(values.type.trim() || "Document")}" data-attachment-visibility="${escapeHtml(values.visibility.trim() || "Public")}">${escapeHtml(displayName)}</a>`
           );
           return null;
         },
@@ -11895,6 +11994,13 @@ ${this.getExportPDFStyles(options)}
     uploadConfig.imageUrl = uploadConfig.imageUrl || textarea.dataset.imageUploadUrl || config.uploadUrl || "";
     uploadConfig.galleryUrl = uploadConfig.galleryUrl || textarea.dataset.galleryUploadUrl || "";
     uploadConfig.attachmentUrl = uploadConfig.attachmentUrl || textarea.dataset.attachmentUploadUrl || "";
+    if (typeof uploadConfig.allowBase64 === "undefined") {
+      if (typeof textarea.dataset.uploadAllowBase64 !== "undefined") {
+        uploadConfig.allowBase64 = textarea.dataset.uploadAllowBase64 === "true";
+      } else {
+        uploadConfig.allowBase64 = !(uploadConfig.imageUrl || uploadConfig.galleryUrl || uploadConfig.attachmentUrl);
+      }
+    }
     if (typeof uploadConfig.allowFallback === "undefined") {
       if (typeof textarea.dataset.uploadAllowFallback !== "undefined") {
         uploadConfig.allowFallback = textarea.dataset.uploadAllowFallback === "true";

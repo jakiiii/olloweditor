@@ -14,7 +14,8 @@ class OllowEditorConfig(AppConfig):
     verbose_name = "Ollow Editor"
 
     def ready(self) -> None:
-        """Backfill admin widget defaults for OllowEditorField."""
+        """Backfill admin widget defaults and register Django checks."""
+        from .integrations.django import checks as _checks  # noqa: F401
         from .integrations.django.fields import _register_admin_widget_default
 
         _register_admin_widget_default()

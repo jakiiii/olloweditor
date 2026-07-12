@@ -7,6 +7,7 @@ import re
 from html import unescape
 
 from django.conf import settings
+from django.test import override_settings
 
 if not settings.configured:
     settings.configure(
@@ -129,3 +130,20 @@ def test_admin_widget_preserves_admin_and_custom_attributes() -> None:
     assert 'rows="12"' in html
     assert 'aria-describedby="hint"' in html
     assert "required" in html
+
+
+@override_settings(
+    OLLOWEDITOR={
+        "UPLOADS_ENABLED": True,
+    }
+)
+def test_widget_serializes_django_upload_endpoints_when_enabled() -> None:
+    widget = OllowEditorWidget(options={"theme": "auto"})
+    html = widget.render("content", "")
+    options = _extract_options(html)
+    assert options["theme"] == "auto"
+    assert options["upload"]["imageUrl"] == "/olloweditor/upload/image/"
+    assert options["upload"]["galleryUrl"] == "/olloweditor/upload/gallery/"
+    assert options["upload"]["attachmentUrl"] == "/olloweditor/upload/attachment/"
+    assert options["upload"]["allowBase64"] is False
+    assert options["upload"]["allowFallback"] is False

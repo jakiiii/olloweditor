@@ -8,7 +8,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
 from django.core.management import call_command
-from django.test import Client
+from django.test import Client, override_settings
 
 from olloweditor.integrations.django import OllowEditorWidget
 from olloweditor.integrations.django.widgets import AdminOllowEditorWidget
@@ -106,6 +106,19 @@ def test_admin_add_page_renders_olloweditor_media_and_admin_attrs() -> None:
     assert html.count("olloweditor/olloweditor.css") == 1
     assert html.count("olloweditor/olloweditor.browser.js") == 1
     assert html.count("olloweditor/olloweditor-init.js") == 1
+
+
+@override_settings(OLLOWEDITOR={"UPLOADS_ENABLED": True})
+def test_admin_add_page_includes_upload_endpoint_configuration() -> None:
+    _ensure_db_ready()
+    client = _get_admin_client()
+    response = client.get("/admin/django_testapp/article/add/")
+    assert response.status_code == 200
+
+    html = response.content.decode()
+    assert "/olloweditor/upload/image/" in html
+    assert "/olloweditor/upload/gallery/" in html
+    assert "/olloweditor/upload/attachment/" in html
 
 
 def test_admin_change_page_loads_existing_html_into_widget() -> None:

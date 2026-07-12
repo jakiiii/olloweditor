@@ -6,6 +6,8 @@ from typing import Any
 
 from django import forms
 
+from .settings import get_olloweditor_upload_settings
+
 
 def _merge_classes(*values: str | None) -> str | None:
     merged: list[str] = []
@@ -36,6 +38,7 @@ class OllowEditorWidget(forms.Textarea):
         attrs: dict[str, Any] | None,
     ) -> dict[str, Any]:
         """Inject OllowEditor data attributes into the rendered textarea."""
+        default_options = self._build_render_options()
         context = super().get_context(name, value, attrs)
         widget_attrs = context["widget"]["attrs"]
         widget_attrs["data-olloweditor"] = "true"
@@ -48,9 +51,9 @@ class OllowEditorWidget(forms.Textarea):
         if merged_classes:
             widget_attrs["class"] = merged_classes
 
-        if self.options:
+        if default_options:
             widget_attrs["data-olloweditor-options"] = json.dumps(
-                self.options,
+                default_options,
                 ensure_ascii=True,
                 separators=(",", ":"),
             )
@@ -67,6 +70,29 @@ class OllowEditorWidget(forms.Textarea):
                 "olloweditor/olloweditor-init.js",
             ),
         )
+
+    def _build_render_options(self) -> dict[str, Any]:
+        options = dict(self.options)
+        django_upload_options = (
+            get_olloweditor_upload_settings().build_widget_upload_options()
+        )
+        if not django_upload_options:
+            return options
+
+        merged_upload_options: dict[str, Any] = {}
+
+        django_upload = django_upload_options.get("upload")
+        if isinstance(django_upload, Mapping):
+            merged_upload_options.update(django_upload)
+
+        user_upload = options.get("upload")
+        if isinstance(user_upload, Mapping):
+            merged_upload_options.update(user_upload)
+
+        merged_options = dict(django_upload_options)
+        merged_options.update(options)
+        merged_options["upload"] = merged_upload_options
+        return merged_options
 
 
 class AdminOllowEditorWidget(OllowEditorWidget):

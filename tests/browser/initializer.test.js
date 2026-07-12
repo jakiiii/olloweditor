@@ -86,6 +86,19 @@ test("dynamic content can be initialized through bootOllowEditor(root)", () => {
   assert.ok(dom.window.OllowEditor.get("#dynamic"));
 });
 
+test("django admin inline additions initialize on formset:added", () => {
+  const { dom } = createDom(`<!doctype html><div id="inline-group"></div>`);
+  fireDomReady(dom);
+
+  const row = dom.window.document.createElement("div");
+  row.innerHTML = '<textarea id="inline-content" data-olloweditor="true"></textarea>';
+  dom.window.document.getElementById("inline-group").appendChild(row);
+  row.dispatchEvent(new dom.window.CustomEvent("formset:added", { bubbles: true }));
+
+  assert.ok(dom.window.OllowEditor.get("#inline-content"));
+  assert.equal(dom.window.OllowEditor.instances().length, 1);
+});
+
 test("missing OllowEditor global reports an error without crashing", () => {
   const { dom, errors } = createDom(
     `<!doctype html><textarea id="content" data-olloweditor="true"></textarea>`,

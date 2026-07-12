@@ -12,7 +12,7 @@
         "./*"
       ],
       "@codefortify/olloweditor": [
-        "./dist/index.d.ts"
+        "./types/index.d.ts"
       ]
     }
   },

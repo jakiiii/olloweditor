@@ -15,6 +15,7 @@ if not settings.configured:
             "django.contrib.sessions",
             "django.contrib.staticfiles",
             "rest_framework",
+            "tests.django_testapp.apps.DjangoTestAppConfig",
             "olloweditor.apps.OllowEditorConfig",
         ],
         DATABASES={
@@ -23,8 +24,12 @@ if not settings.configured:
                 "NAME": ":memory:",
             }
         },
-        MIDDLEWARE=[],
-        ROOT_URLCONF=__name__,
+        MIDDLEWARE=[
+            "django.contrib.sessions.middleware.SessionMiddleware",
+            "django.contrib.auth.middleware.AuthenticationMiddleware",
+            "django.contrib.messages.middleware.MessageMiddleware",
+        ],
+        ROOT_URLCONF="tests.urls",
         STATIC_URL="/static/",
         TEMPLATES=[
             {
@@ -39,11 +44,10 @@ if not settings.configured:
                 },
             }
         ],
+        ALLOWED_HOSTS=["testserver", "localhost", "127.0.0.1"],
         USE_TZ=True,
     )
 
 import django
 
 django.setup()
-
-urlpatterns: list[object] = []

@@ -27,6 +27,7 @@ import django
 
 django.setup()
 
+from django import forms
 from django.db import connection, models
 from django.forms import modelform_factory
 
@@ -53,6 +54,13 @@ def test_model_field_formfield_uses_olloweditor_widget() -> None:
     field = FieldArticle._meta.get_field("content")
     form_field = field.formfield()
     assert isinstance(form_field.widget, OllowEditorWidget)
+
+
+def test_model_field_formfield_respects_explicit_widget_override() -> None:
+    field = FieldArticle._meta.get_field("content")
+    form_field = field.formfield(widget=forms.Textarea)
+    assert isinstance(form_field.widget, forms.Textarea)
+    assert not isinstance(form_field.widget, OllowEditorWidget)
 
 
 def test_model_field_migration_serialization_round_trips() -> None:

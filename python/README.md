@@ -218,7 +218,54 @@ python manage.py collectstatic
 
 ### Admin
 
-`OllowEditorField` uses `OllowEditorWidget` in generated ModelForms, including normal Django admin form construction once `olloweditor.apps.OllowEditorConfig` is installed.
+`OllowEditorField` works in the standard Django admin without a custom `ModelForm`:
+
+```python
+from django.contrib import admin
+
+from .models import Article
+
+
+@admin.register(Article)
+class ArticleAdmin(admin.ModelAdmin):
+    list_display = ("title",)
+```
+
+With `olloweditor.apps.OllowEditorConfig` in `INSTALLED_APPS`, Django admin picks up the widget media automatically:
+
+- `olloweditor/olloweditor.css`
+- `olloweditor/olloweditor.browser.js`
+- `olloweditor/olloweditor-init.js`
+
+The admin add page and change page both render the editor interface, existing HTML loads back into the synchronized textarea, and normal admin saves persist the generated HTML.
+
+Production deployments still need Django staticfiles configured correctly and must run `collectstatic`.
+
+If you already have a plain `models.TextField`, use a custom admin form and attach the verified widget explicitly:
+
+```python
+from django import forms
+from django.contrib import admin
+
+from olloweditor.integrations.django import OllowEditorWidget
+
+from .models import Article
+
+
+class ArticleAdminForm(forms.ModelForm):
+    class Meta:
+        model = Article
+        fields = "__all__"
+        widgets = {
+            "content": OllowEditorWidget(),
+        }
+
+
+@admin.register(Article)
+class ArticleAdmin(admin.ModelAdmin):
+    form = ArticleAdminForm
+    list_display = ("title",)
+```
 
 ## Django REST Framework quick start
 

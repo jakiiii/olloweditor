@@ -159,6 +159,11 @@
     if (!global.document) {
       return;
     }
+    global.document.addEventListener("formset:added", function (event) {
+      if (event && event.target) {
+        bootOllowEditor(event.target);
+      }
+    });
     if (global.document.readyState === "loading") {
       global.document.addEventListener("DOMContentLoaded", function onReady() {
         global.document.removeEventListener("DOMContentLoaded", onReady);

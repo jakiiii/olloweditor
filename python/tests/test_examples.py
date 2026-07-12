@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 PYTHON_DIR = Path(__file__).resolve().parents[1]
 EXAMPLES_DIR = PYTHON_DIR / "examples"
-PYTHON_BIN = PYTHON_DIR / ".venv" / "bin" / "python"
+PYTHON_BIN = Path(sys.executable)
 
 
 def _run_example_snippet(

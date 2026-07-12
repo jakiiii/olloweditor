@@ -14,15 +14,7 @@ class OllowEditorConfig(AppConfig):
     verbose_name = "Ollow Editor"
 
     def ready(self) -> None:
-        """Register admin widget defaults for OllowEditorField."""
-        from django.contrib.admin import options as admin_options
+        """Backfill admin widget defaults for OllowEditorField."""
+        from .integrations.django.fields import _register_admin_widget_default
 
-        from .integrations.django.fields import OllowEditorField
-        from .integrations.django.widgets import OllowEditorWidget
-
-        existing = admin_options.FORMFIELD_FOR_DBFIELD_DEFAULTS.get(
-            OllowEditorField, {}
-        )
-        merged = {"widget": OllowEditorWidget}
-        merged.update(existing)
-        admin_options.FORMFIELD_FOR_DBFIELD_DEFAULTS[OllowEditorField] = merged
+        _register_admin_widget_default()

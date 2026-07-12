@@ -67,3 +67,15 @@ class OllowEditorWidget(forms.Textarea):
                 "olloweditor/olloweditor-init.js",
             ),
         )
+
+
+class AdminOllowEditorWidget(OllowEditorWidget):
+    """Admin-flavored widget that keeps the standard admin textarea class."""
+
+    def __init__(
+        self,
+        attrs: Mapping[str, Any] | None = None,
+        options: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(attrs=attrs, options=options)
+        self.attrs["class"] = _merge_classes("vLargeTextField", self.attrs.get("class"))

@@ -49,7 +49,10 @@ import django
 
 django.setup()
 
-from olloweditor.integrations.django import OllowEditorWidget
+from olloweditor.integrations.django.widgets import (
+    AdminOllowEditorWidget,
+    OllowEditorWidget,
+)
 
 urlpatterns: list[object] = []
 
@@ -114,3 +117,15 @@ def test_widget_instances_render_independently() -> None:
     assert _extract_options(light_html) == {"theme": "light"}
     assert _extract_options(dark_html) == {"theme": "dark"}
     assert light_html != dark_html
+
+
+def test_admin_widget_preserves_admin_and_custom_attributes() -> None:
+    widget = AdminOllowEditorWidget(
+        attrs={"class": "content-field", "rows": 12, "aria-describedby": "hint"}
+    )
+    html = widget.render("content", "", attrs={"class": "extra", "required": True})
+    assert 'data-olloweditor="true"' in html
+    assert 'class="vLargeTextField content-field extra"' in html
+    assert 'rows="12"' in html
+    assert 'aria-describedby="hint"' in html
+    assert "required" in html

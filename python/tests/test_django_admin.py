@@ -2,71 +2,19 @@
 
 from __future__ import annotations
 
-from django.conf import settings
-
-if not settings.configured:
-    settings.configure(
-        SECRET_KEY="test-secret-key",
-        INSTALLED_APPS=[
-            "django.contrib.admin",
-            "django.contrib.auth",
-            "django.contrib.contenttypes",
-            "django.contrib.messages",
-            "django.contrib.sessions",
-            "django.contrib.staticfiles",
-            "olloweditor.apps.OllowEditorConfig",
-        ],
-        DATABASES={
-            "default": {
-                "ENGINE": "django.db.backends.sqlite3",
-                "NAME": ":memory:",
-            }
-        },
-        MIDDLEWARE=[],
-        ROOT_URLCONF=__name__,
-        STATIC_URL="/static/",
-        TEMPLATES=[
-            {
-                "BACKEND": "django.template.backends.django.DjangoTemplates",
-                "APP_DIRS": True,
-                "OPTIONS": {
-                    "context_processors": [
-                        "django.template.context_processors.request",
-                        "django.contrib.auth.context_processors.auth",
-                        "django.contrib.messages.context_processors.messages",
-                    ]
-                },
-            }
-        ],
-        USE_TZ=True,
-    )
-
-import django
-
-django.setup()
-
 from django import forms
 from django.apps import apps
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
-from django.db import models
+from django.core.management import call_command
+from django.test import Client
 
-from olloweditor.integrations.django import OllowEditorField, OllowEditorWidget
+from olloweditor.integrations.django import OllowEditorWidget
+from olloweditor.integrations.django.widgets import AdminOllowEditorWidget
+from tests.django_testapp.models import Article, DualArticle
 
-urlpatterns: list[object] = []
-
-
-class Article(models.Model):
-    title = models.CharField(max_length=255)
-    content = OllowEditorField()
-    summary = models.TextField(blank=True)
-
-    class Meta:
-        app_label = "tests"
-
-
-class ArticleAdmin(admin.ModelAdmin):
-    pass
+_DB_READY = False
 
 
 class ExistingTextFieldForm(forms.ModelForm):
@@ -82,6 +30,35 @@ class ExistingTextFieldForm(forms.ModelForm):
         fields = ["content"]
 
 
+class DualArticleForm(forms.ModelForm):
+    class Meta:
+        model = DualArticle
+        fields = ["title", "primary_content", "secondary_content"]
+
+
+def _ensure_db_ready() -> None:
+    global _DB_READY
+    if _DB_READY:
+        return
+    call_command("migrate", run_syncdb=True, verbosity=0)
+    _DB_READY = True
+
+
+def _get_admin_client() -> Client:
+    _ensure_db_ready()
+    User = get_user_model()
+    user, created = User.objects.get_or_create(
+        username="admin",
+        defaults={"email": "admin@example.com", "is_staff": True, "is_superuser": True},
+    )
+    if created:
+        user.set_password("pass")
+        user.save(update_fields=["password"])
+    client = Client()
+    assert client.login(username="admin", password="pass")
+    return client
+
+
 def test_django_app_imports() -> None:
     config = apps.get_app_config("olloweditor")
     assert config.name == "olloweditor"
@@ -94,9 +71,11 @@ def test_static_files_are_discoverable() -> None:
 
 
 def test_admin_form_uses_olloweditor_widget_for_field() -> None:
-    model_admin = ArticleAdmin(Article, admin.sites.AdminSite())
+    model_admin = admin.site._registry[Article]
     form_class = model_admin.get_form(request=None)
-    assert isinstance(form_class.base_fields["content"].widget, OllowEditorWidget)
+    widget = form_class.base_fields["content"].widget
+    assert isinstance(widget, AdminOllowEditorWidget)
+    assert isinstance(widget, OllowEditorWidget)
 
 
 def test_existing_textfield_form_can_use_olloweditor_widget() -> None:
@@ -104,3 +83,79 @@ def test_existing_textfield_form_can_use_olloweditor_widget() -> None:
     assert isinstance(form.fields["content"].widget, OllowEditorWidget)
     rendered = str(form["content"])
     assert 'data-olloweditor="true"' in rendered
+
+
+def test_admin_add_page_renders_olloweditor_media_and_admin_attrs() -> None:
+    _ensure_db_ready()
+    Article.objects.all().delete()
+    client = _get_admin_client()
+    response = client.get("/admin/django_testapp/article/add/")
+    assert response.status_code == 200
+
+    html = response.content.decode()
+    assert 'data-olloweditor="true"' in html
+    assert "vLargeTextField" in html
+    assert "olloweditor/olloweditor.css" in html
+    assert "olloweditor/olloweditor.browser.js" in html
+    assert "olloweditor/olloweditor-init.js" in html
+    assert (
+        html.index("olloweditor/olloweditor.css")
+        < html.index("olloweditor/olloweditor.browser.js")
+        < html.index("olloweditor/olloweditor-init.js")
+    )
+    assert html.count("olloweditor/olloweditor.css") == 1
+    assert html.count("olloweditor/olloweditor.browser.js") == 1
+    assert html.count("olloweditor/olloweditor-init.js") == 1
+
+
+def test_admin_change_page_loads_existing_html_into_widget() -> None:
+    _ensure_db_ready()
+    Article.objects.all().delete()
+    article = Article.objects.create(
+        title="Existing",
+        content="<p><strong>Existing admin content</strong></p>",
+    )
+    client = _get_admin_client()
+    response = client.get(f"/admin/django_testapp/article/{article.pk}/change/")
+    assert response.status_code == 200
+
+    html = response.content.decode()
+    assert 'data-olloweditor="true"' in html
+    assert (
+        "&lt;p&gt;&lt;strong&gt;Existing admin content&lt;/strong&gt;&lt;/p&gt;" in html
+    )
+    assert "olloweditor/olloweditor.css" in html
+    assert "olloweditor/olloweditor.browser.js" in html
+    assert "olloweditor/olloweditor-init.js" in html
+
+
+def test_admin_post_saves_html_and_redirects() -> None:
+    _ensure_db_ready()
+    Article.objects.all().delete()
+    client = _get_admin_client()
+    payload = {
+        "title": "Saved in admin",
+        "content": "<p><strong>Saved from Django admin</strong></p>",
+        "_save": "Save",
+    }
+    response = client.post("/admin/django_testapp/article/add/", payload, follow=False)
+    assert response.status_code == 302
+
+    article = Article.objects.get(title="Saved in admin")
+    assert article.content == "<p><strong>Saved from Django admin</strong></p>"
+
+    follow_up = client.get(response["Location"])
+    assert follow_up.status_code == 200
+
+
+def test_multiple_olloweditor_fields_share_media_without_duplicate_assets() -> None:
+    form = DualArticleForm()
+    rendered = form.as_p()
+    media = str(form.media)
+
+    assert rendered.count('data-olloweditor="true"') == 2
+    assert rendered.count('id="id_primary_content"') == 1
+    assert rendered.count('id="id_secondary_content"') == 1
+    assert media.count("olloweditor/olloweditor.css") == 1
+    assert media.count("olloweditor/olloweditor.browser.js") == 1
+    assert media.count("olloweditor/olloweditor-init.js") == 1

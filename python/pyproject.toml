@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "olloweditor"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python integrations and packaged browser assets for using OllowEditor with Django, Django REST Framework, Flask, and FastAPI."
 readme = "README.md"
 license = "MIT"

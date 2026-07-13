@@ -12117,7 +12117,7 @@ ${this.getExportPDFStyles(options)}
   };
 
   Object.defineProperty(browserApi, "version", {
-    value: "0.1.0",
+    value: "0.1.1",
     enumerable: true
   });
 

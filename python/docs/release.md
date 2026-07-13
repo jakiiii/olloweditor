@@ -8,7 +8,7 @@ Verify package status and version availability:
 
 ```bash
 cd python
-python scripts/check_pypi_status.py olloweditor 0.1.0
+python scripts/check_pypi_status.py olloweditor 0.1.1
 ```
 
 Interpretation:
@@ -51,6 +51,8 @@ From the repository root:
 ```bash
 npm ci
 npm run build
+npm run typecheck
+npm test
 npm run build:python-assets
 npm run verify:python-assets
 
@@ -58,6 +60,9 @@ cd python
 rm -rf build dist src/*.egg-info
 python -m pytest
 python -m ruff check .
+python -m ruff format --check .
+python -m mypy src
+python -m pip check
 python -m build
 python -m twine check dist/*
 python scripts/check_wheel_contents.py dist/*.whl
@@ -74,15 +79,20 @@ For release-tag validation without publishing:
 
 ```bash
 python scripts/validate_publish_release.py \
-  --release-tag v0.1.0 \
+  --release-tag v0.1.1 \
   --skip-git-check
 ```
 
-For the first production release, note that TestPyPI and PyPI are separate indexes:
+TestPyPI and PyPI are separate indexes:
 
 - a version published to TestPyPI can still be used for the first production PyPI release
 - TestPyPI files remain immutable and cannot be overwritten
 - local verification and CI must validate the production source state before the GitHub release is published
+
+For `0.1.1`, TestPyPI already contains an older immutable metadata candidate.
+Do not attempt to overwrite it. Validate the current artifacts locally and use
+the production PyPI path only after the release audit reports `GO` and explicit
+publication approval is given.
 
 ## GitHub Actions publish flow
 
@@ -146,7 +156,7 @@ Use the dedicated verifier from the `python/` directory:
 ```bash
 python scripts/verify_testpypi_release.py \
   --package olloweditor \
-  --version 0.1.0
+  --version 0.1.1
 ```
 
 What it does:

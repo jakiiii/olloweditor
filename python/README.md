@@ -1,68 +1,65 @@
 # OllowEditor for Python
 
 [![Python CI](https://github.com/CodeFortifyCloud/olloweditor/actions/workflows/python-ci.yml/badge.svg)](https://github.com/CodeFortifyCloud/olloweditor/actions/workflows/python-ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/olloweditor.svg)](https://pypi.org/project/olloweditor/)
+[![Python versions](https://img.shields.io/pypi/pyversions/olloweditor.svg)](https://pypi.org/project/olloweditor/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/CodeFortifyCloud/olloweditor/blob/main/LICENSE)
 
-OllowEditor for Python packages the compiled OllowEditor browser assets and provides integrations for Django, Django REST Framework, Flask, and FastAPI.
+OllowEditor for Python distributes the compiled OllowEditor browser assets and
+provides integrations for Django, Django REST Framework, Flask, and FastAPI.
 
-The editor itself remains a JavaScript and CSS application. This package does not reimplement the editor in Python. Instead, it distributes the browser bundle, stylesheet, and shared initialization script, then adds Python helpers for serving those assets and wiring the editor into forms, templates, and serializer fields.
-
-OllowEditor runs in the browser, keeps a `<textarea>` synchronized with generated HTML, and submits that HTML through normal form posts or JSON payloads. If your application accepts untrusted HTML, you still need server-side validation and sanitization.
-
-## Introduction
-
-The `olloweditor` package is intended for Python applications that want to use the OllowEditor frontend without managing a separate npm-based asset pipeline. It ships the compiled assets inside the Python distribution and exposes framework-specific helpers where they reduce integration work.
-
-Official integrations are included for:
-
-- Django
-- Django REST Framework
-- Flask
-- FastAPI
-
-The base install remains framework-independent. Installing `olloweditor` alone gives you packaged assets and resource helpers without pulling in Django, Flask, FastAPI, or Django REST Framework.
+OllowEditor remains a JavaScript rich-text editor. The Python package does not
+rewrite it in Python; it supplies the browser bundle, stylesheet, initializer,
+widgets, serializer fields, upload endpoints, storage integration, and template
+helpers needed by Python applications. The browser synchronizes generated HTML
+into a `<textarea>`, and the application receives that HTML through its normal
+form or API request path.
 
 ## Key features
 
-### Python integration features
+- Packaged `olloweditor.browser.js`, `olloweditor.css`, and
+  `olloweditor-init.js` assets
+- Django `OllowEditorWidget` and `OllowEditorField`
+- Automatic Django admin add and change form integration
+- Controlled Django admin changelist previews for text and media summaries
+- Django REST Framework `OllowEditorHTMLField` and multipart upload views
+- Flask extension, asset Blueprint, Jinja helpers, and upload endpoints
+- FastAPI static mounting, Jinja helpers, and upload router integration
+- IMAGE, GALLERY, and ATTACHMENT uploads with URL-based rich-text content
+- Django `default_storage` support and framework-neutral storage adapters
+- Shared upload validation, UUID storage names, and actual image verification
+- Safe plain-text preview helpers for API and dashboard list views
+- Multiple independent editor instances and per-editor configuration
+- Optional framework dependencies; the base package installs no web framework
+- No base64 or `blob:` fallback after server-upload mode is configured
 
-- Packaged frontend assets:
-  - `olloweditor.browser.js`
-  - `olloweditor.css`
-  - `olloweditor-init.js`
-- Base install without framework dependencies
-- Safe packaged-resource helpers:
-  - `get_static_root()`
-  - `get_asset_path(filename)`
-  - `asset_exists(filename)`
-- Django `OllowEditorWidget`
-- Django `OllowEditorField`
-- Django admin and staticfiles support
-- Django REST Framework `OllowEditorHTMLField`
-- Optional DRF sanitizer callback
-- Flask `OllowEditor` extension
-- Flask asset blueprint and Jinja helpers
-- FastAPI static mount helper and template helpers
-- Shared automatic initialization for marked textareas
-- Support for multiple independent editor instances
-- Per-editor configuration through widget options or `data-olloweditor-options`
+## Installation
 
-### OllowEditor frontend capabilities
+Install the framework-independent package:
 
-- Rich-text formatting and typography controls
-- Lists, alignment, links, and bookmarks
-- Images, galleries, tables, and code blocks
-- YouTube embeds and editorial blocks
-- Markdown import/export, HTML export, and PDF export
-- Responsive editing UI and plugin API
-- Textarea synchronization for normal backend form handling
+```bash
+pip install olloweditor
+```
 
-The full frontend feature reference lives in the main project documentation:
+Install only the integration your application uses:
 
-- Main repository: <https://github.com/CodeFortifyCloud/olloweditor>
-- Main project README: <https://github.com/CodeFortifyCloud/olloweditor/blob/pip/README.md>
+```bash
+pip install "olloweditor[django]"
+pip install "olloweditor[drf]"
+pip install "olloweditor[flask]"
+pip install "olloweditor[fastapi]"
+pip install "olloweditor[all]"
+```
+
+The `drf` extra includes Django. The `fastapi` extra includes Jinja2 and
+`python-multipart` for templates and multipart uploads. Pillow is installed by
+the framework extras because IMAGE and GALLERY uploads verify actual image
+content. A plain `pip install olloweditor` does not install Django, DRF, Flask,
+FastAPI, or Pillow.
 
 ## Supported environments
+
+The package metadata declares these minimum versions:
 
 | Component | Supported version |
 | --- | --- |
@@ -71,86 +68,34 @@ The full frontend feature reference lives in the main project documentation:
 | Django REST Framework | `>=3.15` |
 | Flask | `>=3.0` |
 | FastAPI | `>=0.110` |
+| Pillow | `>=10.3` for upload-enabled framework extras |
 
-These are the package minimums declared in `python/pyproject.toml`. They are not a promise that every older dependency combination receives the same test coverage as the current CI matrix.
+## Framework capability matrix
 
-## Installation
-
-### Base package
-
-```bash
-pip install olloweditor
-```
-
-This installs the packaged browser assets and framework-independent helpers only.
-
-### Django
-
-```bash
-pip install "olloweditor[django]"
-```
-
-### Django REST Framework
-
-```bash
-pip install "olloweditor[drf]"
-```
-
-The `drf` extra also installs Django because Django REST Framework depends on it.
-
-### Flask
-
-```bash
-pip install "olloweditor[flask]"
-```
-
-### FastAPI
-
-```bash
-pip install "olloweditor[fastapi]"
-```
-
-### All integrations
-
-```bash
-pip install "olloweditor[all]"
-```
-
-Most projects should install only the extra they actually use.
-
-> Production PyPI publication has not been completed yet. Until that happens, install from a local wheel or editable checkout during development.
-
-## Integration overview
-
-| Capability | Django | Django REST Framework | Flask | FastAPI |
+| Capability | Django | DRF | Flask | FastAPI |
 | --- | --- | --- | --- | --- |
-| Editor form or template integration | Yes | Frontend-controlled | Yes | Yes |
+| Editor integration | Widget and admin | Frontend-controlled | Jinja helper | Jinja helper |
 | IMAGE upload | Yes | Yes | Yes | Yes |
 | GALLERY upload | Yes | Yes | Yes | Yes |
 | ATTACHMENT upload | Yes | Yes | Yes | Yes |
-| Storage-backed URLs | Yes | Yes | Yes | Yes |
-| Safe preview helper | Admin preview | Plain text | Plain text | Plain text |
+| Storage-backed URLs | Django storage | Django storage | Storage adapter | Storage adapter |
+| Safe preview | Admin preview | Plain text | Plain text | Plain text |
 | Base64 fallback in server mode | No | No | No | No |
 
-## Framework integration guarantees
-
-- Uploaded binaries are stored separately from the rich-text database column.
-- Configured server-upload mode inserts returned public URLs only.
-- Server-upload failures do not silently fall back to base64 or `blob:` URLs.
-- Safe preview helpers are summaries only. They do not sanitize HTML for public rendering.
-- Media ownership, retention, private-file access, and orphan cleanup remain application concerns.
+DRF is an API integration. It validates HTML and serves upload APIs, but it does
+not render or initialize the browser editor by itself.
 
 ## Django quick start
 
-### Install
+Install the Django extra and add the application:
 
 ```bash
 pip install "olloweditor[django]"
 ```
 
-### Add the application
-
 ```python
+# settings.py
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -162,7 +107,7 @@ INSTALLED_APPS = [
 ]
 ```
 
-### Use the model field
+Use the model field:
 
 ```python
 from django.db import models
@@ -174,14 +119,11 @@ class Article(models.Model):
     content = OllowEditorField()
 ```
 
-Run migrations:
+`OllowEditorField` automatically selects `OllowEditorWidget` for generated
+`ModelForm` classes and standard Django admin forms. No custom admin form is
+required for the normal case.
 
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
-### Use the widget with an existing field
+For a plain `models.TextField`, assign the widget explicitly:
 
 ```python
 from django import forms
@@ -191,107 +133,40 @@ from .models import Article
 
 
 class ArticleForm(forms.ModelForm):
-    content = forms.CharField(
-        widget=OllowEditorWidget(
-            options={
-                "theme": "auto",
-            }
-        )
-    )
-
     class Meta:
         model = Article
         fields = ["title", "content"]
-```
-
-### Render the form
-
-```django
-<form method="post">
-    {% csrf_token %}
-    {{ form.media }}
-    {{ form.as_p }}
-    <button type="submit">Save article</button>
-</form>
-```
-
-`{{ form.media }}` includes:
-
-- `olloweditor/olloweditor.css`
-- `olloweditor/olloweditor.browser.js`
-- `olloweditor/olloweditor-init.js`
-
-### Static files
-
-```bash
-python manage.py collectstatic
-```
-
-### Admin
-
-`OllowEditorField` works in the standard Django admin without a custom `ModelForm`:
-
-```python
-from django.contrib import admin
-
-from .models import Article
-
-
-@admin.register(Article)
-class ArticleAdmin(admin.ModelAdmin):
-    list_display = ("title",)
-```
-
-With `olloweditor.apps.OllowEditorConfig` in `INSTALLED_APPS`, Django admin picks up the widget media automatically:
-
-- `olloweditor/olloweditor.css`
-- `olloweditor/olloweditor.browser.js`
-- `olloweditor/olloweditor-init.js`
-
-The admin add page and change page both render the editor interface, existing HTML loads back into the synchronized textarea, and normal admin saves persist the generated HTML.
-
-Production deployments still need Django staticfiles configured correctly and must run `collectstatic`.
-
-If you already have a plain `models.TextField`, use a custom admin form and attach the verified widget explicitly:
-
-```python
-from django import forms
-from django.contrib import admin
-
-from olloweditor.integrations.django import OllowEditorWidget
-
-from .models import Article
-
-
-class ArticleAdminForm(forms.ModelForm):
-    class Meta:
-        model = Article
-        fields = "__all__"
         widgets = {
             "content": OllowEditorWidget(),
         }
-
-
-@admin.register(Article)
-class ArticleAdmin(admin.ModelAdmin):
-    form = ArticleAdminForm
-    list_display = ("title",)
 ```
 
-### Safe content previews in Django admin
+Normal templates must render the widget media:
 
-Using:
-
-```python
-list_display = ("title", "content")
+```django
+<form method="post">
+  {% csrf_token %}
+  {{ form.media }}
+  {{ form.as_p }}
+  <button type="submit">Save article</button>
+</form>
 ```
 
-is usually a poor fit for `OllowEditorField`. Django admin will display the raw
-stored HTML source, which is noisy for normal rich text and can become
-extremely large for older records that still contain legacy
-`data:image/...;base64,...` values.
+The media declaration loads, in order:
 
-Use the package preview helper instead:
+1. `olloweditor/olloweditor.css`
+2. `olloweditor/olloweditor.browser.js`
+3. `olloweditor/olloweditor-init.js`
+
+Run `python manage.py collectstatic` for production static deployment.
+
+### Django admin and safe previews
+
+The add and change forms automatically use the full editor. For changelists,
+do not place the raw rich-text field directly in `list_display`; that exposes
+HTML source and can make legacy base64 rows extremely large.
+
+Use the controlled preview helper:
 
 ```python
 from django.contrib import admin
@@ -305,62 +180,50 @@ from .models import Article
 
 
 @admin.register(Article)
-class ArticleAdmin(OllowEditorAdminPreviewMedia, admin.ModelAdmin):
-    list_display = ("title", "content_preview")
-    search_fields = ("title", "content")
+class ArticleAdmin(
+    OllowEditorAdminPreviewMedia,
+    admin.ModelAdmin,
+):
+    list_display = (
+        "title",
+        "content_preview",
+    )
+    search_fields = (
+        "title",
+        "content",
+    )
 
     @admin.display(
         description="Content",
         ordering="content",
         empty_value="—",
     )
-    def content_preview(self, obj: Article) -> str:
+    def content_preview(self, obj: Article):
         return render_olloweditor_admin_preview(obj.content)
 ```
 
-The preview helper:
-
-- does not modify stored content
-- renders only a controlled admin summary
-- converts normal rich text into plain text and truncates it
-- can show a bounded thumbnail for safe media URLs under `MEDIA_URL`
-- labels galleries and attachments without rendering the stored HTML directly
-- hides legacy base64 payloads behind a concise warning
-
-The full OllowEditor form interface remains available on the admin add and
-change pages.
-
-The helper is only for Django admin summaries. It does not make arbitrary
-stored HTML safe for public templates, and it is not a substitute for your
-application’s server-side sanitization policy.
+The helper converts rich text to a compact plain-text summary, labels
+attachments and galleries, displays only validated media thumbnails, and
+replaces legacy embedded images with `Legacy embedded image`. It does not
+modify the database value. It is an admin summary, not a general-purpose HTML
+sanitizer for public pages.
 
 Do not use `mark_safe(article.content)` in Django admin unless the HTML has
 already been processed by a trusted server-side sanitizer and the complete
 rendering behavior is intentionally accepted.
 
-Legacy rows containing `data:image/...;base64,...` remain unchanged in the
-database. The admin preview hides the payload and labels the row, but migrating
-those records to storage-backed media URLs is a separate task.
+Legacy rows containing `data:image/...;base64,...` remain unchanged. Migrating
+them to storage-backed media URLs requires a separate, reviewed data migration.
 
 ## Django media uploads
 
-Storing `data:image/...;base64,...` inside rich text makes database rows much
-larger than they need to be. In Django mode, OllowEditor can upload IMAGE,
-GALLERY, and ATTACHMENT files through authenticated Django endpoints, store the
-binary content through Django storage, and keep only normal URLs inside the
-saved HTML.
-
-No second uploader application is required.
-
-### Settings
+Django uploads are disabled until configured. When enabled, IMAGE, GALLERY,
+and ATTACHMENT requests are authenticated by default, files are stored through
+Django `default_storage`, and the returned public URLs are inserted into the
+editor HTML.
 
 ```python
 # settings.py
-
-INSTALLED_APPS = [
-    # ...
-    "olloweditor.apps.OllowEditorConfig",
-]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -375,6 +238,7 @@ OLLOWEDITOR = {
     "MAX_IMAGE_SIZE": 10 * 1024 * 1024,
     "MAX_GALLERY_FILES": 20,
     "MAX_ATTACHMENT_SIZE": 25 * 1024 * 1024,
+    "MAX_IMAGE_PIXELS": 40_000_000,
     "ALLOWED_IMAGE_EXTENSIONS": [
         "jpg",
         "jpeg",
@@ -393,26 +257,29 @@ OLLOWEDITOR = {
         "txt",
         "zip",
     ],
+    "ALLOW_BASE64_UPLOADS": False,
 }
 ```
 
-Supported `OLLOWEDITOR` settings and defaults:
+All `OLLOWEDITOR` settings and defaults are:
 
-- `UPLOADS_ENABLED`: `False`
-- `UPLOAD_REQUIRE_LOGIN`: `True`
-- `UPLOAD_PERMISSION`: `None`
-- `IMAGE_UPLOAD_PATH`: `"olloweditor/images/%Y/%m/"`
-- `GALLERY_UPLOAD_PATH`: `"olloweditor/gallery/%Y/%m/"`
-- `ATTACHMENT_UPLOAD_PATH`: `"olloweditor/attachments/%Y/%m/"`
-- `MAX_IMAGE_SIZE`: `10 * 1024 * 1024`
-- `MAX_GALLERY_FILES`: `20`
-- `MAX_ATTACHMENT_SIZE`: `25 * 1024 * 1024`
-- `MAX_IMAGE_PIXELS`: `40_000_000`
-- `ALLOWED_IMAGE_EXTENSIONS`: `["jpg", "jpeg", "png", "gif", "webp"]`
-- `ALLOWED_ATTACHMENT_EXTENSIONS`: `["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip"]`
-- `ALLOW_BASE64_UPLOADS`: `False`
+| Setting | Default |
+| --- | --- |
+| `UPLOADS_ENABLED` | `False` |
+| `UPLOAD_REQUIRE_LOGIN` | `True` |
+| `UPLOAD_PERMISSION` | `None` |
+| `IMAGE_UPLOAD_PATH` | `"olloweditor/images/%Y/%m/"` |
+| `GALLERY_UPLOAD_PATH` | `"olloweditor/gallery/%Y/%m/"` |
+| `ATTACHMENT_UPLOAD_PATH` | `"olloweditor/attachments/%Y/%m/"` |
+| `MAX_IMAGE_SIZE` | `10 * 1024 * 1024` |
+| `MAX_GALLERY_FILES` | `20` |
+| `MAX_ATTACHMENT_SIZE` | `25 * 1024 * 1024` |
+| `MAX_IMAGE_PIXELS` | `40_000_000` |
+| `ALLOWED_IMAGE_EXTENSIONS` | `jpg`, `jpeg`, `png`, `gif`, `webp` |
+| `ALLOWED_ATTACHMENT_EXTENSIONS` | `pdf`, `doc`, `docx`, `xls`, `xlsx`, `ppt`, `pptx`, `txt`, `zip` |
+| `ALLOW_BASE64_UPLOADS` | `False` |
 
-### URLs
+Include the package URLs. The prefix remains controlled by the host project:
 
 ```python
 # project/urls.py
@@ -436,81 +303,36 @@ if settings.DEBUG:
     )
 ```
 
-The development `static(..., document_root=...)` helper is for local use only.
-Production media should be served by Nginx, Apache, object storage, a CDN, or
-another appropriate media pipeline.
+The package exposes:
 
-### Behavior
+- `POST /olloweditor/upload/image/`
+- `POST /olloweditor/upload/gallery/`
+- `POST /olloweditor/upload/attachment/`
 
-- IMAGE uploads `POST` to `olloweditor:upload_image`
-- GALLERY uploads `POST` to `olloweditor:upload_gallery`
-- ATTACHMENT uploads `POST` to `olloweditor:upload_attachment`
-- files are saved with Django `default_storage`
-- saved HTML stores returned URLs only
+The `static(..., document_root=...)` helper serves development media only.
+Production applications should use object storage, a CDN, Nginx, Apache, or
+another appropriate media service.
 
-Expected:
+Expected stored HTML contains a public URL:
 
 ```html
 <img src="/media/olloweditor/images/2026/07/generated.png">
 ```
 
-Not expected:
+Configured server-upload mode does not save a base64 data URL:
 
 ```html
 <img src="data:image/png;base64,...">
 ```
 
-For a model field, the standard setup remains:
+Cloud storage works through the configured Django storage backend. The upload
+views call `default_storage.save(...)` and `default_storage.url(...)`; they do
+not join paths onto `MEDIA_ROOT` or return physical filesystem paths.
 
-```python
-from django.db import models
-from olloweditor.integrations.django import OllowEditorField
+## Django REST Framework
 
-
-class Article(models.Model):
-    title = models.CharField(max_length=255)
-    content = OllowEditorField()
-```
-
-### Admin and forms
-
-`OllowEditorField` automatically passes the upload endpoint configuration into
-the standard Django admin and generated `ModelForm` widgets. Existing custom
-forms still work, and custom widget options can be merged on top of the Django
-defaults.
-
-### Security
-
-- Uploads require authentication by default.
-- CSRF protection remains enabled.
-- `UPLOAD_PERMISSION` can require a Django permission in addition to login.
-- image and attachment extensions use allowlists.
-- uploaded images are verified with Pillow instead of trusting the browser MIME type.
-- image size and pixel-count limits are enforced.
-- attachment size limits are enforced.
-- saved storage filenames are generated safely and do not reuse the original path.
-- SVG is blocked by default for image uploads.
-- the response returns a public URL, not a filesystem path.
-
-For sensitive deployments, consider:
-
-- private-file storage and signed URLs where appropriate
-- malware scanning for uploaded attachments
-- rate limiting in the host application or reverse proxy
-- media response headers from your production file server
-- orphaned upload cleanup when users remove embedded files from content later
-
-## Django REST Framework quick start
-
-Django REST Framework does not render the JavaScript editor for external API clients. It accepts the HTML string generated by an OllowEditor frontend and can expose reusable upload endpoints for that frontend.
-
-### Install
-
-```bash
-pip install "olloweditor[drf]"
-```
-
-### Serializer example
+`OllowEditorHTMLField` accepts and validates the HTML string produced by a
+separate OllowEditor frontend. DRF does not initialize the JavaScript editor.
 
 ```python
 from rest_framework import serializers
@@ -525,16 +347,10 @@ class ArticleSerializer(serializers.Serializer):
     )
 ```
 
-### JSON request example
+The field accepts an optional `sanitizer` callable and an optional DRF
+`validator` callable. A sanitizer must return a string.
 
-```json
-{
-  "title": "Introducing OllowEditor",
-  "content": "<p>Rich text generated by OllowEditor.</p>"
-}
-```
-
-### Upload views
+Register the reusable multipart upload views:
 
 ```python
 from django.urls import path
@@ -562,359 +378,254 @@ urlpatterns = [
 ]
 ```
 
-The DRF upload views:
+The views use DRF `MultiPartParser` and `FormParser`, reuse the Django upload
+settings and `default_storage`, and require authentication when
+`UPLOAD_REQUIRE_LOGIN` is true. Set DRF authentication globally, or subclass a
+view to set `authentication_classes` and `permission_classes`. Session
+authentication retains Django CSRF checks; token and JWT authentication remain
+host-application decisions.
 
-- parse multipart uploads
-- reuse Django `default_storage`
-- return the same IMAGE, GALLERY, and ATTACHMENT response contract as Django
-- honor `OLLOWEDITOR` upload settings
-- use DRF authentication and permission classes
-
-For session-authenticated browser clients, CSRF protection still applies. Token
-or JWT authentication remains a host-project choice.
-
-### Plain-text preview example
+Use plain text in API list responses:
 
 ```python
 from rest_framework import serializers
-
-from olloweditor.integrations.drf import OllowEditorHTMLField
 from olloweditor.previews import extract_olloweditor_text
 
 
-class ArticleSerializer(serializers.Serializer):
-    title = serializers.CharField()
-    content = OllowEditorHTMLField()
+class ArticleSerializer(serializers.ModelSerializer):
     preview = serializers.SerializerMethodField()
 
     def get_preview(self, obj) -> str:
-        return extract_olloweditor_text(obj.content, max_length=140)
+        return extract_olloweditor_text(
+            obj.content,
+            max_length=140,
+        )
 ```
 
-Return plain text or structured metadata for list previews. Do not return
-trusted HTML for preview use.
+Do not return stored HTML as a trusted preview.
 
-### Sanitizer callback
+## Flask
 
-`OllowEditorHTMLField` accepts `sanitizer: Callable[[str], str]`.
+The Flask extension registers packaged asset routes, upload endpoints, Jinja
+helpers, and an optional development media route for local storage.
 
 ```python
-def sanitize_article_html(value: str) -> str:
-    return trusted_html_sanitizer.clean(value)
-
-
-class ArticleSerializer(serializers.Serializer):
-    title = serializers.CharField()
-    content = OllowEditorHTMLField(
-        sanitizer=sanitize_article_html,
-    )
-```
-
-`trusted_html_sanitizer` is your application’s sanitizer choice. The package does not bundle one automatically.
-
-## Flask quick start
-
-### Install
-
-```bash
-pip install "olloweditor[flask]"
-```
-
-### Application setup
-
-```python
-from flask import Flask, render_template, request
+from flask import Flask, g
 from olloweditor.integrations.flask import OllowEditor
 
 
+def upload_user_is_authenticated() -> bool:
+    return getattr(g, "user", None) is not None
+
+
+def upload_user_has_permission() -> bool:
+    user = getattr(g, "user", None)
+    return bool(user and user.can_upload)
+
+
 app = Flask(__name__)
-app.config["OLLOWEDITOR_UPLOADS_ENABLED"] = True
-app.config["OLLOWEDITOR_UPLOAD_AUTH_REQUIRED"] = False
-app.config["OLLOWEDITOR_MEDIA_URL"] = "/uploads/"
-app.config["OLLOWEDITOR_UPLOAD_ROOT"] = "./media"
+app.config.update(
+    OLLOWEDITOR_UPLOADS_ENABLED=True,
+    OLLOWEDITOR_UPLOAD_AUTH_REQUIRED=True,
+    OLLOWEDITOR_AUTH_CHECK=upload_user_is_authenticated,
+    OLLOWEDITOR_PERMISSION_CHECK=upload_user_has_permission,
+    OLLOWEDITOR_UPLOAD_PERMISSION_REQUIRED=True,
+    OLLOWEDITOR_UPLOAD_ROOT="./media",
+    OLLOWEDITOR_MEDIA_URL="/media/",
+)
 
 olloweditor = OllowEditor(app)
-
-
-@app.route("/", methods=["GET", "POST"])
-def index():
-    content = ""
-
-    if request.method == "POST":
-        content = request.form.get("content", "")
-
-    return render_template("index.html", content=content)
 ```
 
-The Flask extension registers:
+The default URL prefix is `/olloweditor`. It serves the three upload endpoints
+under `/olloweditor/upload/` and injects these Jinja globals:
 
-- packaged asset routes under `OLLOWEDITOR_URL_PREFIX`
-- upload routes for IMAGE, GALLERY, and ATTACHMENT
-- Jinja helpers for assets and textareas
-- `extract_olloweditor_text(...)` for safe plain-text previews
+- `olloweditor_assets()`
+- `olloweditor_textarea(...)`
+- `extract_olloweditor_text(...)`
 
-For production, replace the local filesystem setup with your own storage adapter
-and serve media through your normal media pipeline.
-
-### Upload hooks
-
-Optional application callbacks:
-
-- `OLLOWEDITOR_AUTH_CHECK`
-- `OLLOWEDITOR_PERMISSION_CHECK`
-- `OLLOWEDITOR_CSRF_TOKEN_CALLBACK`
-
-These let the host application integrate its own auth, permission, and CSRF
-mechanisms without making Flask-Login or Flask-WTF mandatory dependencies.
-
-### Template
-
-```html
+```django
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <title>OllowEditor with Flask</title>
     {{ olloweditor_assets() }}
   </head>
   <body>
     <form method="post">
-      <textarea
-        id="content"
-        name="content"
-        data-olloweditor="true"
-      >{{ content }}</textarea>
-      <button type="submit">Save article</button>
+      {{ olloweditor_textarea("content", article.content) }}
+      <button type="submit">Save</button>
     </form>
   </body>
 </html>
 ```
 
-### Application factory
+Configuration supports custom upload paths, extension lists, size and pixel
+limits, `OLLOWEDITOR_CSRF_TOKEN_CALLBACK`, and
+`OLLOWEDITOR_CSRF_HEADER_NAME`. Flask-WTF and Flask-Login are not mandatory;
+connect their CSRF and authentication mechanisms through application callbacks.
+
+Set `OLLOWEDITOR_STORAGE` to an object implementing
+`UploadStorageProtocol.save(...)` and `delete(...)` for S3, Google Cloud
+Storage, Azure Blob Storage, a CDN-backed service, or private application
+storage. The default `LocalFilesystemUploadStorage` uses
+`OLLOWEDITOR_UPLOAD_ROOT` and `OLLOWEDITOR_MEDIA_URL`.
+
+Use `extract_olloweditor_text(article.content, max_length=140)` for list pages.
+Do not render arbitrary stored content with Jinja `|safe`.
+
+## FastAPI
+
+`OllowEditorFastAPI` mounts the packaged static assets, installs upload routes,
+adds template helpers, and can mount a development media directory for its
+local storage adapter.
 
 ```python
-from flask import Flask
-from olloweditor.integrations.flask import OllowEditor
-
-
-olloweditor = OllowEditor()
-
-
-def create_app() -> Flask:
-    app = Flask(__name__)
-    olloweditor.init_app(app)
-    return app
-```
-
-## FastAPI quick start
-
-### Install
-
-```bash
-pip install "olloweditor[fastapi]"
-```
-
-### Application setup
-
-```python
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.templating import Jinja2Templates
 
 from olloweditor.integrations.fastapi import OllowEditorFastAPI
 
 
+async def require_user() -> bool:
+    return True
+
+
+async def require_upload_permission() -> bool:
+    return True
+
+
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-integration = OllowEditorFastAPI(
+
+olloweditor = OllowEditorFastAPI(
     uploads_enabled=True,
-    auth_required=False,
     upload_root="./media",
-    media_url="/uploads/",
+    media_url="/media/",
+    auth_required=True,
+    auth_dependency=require_user,
+    permission_dependency=require_upload_permission,
 )
-integration.init_app(app, templates=templates)
-
-
-@app.get("/")
-def index(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={},
-    )
+olloweditor.init_app(app, templates=templates)
 ```
 
-`OllowEditorFastAPI` mounts static assets, can install upload routes for IMAGE,
-GALLERY, and ATTACHMENT, and injects both textarea helpers and
-`extract_olloweditor_text(...)` into Jinja templates.
+The default routes are:
 
-### Template
+- static assets: `/olloweditor/static/`
+- IMAGE: `POST /olloweditor/upload/image/`
+- GALLERY: `POST /olloweditor/upload/gallery/`
+- ATTACHMENT: `POST /olloweditor/upload/attachment/`
 
-```html
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>OllowEditor with FastAPI</title>
-    {{ olloweditor_assets() }}
-  </head>
-  <body>
-    <form method="post">
-      <textarea
-        id="content"
-        name="content"
-        data-olloweditor="true"
-      ></textarea>
-      <button type="submit">Save article</button>
-    </form>
-  </body>
-</html>
-```
+The routes use FastAPI `UploadFile` and require `python-multipart`, which is
+included in the `fastapi` extra. Authentication and permission callbacks may be
+synchronous or asynchronous; the host application supplies its own identity
+system.
 
-If your FastAPI application processes HTML form submissions, install:
+Templates receive `olloweditor_assets()`, `olloweditor_textarea(...)`, and
+`extract_olloweditor_text(...)`. A custom `storage` implementing
+`UploadStorageProtocol` can replace local filesystem storage. The local media
+mount is intended for development, not production delivery.
 
-```bash
-pip install python-multipart
-```
+## Upload response contract
 
-That package is not required just to serve OllowEditor assets. The
-`fastapi` extra installs it because upload and form handling depend on
-multipart parsing.
-
-## Packaged frontend assets
-
-Installing `olloweditor` gives you:
-
-- `olloweditor.browser.js`
-- `olloweditor.css`
-- `olloweditor-init.js`
-
-The shared initializer looks for:
-
-```html
-<textarea
-  name="content"
-  data-olloweditor="true"
-  data-olloweditor-options='{"theme":"auto"}'
-></textarea>
-```
-
-Framework behavior:
-
-- Django serves assets through staticfiles
-- Flask serves assets through the `OllowEditor` blueprint
-- FastAPI serves assets through `StaticFiles`
-- the base package exposes resource helpers through `olloweditor.resources`
-
-## Per-editor configuration
-
-Django widget example:
-
-```python
-from olloweditor.integrations.django import OllowEditorWidget
-
-
-widget = OllowEditorWidget(
-    options={
-        "theme": "auto",
-    }
-)
-```
-
-HTML data-attribute example:
-
-```html
-<textarea
-  name="content"
-  data-olloweditor="true"
-  data-olloweditor-options='{"theme":"auto"}'
-></textarea>
-```
-
-For the full JavaScript option surface, use the main project documentation.
-
-## Working with submitted content
-
-OllowEditor keeps the original textarea value synchronized with HTML. Your backend receives that HTML through the normal request path.
-
-### Django
-
-```python
-content = request.POST.get("content", "")
-```
-
-### Flask
-
-```python
-content = request.form.get("content", "")
-```
-
-### FastAPI
-
-```python
-from typing import Annotated
-
-from fastapi import Form
-
-
-def create_article(
-    content: Annotated[str, Form()],
-):
-    return {"content": content}
-```
-
-### Django REST Framework
+IMAGE success:
 
 ```json
 {
-  "content": "<p>Article content</p>"
+  "success": true,
+  "type": "image",
+  "url": "/media/olloweditor/images/generated.png",
+  "name": "original.png",
+  "size": 12345
 }
 ```
 
-Storage, validation, sanitization, and rendering remain the application’s responsibility.
+GALLERY success preserves selection order:
 
-## Security and HTML sanitization
-
-OllowEditor generates HTML. That matters for your trust model.
-
-- Client-side cleanup is not a complete security boundary.
-- Untrusted HTML can still carry XSS and related risks.
-- Server-side applications should validate and sanitize untrusted HTML before rendering it.
-- Your application should define allowed tags, attributes, URL schemes, image sources, and embed providers.
-- Upload endpoints need their own validation for authorization, CSRF, MIME type, extension, file size, storage destination, and rate limiting where appropriate.
-- Django `safe`, Jinja `|safe`, `Markup`, or equivalent should only be used after content has been sanitized or otherwise explicitly trusted.
-
-The package does not claim that arbitrary HTML is safe automatically.
-
-## Framework dependency isolation
-
-The base install stays lightweight:
-
-```bash
-pip install olloweditor
+```json
+{
+  "success": true,
+  "type": "gallery",
+  "files": [
+    {
+      "url": "/media/olloweditor/gallery/one.png",
+      "name": "one.png",
+      "size": 12345
+    },
+    {
+      "url": "/media/olloweditor/gallery/two.png",
+      "name": "two.png",
+      "size": 23456
+    }
+  ]
+}
 ```
 
-That does not install Django, Django REST Framework, Flask, or FastAPI. Install only the extra you need:
+ATTACHMENT success:
 
-```bash
-pip install "olloweditor[django]"
+```json
+{
+  "success": true,
+  "type": "attachment",
+  "url": "/media/olloweditor/attachments/generated.pdf",
+  "name": "report.pdf",
+  "size": 12345
+}
 ```
 
-This avoids unnecessary dependency conflicts in applications that only need one integration.
+Structured error payload:
 
-## Example applications
+```json
+{
+  "success": false,
+  "error": {
+    "code": "invalid_file_type",
+    "message": "This file type is not allowed."
+  }
+}
+```
 
-Examples are included under [`python/examples/`](https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python/examples):
+FastAPI returns the same error object under its standard HTTP exception
+`detail` key. Successful responses use the structures shown above.
 
-- [Django example](https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python/examples/django_example) — form workflow, model field, admin, and staticfiles
-- [DRF example](https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python/examples/drf_example) — serializer field and JSON API workflow
-- [Flask example](https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python/examples/flask_example) — extension, asset blueprint, template helper, and form submission
-- [FastAPI example](https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python/examples/fastapi_example) — asset mount, template helper, and form submission
+Uploaded binaries are stored separately from rich text. Responses contain
+public URLs from the configured storage backend, never physical filesystem
+paths. Cloud and CDN adapters may return absolute public URLs.
 
-## Development
+## Security
+
+OllowEditor produces HTML. Treat that HTML according to the trust boundary of
+your application.
+
+- Sanitize untrusted HTML on the server before public rendering.
+- Do not pass arbitrary stored HTML to Django `mark_safe`, Jinja `|safe`,
+  MarkupSafe `Markup`, or equivalent trusted-markup helpers.
+- Require authentication and application permissions for upload endpoints.
+- Keep Django CSRF protection enabled for session-authenticated requests.
+- Integrate Flask CSRF checks through the host application.
+- Apply size limits, extension allowlists, and image pixel limits.
+- IMAGE and GALLERY uploads verify actual image content with Pillow and reject
+  extension/format mismatches.
+- SVG is excluded from the default image allowlist because it may contain
+  active content.
+- Storage names use generated UUIDs and never trust browser path components.
+- Add malware scanning for attachments in sensitive environments.
+- Apply rate limiting in the application or reverse proxy.
+- Use suitable production media headers and content-disposition policies.
+- Protect private media with application authorization or signed URLs.
+- Define ownership, retention, and orphaned-upload cleanup policies.
+
+The upload allowlist reduces risk; it does not make every attachment safe.
+
+Safe preview helpers produce text or controlled metadata only. They are not a
+substitute for sanitizing complete HTML before rendering it on a public site.
+
+## Development and testing
 
 From the repository root:
 
 ```bash
+cd /path/to/olloweditor
+
 npm ci
 npm run build
 npm run typecheck
@@ -923,64 +634,43 @@ npm run build:python-assets
 npm run verify:python-assets
 ```
 
-Then for Python work:
+Then run Python checks:
 
 ```bash
 cd python
+
 python3 -m venv .venv
 source .venv/bin/activate
+
 python -m pip install --upgrade pip
 python -m pip install -e ".[all,dev,test]"
-```
 
-## Testing
-
-Run the Python checks from `python/`:
-
-```bash
 python -m pytest
 python -m ruff check .
 python -m ruff format --check .
 python -m mypy src
 ```
 
-The repository also includes:
-
-- isolated wheel-install verification
-- packaged-asset verification
-- framework integration tests
-- example smoke tests
-- TestPyPI release verification tooling
+Example applications are under
+[`python/examples/`](https://github.com/CodeFortifyCloud/olloweditor/tree/main/python/examples).
 
 ## Building distributions
 
 ```bash
-cd python
 rm -rf build dist src/*.egg-info
+
 python -m build
 python -m twine check dist/*
 ```
 
-Expected outputs:
+Version `0.1.1` produces:
 
-- `dist/olloweditor-<version>-py3-none-any.whl`
-- `dist/olloweditor-<version>.tar.gz`
-
-## Local wheel verification
-
-Prefer testing the built wheel, not only an editable install:
-
-```bash
-pip install dist/olloweditor-<version>-py3-none-any.whl
+```text
+dist/olloweditor-0.1.1-py3-none-any.whl
+dist/olloweditor-0.1.1.tar.gz
 ```
 
-With an extra:
-
-```bash
-pip install "olloweditor[django] @ file:///path/to/dist/olloweditor-<version>-py3-none-any.whl"
-```
-
-The repository also includes:
+Validate the wheel contents and isolated installs:
 
 ```bash
 python scripts/check_wheel_contents.py dist/*.whl
@@ -989,95 +679,77 @@ python scripts/verify_wheel_installs.py dist/*.whl
 
 ## Troubleshooting
 
-### The editor does not appear
+### Editor not appearing
 
-Check:
+Confirm the stylesheet, browser bundle, and initializer load in that order;
+the textarea has `data-olloweditor="true"`; and the browser console has no
+initialization error.
 
-- the CSS and JavaScript assets are actually loaded
-- the browser bundle loads before `olloweditor-init.js`
-- the textarea includes `data-olloweditor="true"`
-- the browser console does not show initialization errors
+### Django admin shows a plain textarea
 
-### Django assets return 404
+Use `OllowEditorField`, include `olloweditor.apps.OllowEditorConfig` in
+`INSTALLED_APPS`, and confirm staticfiles can find the three packaged assets.
 
-Check:
+### Django changelist shows raw HTML
 
-- `django.contrib.staticfiles` is installed
-- `olloweditor.apps.OllowEditorConfig` is in `INSTALLED_APPS`
-- `collectstatic` has been run where required
-- your production staticfiles serving is configured correctly
+Replace the rich-text field in `list_display` with
+`render_olloweditor_admin_preview(...)` and include
+`OllowEditorAdminPreviewMedia` on the `ModelAdmin`.
 
-### `form.media` is missing
+### Uploads fall back to base64
 
-Render:
+Confirm uploads are enabled, upload endpoint URLs are present in
+`data-olloweditor-options`, and the endpoint returns the documented JSON. A
+configured server upload does not fall back after a failed request.
 
-```django
-{{ form.media }}
-```
+### Upload endpoint returns 403
 
-### Flask assets return 404
+Check the framework upload-enabled setting, authenticated user state,
+permission hook or class, and any application-level authorization middleware.
 
-Check:
+### CSRF validation fails
 
-- `OllowEditor(app)` or `init_app(app)` was called
-- the configured URL prefix is what your template expects
-- `{{ olloweditor_assets() }}` renders the expected URLs
+For Django session authentication, render a CSRF token and allow the initializer
+to send `X-CSRFToken`. For Flask, connect the configured token callback and
+header name to the host CSRF extension.
 
-### FastAPI assets return 404
+### Media returns 404
 
-Check:
+Check the public media URL, storage backend, development media route, and
+production media service. Django's development `static()` helper and the local
+Flask/FastAPI media routes are not production servers.
 
-- `mount_olloweditor(app)` was called
-- the mount path matches the helper output
-- no conflicting route already uses that path
+### Invalid file type
 
-### ImportError for a framework integration
+The extension must be in the configured allowlist. Images must also decode as
+the format implied by their extension; renaming another file to `.png` is not
+accepted.
 
-Install the matching extra:
+### Oversized upload
+
+Increase the relevant byte or pixel limit only after considering application,
+proxy, storage, memory, and decompression risks.
+
+### Missing framework extra
+
+Install the matching extra, for example:
 
 ```bash
 pip install "olloweditor[fastapi]"
 ```
 
-### Invalid editor options
+### Stale local wheel
 
-`data-olloweditor-options` must contain valid JSON.
+Rebuilding the same version does not replace an installed wheel. Uninstall it,
+then install the exact rebuilt file with `--no-cache-dir`.
 
-## Relationship to the npm package
+## License and links
 
-The npm package is still the primary frontend distribution:
-
-```bash
-npm install @codefortify/olloweditor
-```
-
-Use the npm package when your project already has a frontend build pipeline and wants to consume the editor directly from JavaScript or TypeScript.
-
-Use the Python package when you want:
-
-- packaged browser assets inside Python distributions
-- Django, DRF, Flask, or FastAPI integration helpers
-- framework-specific form, template, or serializer support
-
-## Contributing
-
-If you want to contribute:
-
-1. Fork the repository.
-2. Create a branch for your change.
-3. Add or update tests.
-4. Run the frontend and Python verification commands.
-5. Open a pull request.
-
-## License
-
-OllowEditor is released under the [MIT License](../LICENSE).
-
-## Project links
+OllowEditor is released under the
+[MIT License](https://github.com/CodeFortifyCloud/olloweditor/blob/main/LICENSE).
 
 - Repository: <https://github.com/CodeFortifyCloud/olloweditor>
-- Python package docs: <https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python>
-- Main project README: <https://github.com/CodeFortifyCloud/olloweditor/blob/main/README.md>
-- npm package source: <https://github.com/CodeFortifyCloud/olloweditor>
+- Python package: <https://pypi.org/project/olloweditor/>
+- Python documentation: <https://github.com/CodeFortifyCloud/olloweditor/tree/main/python>
 - Issue tracker: <https://github.com/CodeFortifyCloud/olloweditor/issues>
-- Release process notes: <https://github.com/CodeFortifyCloud/olloweditor/blob/pip/python/docs/release.md>
+- Release process: <https://github.com/CodeFortifyCloud/olloweditor/blob/main/python/docs/release.md>

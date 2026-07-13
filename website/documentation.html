@@ -62,7 +62,6 @@
               <a class="docs-sidebar-link" href="#basic-html-setup">Basic HTML Setup</a>
               <a class="docs-sidebar-link" href="#editor-initialization">Editor Initialization</a>
               <a class="docs-sidebar-link" href="#toolbar-features">Toolbar Features</a>
-              <a class="docs-sidebar-link" href="#image-upload">Image Upload</a>
               <a class="docs-sidebar-link" href="#gallery-support">Gallery Support</a>
               <a class="docs-sidebar-link" href="#youtube-embed">YouTube Embed</a>
               <a class="docs-sidebar-link" href="#markdown-import-export">Markdown Import/Export</a>
@@ -70,6 +69,20 @@
               <a class="docs-sidebar-link" href="#export-pdf">Export PDF</a>
               <a class="docs-sidebar-link" href="#import-docx">Import DOCX</a>
               <a class="docs-sidebar-link" href="#export-docx">Export DOCX</a>
+            </div>
+
+            <div class="docs-sidebar-group">
+              <p class="docs-sidebar-group-title">Media Uploads</p>
+              <a class="docs-sidebar-link" href="#upload-overview">Upload Overview</a>
+              <a class="docs-sidebar-link" href="#image-upload">Image Upload</a>
+              <a class="docs-sidebar-link" href="#gallery-upload">Gallery Upload</a>
+              <a class="docs-sidebar-link" href="#attachment-upload">Attachment Upload</a>
+              <a class="docs-sidebar-link" href="#drag-drop-images">Drag &amp; Drop Images</a>
+              <a class="docs-sidebar-link" href="#upload-response-format">Upload Response Format</a>
+              <a class="docs-sidebar-link" href="#csrf-handling">CSRF Handling</a>
+              <a class="docs-sidebar-link" href="#fallback-behavior">Fallback Behavior</a>
+              <a class="docs-sidebar-link" href="#backend-examples">Backend Examples</a>
+              <a class="docs-sidebar-link" href="#security-notes">Security Notes</a>
             </div>
 
             <div class="docs-sidebar-group">
@@ -104,6 +117,18 @@
               <a class="docs-sidebar-link" href="#template-helpers">Template Helpers</a>
               <a class="docs-sidebar-link" href="#python-backend-flow">Python Backend Flow</a>
               <a class="docs-sidebar-link" href="#security-notes">Security Notes</a>
+            </div>
+
+            <div class="docs-sidebar-group">
+              <p class="docs-sidebar-group-title">Python Media Uploads</p>
+              <a class="docs-sidebar-link" href="#django-media-uploads">Django Media Uploads</a>
+              <a class="docs-sidebar-link" href="#django-upload-settings">Django Upload Settings</a>
+              <a class="docs-sidebar-link" href="#django-upload-urls">Django Upload URLs</a>
+              <a class="docs-sidebar-link" href="#drf-media-uploads">Django REST Framework Uploads</a>
+              <a class="docs-sidebar-link" href="#flask-media-uploads">Flask Uploads</a>
+              <a class="docs-sidebar-link" href="#fastapi-media-uploads">FastAPI Uploads</a>
+              <a class="docs-sidebar-link" href="#python-upload-response-contract">Upload Response Contract</a>
+              <a class="docs-sidebar-link" href="#python-upload-security-notes">Security Notes</a>
             </div>
 
             <div class="docs-sidebar-group">
@@ -359,44 +384,176 @@
               </div>
             </section>
 
-            <section class="docs-section" id="image-upload">
-              <h2>Image Upload</h2>
-              <p>
-                The browser editor supports local file insertion, URL-based image insertion, drag and drop, and backend upload endpoints. In the standalone editor, uploads are configured with the shared upload adapter.
-              </p>
+            <section class="docs-section" id="upload-overview">
+              <h2>Media Upload Integration</h2>
+              <p>OllowEditor supports configurable upload flows for images, galleries, attachments, and drag-and-drop image insertion. The editor still runs in the browser, while your application decides where files are stored and what public URLs are returned.</p>
+              <p>OllowEditor is textarea-first and browser-based. It keeps the original textarea synchronized with sanitized HTML, so the same editor works with server-rendered forms, JavaScript applications, React applications, and Python framework integrations.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
-                  <span>browser upload</span>
+                  <span>browser-bundle configuration</span>
                   <button class="docs-copy-btn" type="button" data-copy-target="#browser-upload-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="browser-upload-code"><code>&lt;textarea
-  id="ollo-editor"
-  name="body"
-  data-ollow-editor
-  data-image-upload-url="/upload/image"
-  data-gallery-upload-url="/upload/gallery"
-  data-attachment-upload-url="/upload/attachment"&gt;
-&lt;/textarea&gt;</code></pre>
+                <pre class="docs-code" id="browser-upload-code"><code>const editor = window.OllowEditor.create(
+  document.getElementById("editor"),
+  {
+    theme: "auto",
+    persistTheme: true,
+    upload: {
+      imageUrl: "/api/uploads/images",
+      galleryUrl: "/api/uploads/galleries",
+      attachmentUrl: "/api/uploads/attachments",
+      allowFallback: false
+    },
+    plugins: {
+      callout: true
+    }
+  }
+);</code></pre>
               </div>
-              <div class="docs-code-block">
-                <div class="docs-code-toolbar">
-                  <span>response contract</span>
-                  <button class="docs-copy-btn" type="button" data-copy-target="#upload-response-code">Copy</button>
-                </div>
-                <pre class="docs-code" id="upload-response-code"><code>{
-  "url": "/media/editor/images/file.jpg"
-}
+              <div class="docs-upload-grid">
+                <article class="docs-upload-card" id="image-upload"><h3>Image Upload</h3><p><code>imageUrl</code> handles a single image sent in the <code>image</code> field.</p></article>
+                <article class="docs-upload-card" id="gallery-upload"><h3>Gallery Upload</h3><p><code>galleryUrl</code> handles gallery images, each sent using the <code>image</code> field.</p></article>
+                <article class="docs-upload-card" id="attachment-upload"><h3>Attachment Upload</h3><p><code>attachmentUrl</code> handles a file attachment sent in the <code>file</code> field.</p></article>
+                <article class="docs-upload-card" id="drag-drop-images"><h3>Drag &amp; Drop Images</h3><p>Dropped images use the configured image upload flow. Image fallback rules apply to this flow too.</p></article>
+              </div>
 
-{
+              <h3 id="upload-response-format">Upload Response Format</h3>
+              <p>Single image and attachment uploads should return a <code>url</code>. Gallery uploads should return <code>urls</code>. Returned URLs must be public or otherwise accessible to the page that renders the saved HTML.</p>
+              <div class="docs-response-grid">
+                <div class="docs-code-block">
+                  <div class="docs-code-toolbar"><span>single upload</span><button class="docs-copy-btn" type="button" data-copy-target="#single-upload-response">Copy</button></div>
+                  <pre class="docs-code" id="single-upload-response"><code>{
+  "url": "/media/editor/images/file.jpg"
+}</code></pre>
+                </div>
+                <div class="docs-code-block">
+                  <div class="docs-code-toolbar"><span>gallery upload</span><button class="docs-copy-btn" type="button" data-copy-target="#gallery-upload-response">Copy</button></div>
+                  <pre class="docs-code" id="gallery-upload-response"><code>{
   "urls": [
     "/media/editor/gallery/1.jpg",
     "/media/editor/gallery/2.jpg"
   ]
 }</code></pre>
+                </div>
               </div>
-              <p>
-                Confirmed adapter behavior includes automatic CSRF header lookup, optional FileReader fallback, and shared handling for image, gallery, attachment, and drag-and-drop flows.
-              </p>
+
+              <h3 id="request-field-names">Request Field Names</h3>
+              <div class="docs-table-wrapper">
+                <table class="docs-table docs-field-table">
+                  <thead><tr><th>Upload Type</th><th>Request Field Name</th><th>Expected Response</th></tr></thead>
+                  <tbody>
+                    <tr><td>Image upload</td><td><code>image</code></td><td><code>{ "url": "..." }</code></td></tr>
+                    <tr><td>Gallery upload</td><td><code>image</code></td><td><code>{ "urls": ["...", "..."] }</code></td></tr>
+                    <tr><td>Attachment upload</td><td><code>file</code></td><td><code>{ "url": "..." }</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>Image and gallery uploads use the <code>image</code> field. Attachment uploads use the <code>file</code> field.</p>
+
+              <h3 id="csrf-handling">CSRF Handling</h3>
+              <p>The browser runtime checks CSRF values in this order:</p>
+              <ol><li>Uses configured headers when present.</li><li>Looks for <code>csrfmiddlewaretoken</code>.</li><li>Falls back to the <code>csrftoken</code> cookie.</li></ol>
+              <div class="docs-note"><strong>Framework note:</strong> For Django or other CSRF-protected frameworks, make sure the upload endpoint accepts the configured headers or the available CSRF token.</div>
+
+              <h3 id="fallback-behavior">Fallback Behavior</h3>
+              <ul><li>If no upload URL is configured for images or galleries, OllowEditor can use <code>FileReader</code>.</li><li>If an upload URL is configured and <code>allowFallback: true</code>, the editor can fall back to local image data URLs after upload failure.</li><li>Attachments require a configured upload URL.</li></ul>
+              <div class="docs-warning-note"><strong>Production note:</strong> Local data URLs are useful for previews or demos, but production applications should usually upload files to backend storage and return stable public URLs.</div>
+
+              <h3 id="javascript-upload-example">JavaScript Upload Endpoint Example</h3>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar"><span>JavaScript</span><button class="docs-copy-btn" type="button" data-copy-target="#javascript-upload-code">Copy</button></div>
+                <pre class="docs-code" id="javascript-upload-code"><code>const editor = window.OllowEditor.create(
+  document.getElementById("editor"),
+  {
+    upload: {
+      imageUrl: "/api/uploads/images",
+      galleryUrl: "/api/uploads/galleries",
+      attachmentUrl: "/api/uploads/attachments",
+      allowFallback: true
+    }
+  }
+);</code></pre>
+              </div>
+
+              <h3 id="backend-examples">Backend Examples</h3>
+              <h3 id="express-media-upload">Express</h3>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>Express + Multer</span><button class="docs-copy-btn" type="button" data-copy-target="#express-media-code">Copy</button></div><pre class="docs-code" id="express-media-code"><code>import express from "express";
+import multer from "multer";
+
+const app = express();
+const upload = multer({ dest: "uploads/" });
+
+app.post("/api/uploads/images", upload.single("image"), async (req, res) =&gt; {
+  const url = `/uploads/${req.file.filename}`;
+  res.json({ url });
+});
+
+app.post("/api/uploads/galleries", upload.array("image"), async (req, res) =&gt; {
+  const urls = req.files.map((file) =&gt; `/uploads/${file.filename}`);
+  res.json({ urls });
+});
+
+app.post("/api/uploads/attachments", upload.single("file"), async (req, res) =&gt; {
+  const url = `/uploads/${req.file.filename}`;
+  res.json({ url });
+});</code></pre></div>
+              <p>This is a simple example. Real production applications should validate file type, file size, user authorization, and storage path.</p>
+
+              <h3 id="django-upload-example">Django</h3>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>Django</span><button class="docs-copy-btn" type="button" data-copy-target="#django-upload-code">Copy</button></div><pre class="docs-code" id="django-upload-code"><code>from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.core.files.storage import default_storage
+
+@require_POST
+def upload_image(request):
+    file = request.FILES.get("image")
+    if not file:
+        return JsonResponse({"error": "No image uploaded"}, status=400)
+    path = default_storage.save(f"editor/images/{file.name}", file)
+    return JsonResponse({"url": default_storage.url(path)})
+
+@require_POST
+def upload_gallery(request):
+    files = request.FILES.getlist("image")
+    urls = []
+    for file in files:
+        path = default_storage.save(f"editor/gallery/{file.name}", file)
+        urls.append(default_storage.url(path))
+    return JsonResponse({"urls": urls})
+
+@require_POST
+def upload_attachment(request):
+    file = request.FILES.get("file")
+    if not file:
+        return JsonResponse({"error": "No file uploaded"}, status=400)
+    path = default_storage.save(f"editor/attachments/{file.name}", file)
+    return JsonResponse({"url": default_storage.url(path)})</code></pre></div>
+              <p>For production, validate permissions, MIME type, extension, size, and CSRF.</p>
+
+              <h3 id="fastapi-upload-example">FastAPI</h3>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>FastAPI</span><button class="docs-copy-btn" type="button" data-copy-target="#fastapi-upload-code">Copy</button></div><pre class="docs-code" id="fastapi-upload-code"><code>from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import JSONResponse
+from pathlib import Path
+import shutil
+
+app = FastAPI()
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
+@app.post("/api/uploads/images")
+async def upload_image(image: UploadFile = File(...)):
+    file_path = UPLOAD_DIR / image.filename
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
+    return {"url": f"/uploads/{image.filename}"}
+
+@app.post("/api/uploads/attachments")
+async def upload_attachment(file: UploadFile = File(...)):
+    file_path = UPLOAD_DIR / file.filename
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return {"url": f"/uploads/{file.filename}"}</code></pre></div>
+              <p>This is a minimal example. In production, use safe filenames, validation, authorization, and proper static/media serving.</p>
             </section>
 
             <section class="docs-section" id="gallery-support">
@@ -933,7 +1090,8 @@ import "@codefortify/olloweditor/style.css";</code></pre>
 
             <section class="docs-section" id="pip-installation">
               <h2>pip Installation</h2>
-              <p>The base Python package installs the packaged browser assets and framework-independent resource helpers only.</p>
+              <p>The Python package does not reimplement OllowEditor in Python. It packages <code>olloweditor.browser.js</code>, <code>olloweditor.css</code>, and <code>olloweditor-init.js</code>.</p>
+              <p>Official integrations include Django <code>OllowEditorField</code> and <code>OllowEditorWidget</code>, Django REST Framework <code>OllowEditorHTMLField</code>, Flask <code>OllowEditor(app)</code> / <code>init_app</code>, and FastAPI <code>mount_olloweditor()</code> and template helpers.</p>
               <div class="docs-code-block">
                 <div class="docs-code-toolbar">
                   <span>pip</span>
@@ -1247,15 +1405,299 @@ def create_article(
               </div>
             </section>
 
+            <section class="docs-section" id="python-framework-media-uploads">
+              <h2>Python Framework Media Uploads</h2>
+              <p>OllowEditor provides framework integrations for storing uploaded images, galleries, and attachments separately from the synchronized editor HTML. Each host application remains responsible for authentication, storage, media delivery, and production security.</p>
+
+              <h3 id="django-media-uploads">Django Media Uploads</h3>
+              <p>Django uploads are disabled until configured. When enabled, IMAGE, GALLERY, and ATTACHMENT requests are authenticated by default, files are stored through Django <code>default_storage</code>, and the returned public URLs are inserted into the editor HTML.</p>
+
+              <h3 id="django-upload-settings">Django Upload Settings</h3>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar"><span>settings.py</span><button class="docs-copy-btn" type="button" data-copy-target="#django-upload-settings-code">Copy</button></div>
+                <pre class="docs-code" id="django-upload-settings-code"><code>MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+OLLOWEDITOR = {
+    "UPLOADS_ENABLED": True,
+    "UPLOAD_REQUIRE_LOGIN": True,
+    "UPLOAD_PERMISSION": None,
+    "IMAGE_UPLOAD_PATH": "olloweditor/images/%Y/%m/",
+    "GALLERY_UPLOAD_PATH": "olloweditor/gallery/%Y/%m/",
+    "ATTACHMENT_UPLOAD_PATH": "olloweditor/attachments/%Y/%m/",
+    "MAX_IMAGE_SIZE": 10 * 1024 * 1024,
+    "MAX_GALLERY_FILES": 20,
+    "MAX_ATTACHMENT_SIZE": 25 * 1024 * 1024,
+    "MAX_IMAGE_PIXELS": 40_000_000,
+    "ALLOWED_IMAGE_EXTENSIONS": [
+        "jpg",
+        "jpeg",
+        "png",
+        "gif",
+        "webp",
+    ],
+    "ALLOWED_ATTACHMENT_EXTENSIONS": [
+        "pdf",
+        "doc",
+        "docx",
+        "xls",
+        "xlsx",
+        "ppt",
+        "pptx",
+        "txt",
+        "zip",
+    ],
+    "ALLOW_BASE64_UPLOADS": False,
+}</code></pre>
+              </div>
+              <div class="docs-table-wrapper">
+                <table class="docs-table docs-settings-table">
+                  <thead><tr><th>Setting</th><th>Default</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>UPLOADS_ENABLED</code></td><td><code>False</code></td></tr>
+                    <tr><td><code>UPLOAD_REQUIRE_LOGIN</code></td><td><code>True</code></td></tr>
+                    <tr><td><code>UPLOAD_PERMISSION</code></td><td><code>None</code></td></tr>
+                    <tr><td><code>IMAGE_UPLOAD_PATH</code></td><td><code>"olloweditor/images/%Y/%m/"</code></td></tr>
+                    <tr><td><code>GALLERY_UPLOAD_PATH</code></td><td><code>"olloweditor/gallery/%Y/%m/"</code></td></tr>
+                    <tr><td><code>ATTACHMENT_UPLOAD_PATH</code></td><td><code>"olloweditor/attachments/%Y/%m/"</code></td></tr>
+                    <tr><td><code>MAX_IMAGE_SIZE</code></td><td><code>10 * 1024 * 1024</code></td></tr>
+                    <tr><td><code>MAX_GALLERY_FILES</code></td><td><code>20</code></td></tr>
+                    <tr><td><code>MAX_ATTACHMENT_SIZE</code></td><td><code>25 * 1024 * 1024</code></td></tr>
+                    <tr><td><code>MAX_IMAGE_PIXELS</code></td><td><code>40_000_000</code></td></tr>
+                    <tr><td><code>ALLOWED_IMAGE_EXTENSIONS</code></td><td>jpg, jpeg, png, gif, webp</td></tr>
+                    <tr><td><code>ALLOWED_ATTACHMENT_EXTENSIONS</code></td><td>pdf, doc, docx, xls, xlsx, ppt, pptx, txt, zip</td></tr>
+                    <tr><td><code>ALLOW_BASE64_UPLOADS</code></td><td><code>False</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 id="django-upload-urls">Django Upload URLs</h3>
+              <p>Include the package URLs. The prefix remains controlled by the host project.</p>
+              <div class="docs-code-block">
+                <div class="docs-code-toolbar"><span>project/urls.py</span><button class="docs-copy-btn" type="button" data-copy-target="#django-upload-urls-code">Copy</button></div>
+                <pre class="docs-code" id="django-upload-urls-code"><code>from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import include, path
+
+
+urlpatterns = [
+    path(
+        "olloweditor/",
+        include("olloweditor.integrations.django.urls"),
+    ),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT,
+    )</code></pre>
+              </div>
+              <ul class="docs-endpoint-list">
+                <li><code>POST /olloweditor/upload/image/</code></li>
+                <li><code>POST /olloweditor/upload/gallery/</code></li>
+                <li><code>POST /olloweditor/upload/attachment/</code></li>
+              </ul>
+              <div class="docs-warning-note"><strong>Production media:</strong> The <code>static(..., document_root=...)</code> helper serves development media only. Production applications should use object storage, a CDN, Nginx, Apache, or another appropriate media service.</div>
+              <p>Configured server-upload mode stores a public media URL in the HTML:</p>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>stored HTML</span><button class="docs-copy-btn" type="button" data-copy-target="#django-stored-html-code">Copy</button></div><pre class="docs-code" id="django-stored-html-code"><code>&lt;img src="/media/olloweditor/images/2026/07/generated.png"&gt;</code></pre></div>
+              <p>Configured server-upload mode does not save a base64 data URL:</p>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>not stored</span><button class="docs-copy-btn" type="button" data-copy-target="#django-base64-html-code">Copy</button></div><pre class="docs-code" id="django-base64-html-code"><code>&lt;img src="data:image/png;base64,..."&gt;</code></pre></div>
+              <div class="docs-note"><strong>Cloud storage:</strong> Cloud storage works through the configured Django storage backend. The upload views call <code>default_storage.save(...)</code> and <code>default_storage.url(...)</code>; they do not join paths onto <code>MEDIA_ROOT</code> or return physical filesystem paths.</div>
+
+              <h3 id="drf-media-uploads">Django REST Framework Uploads</h3>
+              <p><code>OllowEditorHTMLField</code> accepts and validates the HTML string produced by a separate OllowEditor frontend. DRF does not initialize the JavaScript editor.</p>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>serializer field</span><button class="docs-copy-btn" type="button" data-copy-target="#drf-html-field-code">Copy</button></div><pre class="docs-code" id="drf-html-field-code"><code>from rest_framework import serializers
+from olloweditor.integrations.drf import OllowEditorHTMLField
+
+
+class ArticleSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    content = OllowEditorHTMLField(
+        allow_blank=True,
+        required=False,
+    )</code></pre></div>
+              <div class="docs-note">The field accepts an optional sanitizer callable and an optional DRF validator callable. A sanitizer must return a string.</div>
+              <h3>Register the reusable multipart upload views</h3>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>DRF upload URLs</span><button class="docs-copy-btn" type="button" data-copy-target="#drf-upload-urls-code">Copy</button></div><pre class="docs-code" id="drf-upload-urls-code"><code>from django.urls import path
+
+from olloweditor.integrations.drf import (
+    OllowEditorAttachmentUploadView,
+    OllowEditorGalleryUploadView,
+    OllowEditorImageUploadView,
+)
+
+
+urlpatterns = [
+    path(
+        "api/olloweditor/upload/image/",
+        OllowEditorImageUploadView.as_view(),
+    ),
+    path(
+        "api/olloweditor/upload/gallery/",
+        OllowEditorGalleryUploadView.as_view(),
+    ),
+    path(
+        "api/olloweditor/upload/attachment/",
+        OllowEditorAttachmentUploadView.as_view(),
+    ),
+]</code></pre></div>
+              <p>The views use DRF <code>MultiPartParser</code> and <code>FormParser</code>, reuse the Django upload settings and <code>default_storage</code>, and require authentication when <code>UPLOAD_REQUIRE_LOGIN</code> is true. Set DRF authentication globally, or subclass a view to set <code>authentication_classes</code> and <code>permission_classes</code>. Session authentication retains Django CSRF checks; token and JWT authentication remain host-application decisions.</p>
+              <h3>Plain text previews</h3>
+              <p>Use plain text in API list responses. Do not return stored HTML as a trusted preview.</p>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>preview serializer</span><button class="docs-copy-btn" type="button" data-copy-target="#drf-preview-code">Copy</button></div><pre class="docs-code" id="drf-preview-code"><code>from rest_framework import serializers
+from olloweditor.previews import extract_olloweditor_text
+
+
+class ArticleSerializer(serializers.ModelSerializer):
+    preview = serializers.SerializerMethodField()
+
+    def get_preview(self, obj) -&gt; str:
+        return extract_olloweditor_text(
+            obj.content,
+            max_length=140,
+        )</code></pre></div>
+
+              <h3 id="flask-media-uploads">Flask Uploads</h3>
+              <p>The Flask extension registers packaged asset routes, upload endpoints, Jinja helpers, and an optional development media route for local storage.</p>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>Flask application</span><button class="docs-copy-btn" type="button" data-copy-target="#flask-media-upload-code">Copy</button></div><pre class="docs-code" id="flask-media-upload-code"><code>from flask import Flask, g
+from olloweditor.integrations.flask import OllowEditor
+
+
+def upload_user_is_authenticated() -&gt; bool:
+    return getattr(g, "user", None) is not None
+
+
+def upload_user_has_permission() -&gt; bool:
+    user = getattr(g, "user", None)
+    return bool(user and user.can_upload)
+
+
+app = Flask(__name__)
+app.config.update(
+    OLLOWEDITOR_UPLOADS_ENABLED=True,
+    OLLOWEDITOR_UPLOAD_AUTH_REQUIRED=True,
+    OLLOWEDITOR_AUTH_CHECK=upload_user_is_authenticated,
+    OLLOWEDITOR_PERMISSION_CHECK=upload_user_has_permission,
+    OLLOWEDITOR_UPLOAD_PERMISSION_REQUIRED=True,
+    OLLOWEDITOR_UPLOAD_ROOT="./media",
+    OLLOWEDITOR_MEDIA_URL="/media/",
+)
+
+olloweditor = OllowEditor(app)</code></pre></div>
+              <p>The default URL prefix is <code>/olloweditor</code>. It serves the three upload endpoints under <code>/olloweditor/upload/</code> and injects these Jinja globals:</p>
+              <ul><li><code>olloweditor_assets()</code></li><li><code>olloweditor_textarea(...)</code></li><li><code>extract_olloweditor_text(...)</code></li></ul>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>Jinja template</span><button class="docs-copy-btn" type="button" data-copy-target="#flask-upload-template-code">Copy</button></div><pre class="docs-code" id="flask-upload-template-code"><code>&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    {{ olloweditor_assets() }}
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;form method="post"&gt;
+      {{ olloweditor_textarea("content", article.content) }}
+      &lt;button type="submit"&gt;Save&lt;/button&gt;
+    &lt;/form&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+              <div class="docs-note">Configuration supports custom upload paths, extension lists, size and pixel limits, <code>OLLOWEDITOR_CSRF_TOKEN_CALLBACK</code>, and <code>OLLOWEDITOR_CSRF_HEADER_NAME</code>. Flask-WTF and Flask-Login are not mandatory; connect their CSRF and authentication mechanisms through application callbacks.</div>
+              <p>Set <code>OLLOWEDITOR_STORAGE</code> to an object implementing <code>UploadStorageProtocol.save(...)</code> and <code>delete(...)</code> for S3, Google Cloud Storage, Azure Blob Storage, a CDN-backed service, or private application storage. The default <code>LocalFilesystemUploadStorage</code> uses <code>OLLOWEDITOR_UPLOAD_ROOT</code> and <code>OLLOWEDITOR_MEDIA_URL</code>.</p>
+              <div class="docs-warning-note">Use <code>extract_olloweditor_text(article.content, max_length=140)</code> for list pages. Do not render arbitrary stored content with Jinja <code>|safe</code>.</div>
+
+              <h3 id="fastapi-media-uploads">FastAPI Uploads</h3>
+              <p><code>OllowEditorFastAPI</code> mounts the packaged static assets, installs upload routes, adds template helpers, and can mount a development media directory for its local storage adapter.</p>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>FastAPI application</span><button class="docs-copy-btn" type="button" data-copy-target="#fastapi-media-upload-code">Copy</button></div><pre class="docs-code" id="fastapi-media-upload-code"><code>from fastapi import FastAPI
+from fastapi.templating import Jinja2Templates
+
+from olloweditor.integrations.fastapi import OllowEditorFastAPI
+
+
+async def require_user() -&gt; bool:
+    return True
+
+
+async def require_upload_permission() -&gt; bool:
+    return True
+
+
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
+
+olloweditor = OllowEditorFastAPI(
+    uploads_enabled=True,
+    upload_root="./media",
+    media_url="/media/",
+    auth_required=True,
+    auth_dependency=require_user,
+    permission_dependency=require_upload_permission,
+)
+olloweditor.init_app(app, templates=templates)</code></pre></div>
+              <ul class="docs-endpoint-list">
+                <li><code>static assets: /olloweditor/static/</code></li>
+                <li><code>IMAGE: POST /olloweditor/upload/image/</code></li>
+                <li><code>GALLERY: POST /olloweditor/upload/gallery/</code></li>
+                <li><code>ATTACHMENT: POST /olloweditor/upload/attachment/</code></li>
+              </ul>
+              <p>The routes use FastAPI <code>UploadFile</code> and require <code>python-multipart</code>, which is included in the <code>fastapi</code> extra. Authentication and permission callbacks may be synchronous or asynchronous; the host application supplies its own identity system.</p>
+              <div class="docs-note">Templates receive <code>olloweditor_assets()</code>, <code>olloweditor_textarea(...)</code>, and <code>extract_olloweditor_text(...)</code>. A custom storage implementing <code>UploadStorageProtocol</code> can replace local filesystem storage. The local media mount is intended for development, not production delivery.</div>
+
+              <h3 id="python-upload-response-contract">Upload Response Contract</h3>
+              <p>Successful responses return structured JSON. Uploaded binaries are stored separately from rich text. Responses contain public URLs from the configured storage backend, never physical filesystem paths. Cloud and CDN adapters may return absolute public URLs.</p>
+              <div class="docs-response-grid">
+                <div class="docs-code-block"><div class="docs-code-toolbar"><span>IMAGE success</span><button class="docs-copy-btn" type="button" data-copy-target="#python-image-response-code">Copy</button></div><pre class="docs-code" id="python-image-response-code"><code>{
+  "success": true,
+  "type": "image",
+  "url": "/media/olloweditor/images/generated.png",
+  "name": "original.png",
+  "size": 12345
+}</code></pre></div>
+                <div class="docs-code-block"><div class="docs-code-toolbar"><span>ATTACHMENT success</span><button class="docs-copy-btn" type="button" data-copy-target="#python-attachment-response-code">Copy</button></div><pre class="docs-code" id="python-attachment-response-code"><code>{
+  "success": true,
+  "type": "attachment",
+  "url": "/media/olloweditor/attachments/generated.pdf",
+  "name": "report.pdf",
+  "size": 12345
+}</code></pre></div>
+              </div>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>GALLERY success</span><button class="docs-copy-btn" type="button" data-copy-target="#python-gallery-response-code">Copy</button></div><pre class="docs-code" id="python-gallery-response-code"><code>{
+  "success": true,
+  "type": "gallery",
+  "files": [
+    {
+      "url": "/media/olloweditor/gallery/one.png",
+      "name": "one.png",
+      "size": 12345
+    },
+    {
+      "url": "/media/olloweditor/gallery/two.png",
+      "name": "two.png",
+      "size": 23456
+    }
+  ]
+}</code></pre></div>
+              <p>Gallery success preserves selection order.</p>
+              <div class="docs-code-block"><div class="docs-code-toolbar"><span>Structured error payload</span><button class="docs-copy-btn" type="button" data-copy-target="#python-upload-error-code">Copy</button></div><pre class="docs-code" id="python-upload-error-code"><code>{
+  "success": false,
+  "error": {
+    "code": "invalid_file_type",
+    "message": "This file type is not allowed."
+  }
+}</code></pre></div>
+              <div class="docs-note">FastAPI returns the same error object under its standard HTTP exception <code>detail</code> key. Successful responses use the structures shown above.</div>
+
+              <h3 id="python-upload-security-notes">Security Notes</h3>
+              <div class="docs-warning-note"><strong>Production security:</strong> Production upload endpoints should validate authentication, permissions, file extensions, MIME types, file sizes, image pixel limits, storage paths, and CSRF behavior. Do not treat stored editor HTML as trusted preview text. Use <code>extract_olloweditor_text(...)</code> for previews and sanitize untrusted HTML before rendering.</div>
+            </section>
+
             <section class="docs-section" id="security-notes">
               <h2>Security Notes</h2>
-              <p>
-                Because OllowEditor generates HTML, backend applications should validate and sanitize untrusted HTML before rendering it. The Python README is explicit that client-side cleanup is not a complete security boundary and that the package does not claim arbitrary HTML is safe automatically.
-              </p>
-              <ul>
-                <li>Define allowed tags, attributes, URL schemes, image sources, and embed providers.</li>
-                <li>Validate upload authorization, CSRF, MIME type, extension, file size, storage destination, and rate limits separately.</li>
-                <li>Use Django <code>safe</code>, Jinja <code>|safe</code>, <code>Markup</code>, or equivalent only after sanitization or explicit trust decisions.</li>
+              <p>OllowEditor sanitizes and normalizes content on the client, including pasted HTML, source-mode edits, Markdown import, DOCX import, URLs, embeds, and plugin-inserted markup. This is not a complete security boundary.</p>
+              <p>If content or uploads are untrusted, the host application should:</p>
+              <ul class="docs-security-list">
+                <li>Validate and sanitize HTML on the server.</li>
+                <li>Validate upload authorization.</li>
+                <li>Validate MIME type, extension, and size.</li>
+                <li>Apply normal CSRF protection on upload endpoints.</li>
+                <li>Use an appropriate Content Security Policy.</li>
               </ul>
             </section>
 
@@ -1387,14 +1829,24 @@ python scripts/verify_wheel_installs.py dist/*.whl</code></pre>
               <a href="#package-options">Package Options</a>
               <a href="#installation-commands">Installation</a>
               <a href="#basic-html-setup">JavaScript Editor</a>
+              <a href="#upload-overview">Upload Overview</a>
+              <a href="#image-upload">Image Upload</a>
+              <a href="#gallery-upload">Gallery Upload</a>
+              <a href="#attachment-upload">Attachment Upload</a>
+              <a href="#upload-response-format">Response Format</a>
+              <a href="#csrf-handling">CSRF Handling</a>
+              <a href="#fallback-behavior">Fallback Behavior</a>
+              <a href="#security-notes">Security Notes</a>
               <a href="#npm-installation">NPM / MERN Stack</a>
               <a href="#pip-installation">Python / pip</a>
+              <a href="#django-media-uploads">Django Media Uploads</a>
+              <a href="#drf-media-uploads">Django REST Framework</a>
+              <a href="#flask-media-uploads">Flask</a>
+              <a href="#fastapi-media-uploads">FastAPI</a>
+              <a href="#python-upload-response-contract">Upload Response Contract</a>
+              <a href="#python-upload-security-notes">Security Notes</a>
               <a href="#api-reference">API Reference</a>
-              <a href="#feature-overview">Features</a>
               <a href="#markdown-import-export">Import / Export</a>
-              <a href="#browser-support">Browser Support</a>
-              <a href="#local-development">Development</a>
-              <a href="#license">License</a>
             </nav>
           </div>
         </aside>

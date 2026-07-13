@@ -1896,6 +1896,67 @@ img {
     line-height: 1.7;
 }
 
+.docs-upload-grid,
+.docs-response-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.docs-upload-card {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid rgba(122, 148, 187, 0.2);
+    border-radius: 8px;
+    background: #f7faff;
+    scroll-margin-top: 108px;
+}
+
+.docs-upload-card h3,
+.docs-upload-card p {
+    margin: 0;
+}
+
+.docs-upload-card p {
+    margin-top: 8px;
+}
+
+.docs-warning-note {
+    margin-top: 16px;
+    padding: 16px 18px;
+    border-left: 4px solid #d97706;
+    background: #fff8e8;
+    color: var(--text-soft);
+}
+
+.docs-field-table code {
+    white-space: nowrap;
+}
+
+.docs-security-list li + li {
+    margin-top: 4px;
+}
+
+.docs-settings-table code {
+    white-space: nowrap;
+}
+
+.docs-endpoint-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px !important;
+    padding-left: 0 !important;
+    list-style: none;
+}
+
+.docs-endpoint-list code {
+    display: inline-block;
+    max-width: 100%;
+    overflow-x: auto;
+    vertical-align: bottom;
+}
+
 .docs-note {
     padding: 16px 18px;
     border: 1px solid rgba(47, 124, 255, 0.16);
@@ -2157,6 +2218,11 @@ img {
 }
 
 @media (max-width: 767px) {
+
+    .docs-upload-grid,
+    .docs-response-grid {
+        grid-template-columns: 1fr;
+    }
     .docs-main {
         padding-top: 20px;
         padding-bottom: 52px;

@@ -750,6 +750,6 @@ OllowEditor is released under the
 
 - Repository: <https://github.com/CodeFortifyCloud/olloweditor>
 - Python package: <https://pypi.org/project/olloweditor/>
-- Python documentation: <https://github.com/CodeFortifyCloud/olloweditor/tree/main/python>
+- Python documentation: <https://github.com/CodeFortifyCloud/olloweditor/tree/pip/python>
 - Issue tracker: <https://github.com/CodeFortifyCloud/olloweditor/issues>
-- Release process: <https://github.com/CodeFortifyCloud/olloweditor/blob/main/python/docs/release.md>
+- Release process: <https://github.com/CodeFortifyCloud/olloweditor/blob/pip/python/docs/release.md>

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from flask import Flask, redirect, render_template, request, url_for
 
@@ -17,12 +18,22 @@ class Article:
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "flask-example-not-for-production"
+    app.config["OLLOWEDITOR_UPLOADS_ENABLED"] = True
+    app.config["OLLOWEDITOR_UPLOAD_AUTH_REQUIRED"] = False
+    app.config["OLLOWEDITOR_MEDIA_URL"] = "/uploads/"
+    app.config["OLLOWEDITOR_UPLOAD_ROOT"] = str(Path(__file__).parent / "media")
     OllowEditor(app)
     app.config["ARTICLES"] = []
 
     @app.get("/")
     def index():
-        return render_template("form.html", errors={}, title="", content="")
+        return render_template(
+            "form.html",
+            articles=app.config["ARTICLES"],
+            errors={},
+            title="",
+            content="",
+        )
 
     @app.post("/articles")
     def create_article():
@@ -36,7 +47,11 @@ def create_app() -> Flask:
         if errors:
             return (
                 render_template(
-                    "form.html", errors=errors, title=title, content=content
+                    "form.html",
+                    articles=app.config["ARTICLES"],
+                    errors=errors,
+                    title=title,
+                    content=content,
                 ),
                 400,
             )

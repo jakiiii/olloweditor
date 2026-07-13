@@ -59,11 +59,14 @@ drf = [
   "Pillow>=10.3"
 ]
 flask = [
-  "Flask>=3.0"
+  "Flask>=3.0",
+  "Pillow>=10.3"
 ]
 fastapi = [
   "fastapi>=0.110",
-  "jinja2>=3.1"
+  "jinja2>=3.1",
+  "python-multipart>=0.0.9",
+  "Pillow>=10.3"
 ]
 all = [
   "Django>=4.2",
@@ -71,6 +74,7 @@ all = [
   "Flask>=3.0",
   "fastapi>=0.110",
   "jinja2>=3.1",
+  "python-multipart>=0.0.9",
   "Pillow>=10.3"
 ]
 dev = [

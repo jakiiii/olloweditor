@@ -7,11 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from olloweditor.integrations.fastapi import (
-    mount_olloweditor,
-    olloweditor_assets,
-    olloweditor_textarea,
-)
+from olloweditor.integrations.fastapi import OllowEditorFastAPI
 
 
 @dataclass
@@ -23,20 +19,29 @@ class Article:
 
 def create_app() -> FastAPI:
     app = FastAPI()
-    mount_olloweditor(app)
     app.state.articles = []
 
     templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
-    templates.env.globals["olloweditor_assets"] = olloweditor_assets
-    templates.env.globals["olloweditor_textarea"] = olloweditor_textarea
-    app.state.templates = templates
+    integration = OllowEditorFastAPI(
+        uploads_enabled=True,
+        auth_required=False,
+        upload_root=str(Path(__file__).parent / "media"),
+        media_url="/uploads/",
+    )
+    integration.init_app(app, templates=templates)
 
     @app.get("/", response_class=HTMLResponse)
     async def index(request: Request) -> HTMLResponse:
         return templates.TemplateResponse(
             request,
             "form.html",
-            {"request": request, "errors": {}, "title": "", "content": ""},
+            {
+                "request": request,
+                "articles": app.state.articles,
+                "errors": {},
+                "title": "",
+                "content": "",
+            },
         )
 
     @app.post("/articles", response_class=HTMLResponse)
@@ -55,6 +60,7 @@ def create_app() -> FastAPI:
                 "form.html",
                 {
                     "request": request,
+                    "articles": app.state.articles,
                     "errors": errors,
                     "title": title,
                     "content": content,

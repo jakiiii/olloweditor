@@ -10,4 +10,29 @@ except ModuleNotFoundError as exc:
         ) from exc
     raise
 
-__all__ = ["OllowEditorHTMLField"]
+__all__ = [
+    "OllowEditorAttachmentUploadView",
+    "OllowEditorGalleryUploadView",
+    "OllowEditorHTMLField",
+    "OllowEditorImageUploadView",
+]
+
+
+def __getattr__(name: str):
+    if name in {
+        "OllowEditorAttachmentUploadView",
+        "OllowEditorGalleryUploadView",
+        "OllowEditorImageUploadView",
+    }:
+        from .views import (
+            OllowEditorAttachmentUploadView,
+            OllowEditorGalleryUploadView,
+            OllowEditorImageUploadView,
+        )
+
+        return {
+            "OllowEditorAttachmentUploadView": OllowEditorAttachmentUploadView,
+            "OllowEditorGalleryUploadView": OllowEditorGalleryUploadView,
+            "OllowEditorImageUploadView": OllowEditorImageUploadView,
+        }[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

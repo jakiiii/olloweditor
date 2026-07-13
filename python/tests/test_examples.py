@@ -61,6 +61,7 @@ client = Client()
 assert client.get("/").status_code == 200
 assert client.get("/api/articles/").status_code == 200
 assert client.get("/static/olloweditor/olloweditor.css").status_code == 200
+assert client.get("/api/olloweditor/upload/image/").status_code == 405
 response = client.post(
     "/api/articles/",
     data='{"title":"Example","content":"<p>Saved</p>"}',
@@ -78,10 +79,21 @@ def test_flask_example_smoke() -> None:
         EXAMPLES_DIR / "flask_example",
         """
 from app import create_app
+from io import BytesIO
+from PIL import Image
 app = create_app()
 client = app.test_client()
 assert client.get("/").status_code == 200
 assert client.get("/olloweditor/olloweditor.css").status_code == 200
+buffer = BytesIO()
+Image.new("RGB", (8, 8), (10, 20, 30)).save(buffer, format="PNG")
+buffer.seek(0)
+upload = client.post(
+    "/olloweditor/upload/image/",
+    data={"file": (buffer, "example.png")},
+    content_type="multipart/form-data",
+)
+assert upload.status_code == 200
 response = client.post(
     "/articles",
     data={"title": "Example", "content": "<p>Saved</p>"},
@@ -98,11 +110,21 @@ def test_fastapi_example_smoke() -> None:
         EXAMPLES_DIR / "fastapi_example",
         """
 from fastapi.testclient import TestClient
+from io import BytesIO
+from PIL import Image
 from main import create_app
 app = create_app()
 client = TestClient(app)
 assert client.get("/").status_code == 200
 assert client.get("/olloweditor/static/olloweditor.css").status_code == 200
+buffer = BytesIO()
+Image.new("RGB", (8, 8), (10, 20, 30)).save(buffer, format="PNG")
+buffer.seek(0)
+upload = client.post(
+    "/olloweditor/upload/image/",
+    files={"file": ("example.png", buffer, "image/png")},
+)
+assert upload.status_code == 200
 response = client.post(
     "/articles",
     data={"title": "Example", "content": "<p>Saved</p>"},

@@ -14,15 +14,21 @@
 </head>
 <body>
     <h1>DRF OllowEditor Example</h1>
-    <p>This page demonstrates a separate frontend posting editor HTML to the API. Stored content shown below is escaped.</p>
+    <p>This page demonstrates a separate frontend posting editor HTML to the API. Files upload through Django storage-backed endpoints, and saved content is still shown escaped below.</p>
     <form id="article-form">
+        {% csrf_token %}
         <p>
             <label for="title">Title</label>
             <input id="title" name="title" type="text" maxlength="255" required>
         </p>
         <p>
             <label for="content">Content</label>
-            <textarea id="content" name="content" data-olloweditor="true"></textarea>
+            <textarea
+                id="content"
+                name="content"
+                data-olloweditor="true"
+                data-olloweditor-options="{{ upload_options_json }}"
+            ></textarea>
         </p>
         <button type="submit">Create article via API</button>
     </form>
@@ -32,6 +38,7 @@
         {% for article in articles %}
             <article>
                 <h3>{{ article.title }}</h3>
+                <p>{{ article.preview }}</p>
                 <pre>{{ article.content }}</pre>
             </article>
         {% endfor %}

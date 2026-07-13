@@ -6,23 +6,23 @@ from django.test import override_settings
 
 from olloweditor.integrations.django.admin import (
     _get_safe_media_thumbnail_url,
-    _summarize_olloweditor_html,
     render_olloweditor_admin_preview,
 )
+from olloweditor.previews import inspect_olloweditor_content
 
 
 def test_summary_extracts_plain_text_and_normalizes_whitespace() -> None:
-    summary = _summarize_olloweditor_html(
+    summary = inspect_olloweditor_content(
         "<h2>Article&nbsp;heading</h2><p>This is <strong>formatted</strong> text.</p>"
     )
-    assert summary.plain_text() == "Article heading This is formatted text."
+    assert summary.plain_text == "Article heading This is formatted text."
 
 
 def test_summary_handles_nested_tags_and_malformed_html() -> None:
-    summary = _summarize_olloweditor_html(
+    summary = inspect_olloweditor_content(
         "<p><strong>Nested <em>text</p><p>still works"
     )
-    assert summary.plain_text() == "Nested text still works"
+    assert summary.plain_text == "Nested text still works"
 
 
 def test_render_truncates_long_text() -> None:

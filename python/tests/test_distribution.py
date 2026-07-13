@@ -117,6 +117,7 @@ def test_base_wheel_installation_is_framework_isolated(
         ("drf", {"django", "rest_framework"}, {"flask", "fastapi"}),
         ("flask", {"flask"}, {"django", "rest_framework", "fastapi"}),
         ("fastapi", {"fastapi"}, {"django", "rest_framework", "flask"}),
+        ("all", {"django", "rest_framework", "flask", "fastapi"}, set()),
     ],
 )
 def test_optional_extras_install_independently(

@@ -57,16 +57,15 @@ npm run build:python-assets
 npm run verify:python-assets
 
 cd packages/python
-rm -rf build dist src/*.egg-info
 python -m pytest
 python -m ruff check .
 python -m ruff format --check .
 python -m mypy src
 python -m pip check
-python -m build
-python -m twine check dist/*
-python scripts/check_wheel_contents.py dist/*.whl
-python scripts/verify_wheel_installs.py dist/*.whl
+python -m build --outdir python-dist
+python -m twine check python-dist/*
+python scripts/check_wheel_contents.py python-dist/*.whl
+python scripts/verify_wheel_installs.py python-dist/*.whl
 ```
 
 You can also run the broader local verifier:
@@ -119,7 +118,7 @@ Before the workflow builds distributions, it verifies:
 Manual upload command:
 
 ```bash
-python -m twine upload --repository testpypi dist/*
+python -m twine upload --repository testpypi python-dist/*
 ```
 
 ## TestPyPI install verification
@@ -176,7 +175,7 @@ The verifier does not publish anything and does not require stored credentials.
 Manual upload command, if you intentionally need a fallback outside Trusted Publishing:
 
 ```bash
-python -m twine upload dist/*
+python -m twine upload python-dist/*
 ```
 
 ## Release checklist

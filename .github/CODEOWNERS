@@ -1,0 +1,9 @@
+# Default ownership for repository-wide review.
+* @CodeFortifyCloud
+
+# Implementation boundaries.
+/packages/javascript/ @CodeFortifyCloud
+/packages/npm/ @CodeFortifyCloud
+/packages/python/ @CodeFortifyCloud
+/.github/ @CodeFortifyCloud
+/docs/ @CodeFortifyCloud

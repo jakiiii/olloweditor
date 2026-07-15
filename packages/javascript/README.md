@@ -71,7 +71,7 @@ olloweditor/
 Open the demo file directly in your browser:
 
 ```bash
-cd /home/jaki/Dev/olloweditor
+cd packages/javascript
 xdg-open ollow.html
 ```
 
@@ -1348,7 +1348,7 @@ Local test flow:
 
 1. Open `ollow.html`
 2. Click `Image`
-3. Choose `/home/jaki/Dev/olloweditor/image.jpg`
+3. Choose the included `image.jpg` file
 4. Insert the image
 5. Click the inserted image to show the resize toolbar
 6. Apply `Small`, `Medium`, `Large`, `Full`, or `Reset`
@@ -2023,6 +2023,21 @@ Host applications should still implement:
 - rate limiting where appropriate
 
 ---
+
+## Development and Testing
+
+This direct distribution has no dependency installation or build step. Check
+JavaScript syntax and serve the demo from the repository root:
+
+```bash
+node --check packages/javascript/ollow.js
+python3 -m http.server 8000 --directory packages/javascript
+```
+
+Open `http://localhost:8000/ollow.html` and exercise the affected toolbar,
+textarea synchronization, responsive layout, theme, and upload behavior in the
+target browsers. The Vanilla implementation does not currently define an
+automated test or lint command.
 
 ## Roadmap
 

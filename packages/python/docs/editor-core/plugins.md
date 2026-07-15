@@ -1,6 +1,6 @@
 # Plugin API
 
-[Back to README](../README.md)
+[Back to README](../../README.md)
 
 ## Registering a plugin
 

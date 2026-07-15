@@ -657,24 +657,22 @@ Example applications are under
 ## Building distributions
 
 ```bash
-rm -rf build dist src/*.egg-info
-
-python -m build
-python -m twine check dist/*
+python -m build --outdir python-dist
+python -m twine check python-dist/*
 ```
 
 Version `0.1.1` produces:
 
 ```text
-dist/olloweditor-0.1.1-py3-none-any.whl
-dist/olloweditor-0.1.1.tar.gz
+python-dist/olloweditor-0.1.1-py3-none-any.whl
+python-dist/olloweditor-0.1.1.tar.gz
 ```
 
 Validate the wheel contents and isolated installs:
 
 ```bash
-python scripts/check_wheel_contents.py dist/*.whl
-python scripts/verify_wheel_installs.py dist/*.whl
+python scripts/check_wheel_contents.py python-dist/*.whl
+python scripts/verify_wheel_installs.py python-dist/*.whl
 ```
 
 ## Troubleshooting

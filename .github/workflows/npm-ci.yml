@@ -1,0 +1,37 @@
+name: npm CI
+
+on:
+  push:
+    paths:
+      - "packages/npm/**"
+      - ".github/workflows/npm-ci.yml"
+  pull_request:
+    paths:
+      - "packages/npm/**"
+      - ".github/workflows/npm-ci.yml"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: packages/npm
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: packages/npm/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck declarations and examples
+        run: npm run typecheck
+      - name: Build package
+        run: npm run build
+      - name: Inspect publish contents
+        run: npm pack --dry-run

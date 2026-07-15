@@ -1,0 +1,58 @@
+name: Verify TestPyPI Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: TestPyPI package version to verify
+        required: true
+        type: string
+      keep_environments:
+        description: Keep temporary verification environments on the runner
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: packages/python/package-lock.json
+      - run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: packages/python/pyproject.toml
+      - run: python -m pip install --upgrade pip pytest
+      - name: Run TestPyPI verifier
+        shell: bash
+        run: |
+          ARGS=(
+            scripts/verify_testpypi_release.py
+            --package olloweditor
+            --version "${{ inputs.version }}"
+            --verbose
+          )
+          if [ "${{ inputs.keep_environments }}" = "true" ]; then
+            ARGS+=(--keep-environments)
+          fi
+          python "${ARGS[@]}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: testpypi-verification
+          path: |
+            packages/python/TESTPYPI_VERIFICATION.md
+            packages/python/testpypi-verification.json
+          if-no-files-found: error

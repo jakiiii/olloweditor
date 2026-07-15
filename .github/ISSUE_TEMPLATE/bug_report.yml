@@ -1,0 +1,98 @@
+name: Bug report
+description: Report a reproducible OllowEditor defect
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Search existing issues and remove secrets or private content from reproductions and logs.
+  - type: dropdown
+    id: implementation
+    attributes:
+      label: Implementation
+      options:
+        - Vanilla JavaScript
+        - npm core or TypeScript
+        - React
+        - Next.js example or usage
+        - Vue example or usage
+        - Node.js or NestJS upload integration
+        - Django
+        - Django REST Framework
+        - Flask
+        - FastAPI
+        - Project website or documentation
+    validations:
+      required: true
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version or commit
+      placeholder: "For example: 0.1.1 or commit SHA"
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime and framework versions
+      placeholder: "For example: Node 20 / React 19 or Python 3.12 / Django 5.2"
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      placeholder: "Browser and version, or Not applicable"
+    validations:
+      required: true
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating system
+      placeholder: "For example: Ubuntu 24.04, macOS 15, Windows 11"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest complete sequence that reproduces the defect.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: input
+    id: minimal-reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Link to a small public repository or provide code below.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and screenshots
+      description: Paste relevant logs or attach screenshots. Remove credentials and private data.
+      render: shell
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched for existing reports.
+          required: true
+        - label: This report does not disclose an unpatched security vulnerability.
+          required: true

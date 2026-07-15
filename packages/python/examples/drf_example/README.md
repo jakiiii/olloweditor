@@ -7,7 +7,7 @@ shared Django storage-backed endpoints.
 ## Install
 
 ```bash
-cd python
+cd packages/python
 source .venv/bin/activate
 python -m pip install -e ".[drf,test]"
 ```
@@ -15,7 +15,7 @@ python -m pip install -e ".[drf,test]"
 ## Run
 
 ```bash
-cd packages/python/examples/drf_example
+cd examples/drf_example
 ../../.venv/bin/python manage.py migrate
 ../../.venv/bin/python manage.py runserver
 ```

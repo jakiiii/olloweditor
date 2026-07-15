@@ -7,7 +7,7 @@ upload endpoints for IMAGE, GALLERY, and ATTACHMENT.
 ## Install
 
 ```bash
-cd python
+cd packages/python
 source .venv/bin/activate
 python -m pip install -e ".[flask,test]"
 ```
@@ -15,7 +15,7 @@ python -m pip install -e ".[flask,test]"
 ## Run
 
 ```bash
-cd packages/python/examples/flask_example
+cd examples/flask_example
 ../../.venv/bin/python app.py
 ```
 

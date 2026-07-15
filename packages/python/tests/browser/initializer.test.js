@@ -5,7 +5,14 @@ import path from "node:path";
 import { JSDOM } from "jsdom";
 
 const bundlePath = path.join(process.cwd(), "dist", "olloweditor.browser.js");
-const initPath = path.join(process.cwd(), "python", "src", "olloweditor", "static", "olloweditor", "olloweditor-init.js");
+const initPath = path.join(
+  process.cwd(),
+  "src",
+  "olloweditor",
+  "static",
+  "olloweditor",
+  "olloweditor-init.js"
+);
 const bundleSource = await fs.readFile(bundlePath, "utf8");
 const initSource = await fs.readFile(initPath, "utf8");
 

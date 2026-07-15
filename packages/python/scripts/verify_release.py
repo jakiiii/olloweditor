@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+DIST_ROOT = ROOT / "python-dist"
 STATIC_ROOT = ROOT / "src" / "olloweditor" / "static" / "olloweditor"
 REQUIRED_ASSETS = (
     "olloweditor.browser.js",
@@ -47,10 +48,10 @@ def main() -> int:
         run([sys.executable, "-m", "ruff", "check", "."])
         run([sys.executable, "-m", "ruff", "format", "--check", "."])
         run([sys.executable, "-m", "mypy", "src"])
-        shutil.rmtree(ROOT / "dist", ignore_errors=True)
-        run([sys.executable, "-m", "build"])
+        shutil.rmtree(DIST_ROOT, ignore_errors=True)
+        run([sys.executable, "-m", "build", "--outdir", str(DIST_ROOT)])
 
-        distributions = sorted((ROOT / "dist").glob("*"))
+        distributions = sorted(DIST_ROOT.glob("*"))
         if not distributions:
             raise SystemExit("No distributions were built.")
 
@@ -64,9 +65,9 @@ def main() -> int:
             ]
         )
 
-        wheels = sorted((ROOT / "dist").glob("*.whl"))
+        wheels = sorted(DIST_ROOT.glob("*.whl"))
         if not wheels:
-            raise SystemExit("No wheel found in dist/.")
+            raise SystemExit("No wheel found in python-dist/.")
         run(
             [
                 sys.executable,

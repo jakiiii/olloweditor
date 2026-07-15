@@ -7,7 +7,7 @@ upload endpoints for IMAGE, GALLERY, and ATTACHMENT.
 ## Install
 
 ```bash
-cd python
+cd packages/python
 source .venv/bin/activate
 python -m pip install -e ".[fastapi,test]"
 ```
@@ -15,7 +15,7 @@ python -m pip install -e ".[fastapi,test]"
 ## Run
 
 ```bash
-cd packages/python/examples/fastapi_example
+cd examples/fastapi_example
 ../../.venv/bin/python -m uvicorn main:app --reload
 ```
 

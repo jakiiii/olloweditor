@@ -38,7 +38,8 @@ def check_wheel(path: Path) -> int:
 def main(argv: list[str]) -> int:
     if len(argv) < 2:
         print(
-            "Usage: python scripts/check_wheel_contents.py dist/*.whl", file=sys.stderr
+            "Usage: python scripts/check_wheel_contents.py python-dist/*.whl",
+            file=sys.stderr,
         )
         return 1
 

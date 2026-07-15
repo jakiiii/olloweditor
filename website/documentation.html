@@ -1746,7 +1746,8 @@ olloweditor.init_app(app, templates=templates)</code></pre></div>
                 </div>
                 <pre class="docs-code" id="local-dev-code"><code>git clone https://github.com/CodeFortifyCloud/olloweditor.git
 cd olloweditor
-npm install
+cd packages/npm
+npm ci
 npm run dev</code></pre>
               </div>
               <div class="docs-code-block">
@@ -1754,14 +1755,14 @@ npm run dev</code></pre>
                   <span>python dev</span>
                   <button class="docs-copy-btn" type="button" data-copy-target="#python-dev-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="python-dev-code"><code>npm ci
+                <pre class="docs-code" id="python-dev-code"><code>cd packages/python
+npm ci
 npm run build
 npm run typecheck
 npm test
 npm run build:python-assets
 npm run verify:python-assets
 
-cd python
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
@@ -1783,10 +1784,9 @@ python -m pip install -e ".[all,dev,test]"</code></pre>
                   <span>python distributions</span>
                   <button class="docs-copy-btn" type="button" data-copy-target="#python-build-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="python-build-code"><code>cd python
-rm -rf build dist src/*.egg-info
-python -m build
-python -m twine check dist/*</code></pre>
+                <pre class="docs-code" id="python-build-code"><code>cd packages/python
+python -m build --outdir python-dist
+python -m twine check python-dist/*</code></pre>
               </div>
             </section>
 
@@ -1807,9 +1807,9 @@ npm publish --access public</code></pre>
                   <span>python wheel verification</span>
                   <button class="docs-copy-btn" type="button" data-copy-target="#python-publish-code">Copy</button>
                 </div>
-                <pre class="docs-code" id="python-publish-code"><code>pip install dist/olloweditor-&lt;version&gt;-py3-none-any.whl
-python scripts/check_wheel_contents.py dist/*.whl
-python scripts/verify_wheel_installs.py dist/*.whl</code></pre>
+                <pre class="docs-code" id="python-publish-code"><code>pip install python-dist/olloweditor-&lt;version&gt;-py3-none-any.whl
+python scripts/check_wheel_contents.py python-dist/*.whl
+python scripts/verify_wheel_installs.py python-dist/*.whl</code></pre>
               </div>
               <p>The Python README documents build and verification commands, but it does not publish a final PyPI release command in the same way the npm README does.</p>
             </section>

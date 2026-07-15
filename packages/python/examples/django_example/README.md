@@ -7,7 +7,7 @@ and ATTACHMENT.
 ## Install
 
 ```bash
-cd python
+cd packages/python
 source .venv/bin/activate
 python -m pip install -e ".[django,test]"
 ```
@@ -15,7 +15,7 @@ python -m pip install -e ".[django,test]"
 ## Run
 
 ```bash
-cd packages/python/examples/django_example
+cd examples/django_example
 ../../.venv/bin/python manage.py migrate
 ../../.venv/bin/python manage.py collectstatic --noinput
 ../../.venv/bin/python manage.py runserver

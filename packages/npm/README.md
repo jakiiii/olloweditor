@@ -390,7 +390,8 @@ olloweditor/
 ```bash
 git clone https://github.com/CodeFortifyCloud/olloweditor.git
 cd olloweditor
-npm install
+cd packages/npm
+npm ci
 npm run dev
 ```
 
@@ -416,14 +417,19 @@ dist/
 ## Test Before Publish
 
 ```bash
+npm run typecheck
+npm run build
 npm pack --dry-run
-npm pack
 ```
 
-Then test inside another project:
+The package currently has no automated `test` or `lint` script. Type checking,
+the production build, and package-content inspection are the required automated
+validation. Exercise changed editor behavior in a browser and test the tarball
+inside another project when preparing a release:
 
 ```bash
-npm install ../olloweditor/codefortify-olloweditor-0.1.0.tgz
+npm pack
+npm install /path/to/codefortify-olloweditor-<version>.tgz
 ```
 
 ## Publishing

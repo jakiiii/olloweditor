@@ -1,6 +1,6 @@
 # Security
 
-[Back to README](../README.md)
+[Back to README](../../README.md)
 
 OllowEditor includes client-side cleanup and sanitization, but it is not a complete security boundary.
 

@@ -1,0 +1,33 @@
+name: Vanilla JavaScript CI
+
+on:
+  push:
+    paths:
+      - "packages/javascript/**"
+      - ".github/workflows/javascript-ci.yml"
+  pull_request:
+    paths:
+      - "packages/javascript/**"
+      - ".github/workflows/javascript-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check JavaScript syntax
+        run: node --check packages/javascript/ollow.js
+      - name: Verify direct-distribution files
+        shell: bash
+        run: |
+          test -s packages/javascript/ollow.js
+          test -s packages/javascript/ollow.css
+          test -s packages/javascript/ollow.html
+          grep -Fq 'ollow.css' packages/javascript/ollow.html
+          grep -Fq 'ollow.js' packages/javascript/ollow.html

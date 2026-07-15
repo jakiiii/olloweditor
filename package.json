@@ -1,0 +1,11 @@
+{
+  "name": "olloweditor-monorepo",
+  "private": true,
+  "description": "Development commands for the OllowEditor monorepo.",
+  "scripts": {
+    "check": "npm run check:javascript && npm run check:npm && npm run check:python-frontend",
+    "check:javascript": "node --check packages/javascript/ollow.js",
+    "check:npm": "npm --prefix packages/npm run typecheck && npm --prefix packages/npm run build",
+    "check:python-frontend": "npm --prefix packages/python run build && npm --prefix packages/python run typecheck && npm --prefix packages/python test && npm --prefix packages/python run verify:python-assets"
+  }
+}

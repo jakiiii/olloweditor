@@ -1,0 +1,8 @@
+**/dist/
+**/build/
+**/node_modules/
+**/coverage/
+**/.venv/
+**/package-lock.json
+packages/python/src/olloweditor/static/olloweditor/olloweditor.browser.js
+packages/python/src/olloweditor/static/olloweditor/olloweditor.css

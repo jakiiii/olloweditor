@@ -1,0 +1,52 @@
+name: Feature request
+description: Propose a focused improvement to OllowEditor
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: dropdown
+    id: implementation
+    attributes:
+      label: Target implementation
+      options:
+        - Vanilla JavaScript
+        - npm core or TypeScript
+        - React
+        - npm framework examples
+        - Django
+        - Django REST Framework
+        - Flask
+        - FastAPI
+        - Cross-project
+        - Documentation or website
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Explain the user or developer problem without assuming a particular solution.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe behavior, API, compatibility, and package-boundary implications.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example usage
+      render: text
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

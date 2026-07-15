@@ -41,7 +41,7 @@ def install_and_check(
 def main(argv: list[str]) -> int:
     if len(argv) != 2:
         print(
-            "Usage: python scripts/verify_wheel_installs.py dist/<wheel>.whl",
+            "Usage: python scripts/verify_wheel_installs.py python-dist/<wheel>.whl",
             file=sys.stderr,
         )
         return 1

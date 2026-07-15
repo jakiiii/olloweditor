@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="website/olloweditor_logo.png" alt="OllowEditor" width="180">
-</p>
-
 # OllowEditor
 
 A modern, open-source rich-text editor for JavaScript and Python ecosystems.
@@ -10,6 +6,10 @@ OllowEditor provides one editing experience through a framework-independent
 browser implementation, a published npm package with a React adapter, and a
 Python package with Django, Django REST Framework, Flask, and FastAPI
 integrations. The project is maintained by CodeFortify.
+
+<p align="center">
+  <img src="images/olloweditor.jpg" alt="OllowEditor" width="600">
+</p>
 
 ## Features
 

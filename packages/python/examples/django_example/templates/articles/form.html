@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Edit Article{% endblock %}
+{% block head %}{{ form.media }}{% endblock %}
+{% block content %}
+<h1>{% if object %}Edit{% else %}Create{% endif %} article</h1>
+<p class="help">The editor keeps the underlying textarea synchronized, and Django receives that HTML during normal form submission.</p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save article</button>
+</form>
+{% endblock %}

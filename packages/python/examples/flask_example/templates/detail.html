@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{{ article.title }}</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem auto; max-width: 960px; padding: 0 1rem; }
+        pre { white-space: pre-wrap; background: #f5f5f5; padding: 1rem; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>{{ article.title }}</h1>
+    <p>Stored HTML is escaped below. Sanitize untrusted HTML before rendering it as active markup.</p>
+    <pre>{{ article.content }}</pre>
+    <p><a href="{{ url_for('index') }}">Create another article</a></p>
+</body>
+</html>

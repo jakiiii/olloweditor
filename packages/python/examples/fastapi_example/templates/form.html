@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FastAPI OllowEditor Example</title>
+    {{ olloweditor_assets() }}
+    <style>
+        body { font-family: sans-serif; margin: 2rem auto; max-width: 960px; padding: 0 1rem; }
+        input[type="text"], textarea { width: 100%; box-sizing: border-box; }
+        .error { color: #a00; }
+    </style>
+</head>
+<body>
+    <h1>FastAPI OllowEditor Example</h1>
+    <p>The editor keeps the textarea synchronized, FastAPI receives HTML through normal form submission, and uploads are stored separately under the configured media URL.</p>
+    <form method="post" action="/articles">
+        <p>
+            <label for="title">Title</label>
+            <input id="title" name="title" type="text" value="{{ title }}" maxlength="255" required>
+            {% if errors.title %}<span class="error">{{ errors.title }}</span>{% endif %}
+        </p>
+        <p>
+            <label for="content">Content</label>
+            {{ olloweditor_textarea("content", content, id="content") }}
+            {% if errors.content %}<span class="error">{{ errors.content }}</span>{% endif %}
+        </p>
+        <button type="submit">Save article</button>
+    </form>
+    <h2>Recent articles</h2>
+    {% if articles %}
+        <ul>
+            {% for article in articles %}
+                <li>
+                    <a href="/articles/{{ article.id }}">{{ article.title }}</a>
+                    <div>{{ extract_olloweditor_text(article.content, max_length=140) }}</div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No articles yet.</p>
+    {% endif %}
+</body>
+</html>

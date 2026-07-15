@@ -1,0 +1,787 @@
+{
+  "artifact": {
+    "asset_sizes": {
+      "olloweditor/static/olloweditor/olloweditor-init.js": 4752,
+      "olloweditor/static/olloweditor/olloweditor.browser.js": 476412,
+      "olloweditor/static/olloweditor/olloweditor.css": 82883
+    },
+    "download_url": "https://test-files.pythonhosted.org/packages/45/3e/82fd78aef4b7562f65a75a142cb58436f52017419a46d513b4dcbcb84e50/olloweditor-0.1.0-py3-none-any.whl",
+    "extras": [
+      "django",
+      "drf",
+      "flask",
+      "fastapi",
+      "all",
+      "dev",
+      "test"
+    ],
+    "filename": "olloweditor-0.1.0-py3-none-any.whl",
+    "metadata": {
+      "license": null,
+      "name": "olloweditor",
+      "project_urls": [
+        "Homepage, https://github.com/jakiiii/olloweditor",
+        "Documentation, https://github.com/jakiiii/olloweditor/tree/main/python",
+        "Repository, https://github.com/jakiiii/olloweditor",
+        "Issues, https://github.com/jakiiii/olloweditor/issues"
+      ],
+      "provides_extra": [
+        "django",
+        "drf",
+        "flask",
+        "fastapi",
+        "all",
+        "dev",
+        "test"
+      ],
+      "requires_dist": [
+        "Django>=4.2; extra == \"django\"",
+        "Django>=4.2; extra == \"drf\"",
+        "djangorestframework>=3.15; extra == \"drf\"",
+        "Flask>=3.0; extra == \"flask\"",
+        "fastapi>=0.110; extra == \"fastapi\"",
+        "jinja2>=3.1; extra == \"fastapi\"",
+        "Django>=4.2; extra == \"all\"",
+        "djangorestframework>=3.15; extra == \"all\"",
+        "Flask>=3.0; extra == \"all\"",
+        "fastapi>=0.110; extra == \"all\"",
+        "jinja2>=3.1; extra == \"all\"",
+        "build>=1.2.1; extra == \"dev\"",
+        "mypy>=1.10; extra == \"dev\"",
+        "twine>=5.1.1; extra == \"dev\"",
+        "ruff>=0.5.0; extra == \"dev\"",
+        "pytest>=8.2; extra == \"test\"",
+        "pytest-cov>=5.0; extra == \"test\"",
+        "Django>=4.2; extra == \"test\"",
+        "djangorestframework>=3.15; extra == \"test\"",
+        "Flask>=3.0; extra == \"test\"",
+        "fastapi>=0.110; extra == \"test\"",
+        "jinja2>=3.1; extra == \"test\"",
+        "httpx>=0.27; extra == \"test\"",
+        "python-multipart>=0.0.9; extra == \"test\""
+      ],
+      "requires_python": ">=3.10",
+      "summary": "Python packaging foundation for the OllowEditor browser assets and future framework integrations.",
+      "version": "0.1.0"
+    },
+    "requires_python": ">=3.10",
+    "sdist_filename": "olloweditor-0.1.0.tar.gz",
+    "sha256": "90d33ab45a8d1bac7aaa98dd2797996b27271cf901b6f59ad1a922db8e15c1f7",
+    "size": 117888
+  },
+  "generated_at": "2026-07-11T00:38:47.229260+00:00",
+  "git_commit": "10f7dfb4fce77fce7fdf59f783aff81084a8e7df",
+  "index": "https://test.pypi.org/simple/",
+  "package": "olloweditor",
+  "platform": "linux",
+  "python": "3.12.3",
+  "result": "passed",
+  "tests": {
+    "all": {
+      "details": {
+        "pip_list": [
+          {
+            "name": "annotated-doc",
+            "version": "0.0.4"
+          },
+          {
+            "name": "annotated-types",
+            "version": "0.7.0"
+          },
+          {
+            "name": "anyio",
+            "version": "4.14.1"
+          },
+          {
+            "name": "asgiref",
+            "version": "3.11.1"
+          },
+          {
+            "name": "blinker",
+            "version": "1.9.0"
+          },
+          {
+            "name": "certifi",
+            "version": "2026.6.17"
+          },
+          {
+            "name": "click",
+            "version": "8.4.2"
+          },
+          {
+            "name": "Django",
+            "version": "6.0.7"
+          },
+          {
+            "name": "djangorestframework",
+            "version": "3.17.1"
+          },
+          {
+            "name": "fastapi",
+            "version": "0.139.0"
+          },
+          {
+            "name": "Flask",
+            "version": "3.1.3"
+          },
+          {
+            "name": "h11",
+            "version": "0.16.0"
+          },
+          {
+            "name": "httpcore",
+            "version": "1.0.9"
+          },
+          {
+            "name": "httpx",
+            "version": "0.28.1"
+          },
+          {
+            "name": "idna",
+            "version": "3.18"
+          },
+          {
+            "name": "itsdangerous",
+            "version": "2.2.0"
+          },
+          {
+            "name": "Jinja2",
+            "version": "3.1.6"
+          },
+          {
+            "name": "MarkupSafe",
+            "version": "3.0.3"
+          },
+          {
+            "name": "olloweditor",
+            "version": "0.1.0"
+          },
+          {
+            "name": "pip",
+            "version": "26.1.2"
+          },
+          {
+            "name": "pydantic",
+            "version": "2.13.4"
+          },
+          {
+            "name": "pydantic_core",
+            "version": "2.46.4"
+          },
+          {
+            "name": "python-multipart",
+            "version": "0.0.32"
+          },
+          {
+            "name": "sqlparse",
+            "version": "0.5.5"
+          },
+          {
+            "name": "starlette",
+            "version": "1.3.1"
+          },
+          {
+            "name": "typing_extensions",
+            "version": "4.16.0"
+          },
+          {
+            "name": "typing-inspection",
+            "version": "0.4.2"
+          },
+          {
+            "name": "Werkzeug",
+            "version": "3.1.8"
+          }
+        ],
+        "smoke": {
+          "checks": {
+            "base_import": true,
+            "django_imports": [
+              "OllowEditorField",
+              "OllowEditorWidget"
+            ],
+            "drf_import": "OllowEditorHTMLField",
+            "fastapi_imports": [
+              "mount_olloweditor",
+              "olloweditor_assets"
+            ],
+            "flask_import": "OllowEditor"
+          },
+          "framework_versions": {
+            "django": "6.0.7",
+            "djangorestframework": "3.17.1",
+            "fastapi": "0.139.0",
+            "flask": "3.1.3"
+          },
+          "package": {
+            "module_file": "/tmp/olloweditor-testpypi-95093lif/envs/all/lib/python3.12/site-packages/olloweditor/__init__.py",
+            "version": "0.1.0"
+          },
+          "venv_prefix": "/tmp/olloweditor-testpypi-95093lif/envs/all"
+        }
+      },
+      "environment": "Isolated venv",
+      "failure": null,
+      "name": "all",
+      "notes": "",
+      "status": "passed"
+    },
+    "base": {
+      "details": {
+        "frameworks_absent": true,
+        "pip_list": [
+          {
+            "name": "olloweditor",
+            "version": "0.1.0"
+          },
+          {
+            "name": "pip",
+            "version": "26.1.2"
+          }
+        ],
+        "smoke": {
+          "asset_exists": {
+            "browser": true,
+            "css": true,
+            "init": true
+          },
+          "assets": {
+            "browser": {
+              "name": "olloweditor.browser.js",
+              "size": 476412
+            },
+            "css": {
+              "name": "olloweditor.css",
+              "size": 82883
+            },
+            "init": {
+              "name": "olloweditor-init.js",
+              "size": 4752
+            }
+          },
+          "checks": {
+            "browser_global": true,
+            "css_non_empty": true,
+            "initializer_contains_boot_helper": true,
+            "missing_asset_error": "OllowEditor asset not found: missing.js",
+            "path_traversal_error": "Asset filename must not contain path traversal: '../secret'"
+          },
+          "package": {
+            "module_file": "/tmp/olloweditor-testpypi-95093lif/envs/base/lib/python3.12/site-packages/olloweditor/__init__.py",
+            "version": "0.1.0"
+          },
+          "static_root": "/tmp/olloweditor-testpypi-95093lif/envs/base/lib/python3.12/site-packages/olloweditor/static/olloweditor",
+          "venv_prefix": "/tmp/olloweditor-testpypi-95093lif/envs/base"
+        }
+      },
+      "environment": "Isolated venv",
+      "failure": null,
+      "name": "base",
+      "notes": "",
+      "status": "passed"
+    },
+    "browser": {
+      "details": {
+        "automatic_initialization": true,
+        "browser_global": true,
+        "bundle_size": 476157,
+        "creation_api": true,
+        "css_size": 82883,
+        "form_submission_value": "<p>Updated</p>",
+        "initializer_size": 4752,
+        "multiple_instances": 2,
+        "textarea_sync": "<p>Updated</p>"
+      },
+      "environment": "Temporary browser test",
+      "failure": null,
+      "name": "browser",
+      "notes": "",
+      "status": "passed"
+    },
+    "django": {
+      "details": {
+        "pip_list": [
+          {
+            "name": "asgiref",
+            "version": "3.11.1"
+          },
+          {
+            "name": "Django",
+            "version": "6.0.7"
+          },
+          {
+            "name": "olloweditor",
+            "version": "0.1.0"
+          },
+          {
+            "name": "pip",
+            "version": "26.1.2"
+          },
+          {
+            "name": "sqlparse",
+            "version": "0.5.5"
+          }
+        ],
+        "smoke": {
+          "checks": {
+            "admin_widget": "OllowEditorWidget",
+            "app_config": "olloweditor",
+            "bound_form_valid": true,
+            "cleaned_content": "<p><strong>TestPyPI Django content</strong></p>",
+            "data_attribute_present": true,
+            "field_db_type": "text",
+            "formfield_widget": "OllowEditorWidget",
+            "media_css": [
+              "olloweditor/olloweditor.css"
+            ],
+            "media_js": [
+              "olloweditor/olloweditor.browser.js",
+              "olloweditor/olloweditor-init.js"
+            ],
+            "options": {
+              "theme": "auto"
+            },
+            "rows_present": true,
+            "static_assets": {
+              "browser": true,
+              "css": true,
+              "init": true
+            },
+            "two_widgets_independent": true
+          },
+          "django_version": "6.0.7",
+          "package": {
+            "module_file": "/tmp/olloweditor-testpypi-95093lif/envs/django/lib/python3.12/site-packages/olloweditor/__init__.py",
+            "version": "0.1.0"
+          },
+          "venv_prefix": "/tmp/olloweditor-testpypi-95093lif/envs/django"
+        }
+      },
+      "environment": "Isolated venv",
+      "failure": null,
+      "name": "django",
+      "notes": "",
+      "status": "passed"
+    },
+    "drf": {
+      "details": {
+        "pip_list": [
+          {
+            "name": "asgiref",
+            "version": "3.11.1"
+          },
+          {
+            "name": "Django",
+            "version": "6.0.7"
+          },
+          {
+            "name": "djangorestframework",
+            "version": "3.17.1"
+          },
+          {
+            "name": "olloweditor",
+            "version": "0.1.0"
+          },
+          {
+            "name": "pip",
+            "version": "26.1.2"
+          },
+          {
+            "name": "sqlparse",
+            "version": "0.5.5"
+          }
+        ],
+        "smoke": {
+          "checks": {
+            "allow_blank": true,
+            "broken_sanitizer_errors": {
+              "content": [
+                "HTML sanitizer failed: broken sanitizer"
+              ]
+            },
+            "model_serializer_valid": true,
+            "sanitized_output": "<p>safe</p>x",
+            "sanitizer_calls": [
+              "<p>safe</p><script>x</script>"
+            ],
+            "serializer_output": {
+              "content": "<p><strong>DRF content</strong></p>",
+              "title": "TestPyPI article"
+            },
+            "serializer_style": {
+              "base_template": "textarea.html"
+            },
+            "valid_payload": {
+              "content": "<p><strong>DRF content</strong></p>",
+              "title": "TestPyPI article"
+            },
+            "whitespace_preserved": "  <p>Keep me</p>  "
+          },
+          "django_version": "6.0.7",
+          "drf_version": "3.17.1",
+          "package": {
+            "module_file": "/tmp/olloweditor-testpypi-95093lif/envs/drf/lib/python3.12/site-packages/olloweditor/__init__.py",
+            "version": "0.1.0"
+          },
+          "venv_prefix": "/tmp/olloweditor-testpypi-95093lif/envs/drf"
+        }
+      },
+      "environment": "Isolated venv",
+      "failure": null,
+      "name": "drf",
+      "notes": "",
+      "status": "passed"
+    },
+    "example_django": {
+      "details": {},
+      "environment": "Isolated venv",
+      "failure": null,
+      "name": "example_django",
+      "notes": "",
+      "status": "passed"
+    },
+    "example_drf": {
+      "details": {},
+      "environment": "Isolated venv",
+      "failure": null,
+      "name": "example_drf",
+      "notes": "",
+      "status": "passed"
+    },
+    "example_fastapi": {
+      "details": {},
+      "environment": "Isolated venv",
+      "failure": null,
+      "name": "example_fastapi",
+      "notes": "",
+      "status": "passed"
+    },
+    "example_flask": {
+      "details": {},
+      "environment": "Isolated venv",
+      "failure": null,
+      "name": "example_flask",
+      "notes": "",
+      "status": "passed"
+    },
+    "fastapi": {
+      "details": {
+        "pip_list": [
+          {
+            "name": "annotated-doc",
+            "version": "0.0.4"
+          },
+          {
+            "name": "annotated-types",
+            "version": "0.7.0"
+          },
+          {
+            "name": "anyio",
+            "version": "4.14.1"
+          },
+          {
+            "name": "certifi",
+            "version": "2026.6.17"
+          },
+          {
+            "name": "fastapi",
+            "version": "0.139.0"
+          },
+          {
+            "name": "h11",
+            "version": "0.16.0"
+          },
+          {
+            "name": "httpcore",
+            "version": "1.0.9"
+          },
+          {
+            "name": "httpx",
+            "version": "0.28.1"
+          },
+          {
+            "name": "idna",
+            "version": "3.18"
+          },
+          {
+            "name": "Jinja2",
+            "version": "3.1.6"
+          },
+          {
+            "name": "MarkupSafe",
+            "version": "3.0.3"
+          },
+          {
+            "name": "olloweditor",
+            "version": "0.1.0"
+          },
+          {
+            "name": "pip",
+            "version": "26.1.2"
+          },
+          {
+            "name": "pydantic",
+            "version": "2.13.4"
+          },
+          {
+            "name": "pydantic_core",
+            "version": "2.46.4"
+          },
+          {
+            "name": "python-multipart",
+            "version": "0.0.32"
+          },
+          {
+            "name": "starlette",
+            "version": "1.3.1"
+          },
+          {
+            "name": "typing_extensions",
+            "version": "4.16.0"
+          },
+          {
+            "name": "typing-inspection",
+            "version": "0.4.2"
+          }
+        ],
+        "smoke": {
+          "checks": {
+            "assets_helper_html": "<link rel=\"stylesheet\" href=\"/olloweditor/static/olloweditor.css\">\n<script src=\"/olloweditor/static/olloweditor.browser.js\"></script>\n<script src=\"/olloweditor/static/olloweditor-init.js\"></script>",
+            "browser_response": {
+              "contains_global": true,
+              "content_type": "text/javascript; charset=utf-8",
+              "status": 200
+            },
+            "css_response": {
+              "content_type": "text/css; charset=utf-8",
+              "non_empty": true,
+              "status": 200
+            },
+            "initializer_response": {
+              "contains_boot_helper": true,
+              "content_type": "text/javascript; charset=utf-8",
+              "status": 200
+            },
+            "mount_path": "/olloweditor/static",
+            "request_form_value": "<p>TestPyPI FastAPI content</p>",
+            "template_rendered": true
+          },
+          "fastapi_version": "0.139.0",
+          "httpx_version": "0.28.1",
+          "package": {
+            "module_file": "/tmp/olloweditor-testpypi-95093lif/envs/fastapi/lib/python3.12/site-packages/olloweditor/__init__.py",
+            "version": "0.1.0"
+          },
+          "python_multipart_version": "0.0.32",
+          "venv_prefix": "/tmp/olloweditor-testpypi-95093lif/envs/fastapi"
+        }
+      },
+      "environment": "Isolated venv",
+      "failure": null,
+      "name": "fastapi",
+      "notes": "",
+      "status": "passed"
+    },
+    "flask": {
+      "details": {
+        "pip_list": [
+          {
+            "name": "blinker",
+            "version": "1.9.0"
+          },
+          {
+            "name": "click",
+            "version": "8.4.2"
+          },
+          {
+            "name": "Flask",
+            "version": "3.1.3"
+          },
+          {
+            "name": "itsdangerous",
+            "version": "2.2.0"
+          },
+          {
+            "name": "Jinja2",
+            "version": "3.1.6"
+          },
+          {
+            "name": "MarkupSafe",
+            "version": "3.0.3"
+          },
+          {
+            "name": "olloweditor",
+            "version": "0.1.0"
+          },
+          {
+            "name": "pip",
+            "version": "26.1.2"
+          },
+          {
+            "name": "Werkzeug",
+            "version": "3.1.8"
+          }
+        ],
+        "smoke": {
+          "checks": {
+            "asset_blueprint_registered": true,
+            "assets_helper_html": "<link rel=\"stylesheet\" href=\"/olloweditor/olloweditor.css\">\n<script src=\"/olloweditor/olloweditor.browser.js\"></script>\n<script src=\"/olloweditor/olloweditor-init.js\"></script>",
+            "browser_response": {
+              "contains_global": true,
+              "content_type": "text/javascript",
+              "status": 200
+            },
+            "css_response": {
+              "content_type": "text/css",
+              "non_empty": true,
+              "status": 200
+            },
+            "delayed_assets_helper_html": "<link rel=\"stylesheet\" href=\"/assets/editor/olloweditor.css\">\n<script src=\"/assets/editor/olloweditor.browser.js\"></script>\n<script src=\"/assets/editor/olloweditor-init.js\"></script>",
+            "direct_extension_registered": true,
+            "initializer_response": {
+              "contains_boot_helper": true,
+              "content_type": "text/javascript",
+              "status": 200
+            },
+            "request_form_value": "<p>TestPyPI Flask content</p>",
+            "template_helper_available": true,
+            "textarea_helper": "<textarea class=\"editor\" name=\"content\" data-olloweditor=\"true\" data-olloweditor-options=\"{&#34;theme&#34;:&#34;auto&#34;}\">&lt;p&gt;Escaped&lt;/p&gt;</textarea>"
+          },
+          "flask_version": "3.1.3",
+          "package": {
+            "module_file": "/tmp/olloweditor-testpypi-95093lif/envs/flask/lib/python3.12/site-packages/olloweditor/__init__.py",
+            "version": "0.1.0"
+          },
+          "venv_prefix": "/tmp/olloweditor-testpypi-95093lif/envs/flask"
+        }
+      },
+      "environment": "Isolated venv",
+      "failure": null,
+      "name": "flask",
+      "notes": "",
+      "status": "passed"
+    },
+    "metadata": {
+      "details": {
+        "project_name": "olloweditor",
+        "requires_python": ">=3.10",
+        "sdist_filename": "olloweditor-0.1.0.tar.gz",
+        "version": "0.1.0",
+        "wheel_filename": "olloweditor-0.1.0-py3-none-any.whl"
+      },
+      "environment": "Host",
+      "failure": null,
+      "name": "metadata",
+      "notes": "",
+      "status": "passed"
+    },
+    "readme": {
+      "details": {
+        "description_non_empty": true,
+        "project_urls": {
+          "Documentation": "https://github.com/jakiiii/olloweditor/tree/main/python",
+          "Homepage": "https://github.com/jakiiii/olloweditor",
+          "Issues": "https://github.com/jakiiii/olloweditor/issues",
+          "Repository": "https://github.com/jakiiii/olloweditor"
+        },
+        "summary": "Python packaging foundation for the OllowEditor browser assets and future framework integrations."
+      },
+      "environment": "Host",
+      "failure": null,
+      "name": "readme",
+      "notes": "",
+      "status": "passed"
+    },
+    "wheel": {
+      "details": {
+        "asset_sizes": {
+          "olloweditor/static/olloweditor/olloweditor-init.js": 4752,
+          "olloweditor/static/olloweditor/olloweditor.browser.js": 476412,
+          "olloweditor/static/olloweditor/olloweditor.css": 82883
+        },
+        "bundle_has_global": true,
+        "bundle_has_no_toplevel_import_export": true,
+        "css_non_empty": true,
+        "initializer_has_selector": true,
+        "metadata": {
+          "license": null,
+          "name": "olloweditor",
+          "project_urls": [
+            "Homepage, https://github.com/jakiiii/olloweditor",
+            "Documentation, https://github.com/jakiiii/olloweditor/tree/main/python",
+            "Repository, https://github.com/jakiiii/olloweditor",
+            "Issues, https://github.com/jakiiii/olloweditor/issues"
+          ],
+          "provides_extra": [
+            "django",
+            "drf",
+            "flask",
+            "fastapi",
+            "all",
+            "dev",
+            "test"
+          ],
+          "requires_dist": [
+            "Django>=4.2; extra == \"django\"",
+            "Django>=4.2; extra == \"drf\"",
+            "djangorestframework>=3.15; extra == \"drf\"",
+            "Flask>=3.0; extra == \"flask\"",
+            "fastapi>=0.110; extra == \"fastapi\"",
+            "jinja2>=3.1; extra == \"fastapi\"",
+            "Django>=4.2; extra == \"all\"",
+            "djangorestframework>=3.15; extra == \"all\"",
+            "Flask>=3.0; extra == \"all\"",
+            "fastapi>=0.110; extra == \"all\"",
+            "jinja2>=3.1; extra == \"all\"",
+            "build>=1.2.1; extra == \"dev\"",
+            "mypy>=1.10; extra == \"dev\"",
+            "twine>=5.1.1; extra == \"dev\"",
+            "ruff>=0.5.0; extra == \"dev\"",
+            "pytest>=8.2; extra == \"test\"",
+            "pytest-cov>=5.0; extra == \"test\"",
+            "Django>=4.2; extra == \"test\"",
+            "djangorestframework>=3.15; extra == \"test\"",
+            "Flask>=3.0; extra == \"test\"",
+            "fastapi>=0.110; extra == \"test\"",
+            "jinja2>=3.1; extra == \"test\"",
+            "httpx>=0.27; extra == \"test\"",
+            "python-multipart>=0.0.9; extra == \"test\""
+          ],
+          "requires_python": ">=3.10",
+          "summary": "Python packaging foundation for the OllowEditor browser assets and future framework integrations.",
+          "version": "0.1.0"
+        },
+        "packaged_files": [
+          "olloweditor/__init__.py",
+          "olloweditor/apps.py",
+          "olloweditor/py.typed",
+          "olloweditor/resources.py",
+          "olloweditor/integrations/__init__.py",
+          "olloweditor/integrations/fastapi.py",
+          "olloweditor/integrations/flask.py",
+          "olloweditor/integrations/django/__init__.py",
+          "olloweditor/integrations/django/fields.py",
+          "olloweditor/integrations/django/widgets.py",
+          "olloweditor/integrations/drf/__init__.py",
+          "olloweditor/integrations/drf/fields.py",
+          "olloweditor/static/olloweditor/.asset-manifest.json",
+          "olloweditor/static/olloweditor/GENERATED.txt",
+          "olloweditor/static/olloweditor/olloweditor-init.js",
+          "olloweditor/static/olloweditor/olloweditor.browser.js",
+          "olloweditor/static/olloweditor/olloweditor.css",
+          "olloweditor-0.1.0.dist-info/licenses/LICENSE",
+          "olloweditor-0.1.0.dist-info/METADATA",
+          "olloweditor-0.1.0.dist-info/WHEEL",
+          "olloweditor-0.1.0.dist-info/top_level.txt",
+          "olloweditor-0.1.0.dist-info/RECORD"
+        ]
+      },
+      "environment": "Host",
+      "failure": null,
+      "name": "wheel",
+      "notes": "",
+      "status": "passed"
+    }
+  },
+  "version": "0.1.0"
+}

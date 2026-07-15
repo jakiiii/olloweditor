@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OllowEditor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="ollow.css">
+  <style>
+    body {
+      margin: 0;
+      background: #f3f5f7;
+      color: #191c1e;
+      font-family: "Work Sans", sans-serif;
+    }
+
+    main {
+      width: min(100%, 1100px);
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-family: "Newsreader", serif;
+      font-size: 40px;
+      line-height: 1.1;
+    }
+
+    p {
+      color: #4b5563;
+      line-height: 1.7;
+    }
+
+    .demo-stack {
+      display: grid;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .demo-card {
+      border: 1px solid #d9dde3;
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      padding: 20px;
+    }
+
+    .demo-card h2 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: #6b7280;
+    }
+
+    .demo-grid {
+      display: grid;
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      main {
+        padding: 24px 16px 32px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main {
+        padding: 18px 10px 24px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+    }
+
+    .demo-submit {
+      appearance: none;
+      border: 0;
+      border-radius: 6px;
+      background: #111827;
+      color: #ffffff;
+      padding: 11px 16px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .demo-source {
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #111827;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Ollow Editor</h1>
+  <p>This page shows the reusable editor bound to a normal textarea. Submit is intercepted only to print the synced HTML below.</p>
+
+  <div class="demo-stack">
+    <form id="demo-form" class="demo-grid">
+      <textarea id="story_body" name="body" data-nw-editor data-theme="auto" data-persist-theme="true" data-autosave-delay="1200">
+<h2>Economic Repercussions in the Eurozone</h2>
+<p>The recent policy shifts in the capital have sent ripples through international markets.</p>
+<blockquote><p>Markets reacted with cautious optimism.</p></blockquote>
+<ul><li>First verified point</li><li>Second verified point</li></ul>
+      </textarea>
+    </form>
+  </div>
+</main>
+
+<script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="ollow.js"></script>
+<script>
+  OllowEditor.registerPlugin("alertBox", function(editor, options) {
+    const label = options.label || "Alert";
+    editor.addSanitizerRule({
+      classes: ["ollow-alert-box"]
+    });
+    editor.addToolbarButton({
+      name: "alertBox",
+      label: label,
+      icon: "alert-box",
+      group: "blocks",
+      title: "Insert alert box",
+      onClick() {
+        editor.insertHTML('<section class="ollow-alert-box"><p>Alert text</p></section>');
+      }
+    });
+  });
+
+  NationWireEditor.initAll(document, {
+    persistTheme: true,
+    docx: {
+      enabled: true
+    },
+    plugins: {
+      alertBox: {
+        label: "Alert"
+      }
+    }
+  });
+
+  const output = document.getElementById("submitted-html");
+  document.getElementById("demo-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const bodyEditor = NationWireEditor.get("#story_body");
+    bodyEditor.sync();
+    output.textContent = document.getElementById("story_body").value;
+  });
+</script>
+</body>
+</html>

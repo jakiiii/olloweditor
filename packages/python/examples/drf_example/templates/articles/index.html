@@ -1,0 +1,74 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>DRF OllowEditor Example</title>
+    <link rel="stylesheet" href="{% static 'olloweditor/olloweditor.css' %}">
+    <style>
+        body { font-family: sans-serif; margin: 2rem auto; max-width: 960px; padding: 0 1rem; }
+        input[type="text"], textarea { width: 100%; box-sizing: border-box; }
+        pre { white-space: pre-wrap; background: #f5f5f5; padding: 1rem; overflow: auto; }
+        .status { margin-top: 1rem; color: #444; }
+    </style>
+</head>
+<body>
+    <h1>DRF OllowEditor Example</h1>
+    <p>This page demonstrates a separate frontend posting editor HTML to the API. Files upload through Django storage-backed endpoints, and saved content is still shown escaped below.</p>
+    <form id="article-form">
+        {% csrf_token %}
+        <p>
+            <label for="title">Title</label>
+            <input id="title" name="title" type="text" maxlength="255" required>
+        </p>
+        <p>
+            <label for="content">Content</label>
+            <textarea
+                id="content"
+                name="content"
+                data-olloweditor="true"
+                data-olloweditor-options="{{ upload_options_json }}"
+            ></textarea>
+        </p>
+        <button type="submit">Create article via API</button>
+    </form>
+    <p class="status" id="status"></p>
+    <h2>Recent articles</h2>
+    {% if articles %}
+        {% for article in articles %}
+            <article>
+                <h3>{{ article.title }}</h3>
+                <p>{{ article.preview }}</p>
+                <pre>{{ article.content }}</pre>
+            </article>
+        {% endfor %}
+    {% else %}
+        <p>No articles yet.</p>
+    {% endif %}
+    <script src="{% static 'olloweditor/olloweditor.browser.js' %}"></script>
+    <script src="{% static 'olloweditor/olloweditor-init.js' %}"></script>
+    <script>
+        const form = document.getElementById("article-form");
+        const status = document.getElementById("status");
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const payload = {
+                title: document.getElementById("title").value,
+                content: document.getElementById("content").value,
+            };
+            const response = await fetch("/api/articles/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                status.textContent = "Validation error: " + JSON.stringify(data);
+                return;
+            }
+            status.textContent = "Saved article #" + data.id + ". Refresh the page to see it in the list.";
+            form.reset();
+        });
+    </script>
+</body>
+</html>

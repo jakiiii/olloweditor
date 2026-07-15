@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Articles{% endblock %}
+{% block content %}
+<h1>Articles</h1>
+<p class="help">Stored HTML is shown escaped on the detail page. Sanitize untrusted HTML before rendering it as active markup.</p>
+{% if articles %}
+    <ul>
+        {% for article in articles %}
+            <li>
+                <a href="{% url 'article-detail' article.pk %}">{{ article.title }}</a>
+                (<a href="{% url 'article-update' article.pk %}">edit</a>)
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No articles yet.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Django OllowEditor Example{% endblock %}</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem auto; max-width: 960px; padding: 0 1rem; }
+        nav { margin-bottom: 1rem; }
+        .message-list { padding: 0; list-style: none; }
+        .message-list li { background: #eef6ff; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; }
+        label { display: block; font-weight: 600; margin-top: 1rem; }
+        input[type="text"], textarea { width: 100%; box-sizing: border-box; }
+        .help { color: #555; }
+        pre { white-space: pre-wrap; background: #f5f5f5; padding: 1rem; overflow: auto; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav>
+        <a href="{% url 'article-list' %}">Articles</a> |
+        <a href="{% url 'article-create' %}">Create article</a> |
+        <a href="/admin/">Admin</a>
+    </nav>
+    {% if messages %}
+        <ul class="message-list">
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+</body>
+</html>
